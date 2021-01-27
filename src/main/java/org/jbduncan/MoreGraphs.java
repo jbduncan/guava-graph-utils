@@ -23,10 +23,10 @@ import static java.util.Objects.requireNonNull;
 public class MoreGraphs {
 
   /**
-   * Returns an immutable directed graph from a given set of starting nodes and {@linkplain
-   * SuccessorsFunction successors function}. The successors function is applied in a breadth-first
-   * manner to the starting nodes, then their children, then their grand-children, and so on and so
-   * forth until all descendants have been traversed.
+   * Returns an immutable directed graph from a given set of starting nodes and a {@linkplain
+   * SuccessorsFunction successors function}. The successors function is applied to the starting
+   * nodes, then their children, then their grand-children, and so on and so forth in a
+   * breadth-first manner until all descendants have been traversed.
    *
    * <p>For example, given the starting node {@code "a"} and the following successors function:
    *
@@ -38,24 +38,32 @@ public class MoreGraphs {
    *   if (node.equals("b") {
    *     return ImmutableList.of("c");
    *   }
-   *   if (node.equals("c") {
-   *     return ImmutableList.of();
-   *   }
+   *   return ImmutableList.of();
    * }
    * }</pre>
    *
-   * <p>...then the resulting graph will be {@code {("a", "b"), ("b", "c")}}.
+   * <p>...then this method will return the graph {@code {("a", "b"), ("b", "c")}}.
    *
-   * <p>Note that this method takes measures to prevent endlessly cycling over nodes it has
-   * encountered more than once during the breadth-first traversal. Therefore the successors
-   * function can safely represent a cyclic graph.
+   * <p>This method is safe to use with successor functions with cycles. For example, given node "z"
+   * and the following successors function:
+   *
+   * <pre>{@code
+   * node -> {
+   *   if (nodes.equals("z") {
+   *       return ImmutableList.of("z");
+   *   }
+   *   return ImmutableList.of();
+   * }
+   * }</pre>
+   *
+   * <p>...then this method will terminate quickly and return the graph {@code {("z", "z")}}.
    *
    * @param startingNodes the set of nodes to start from
    * @param successorsFunction the function to apply to the starting nodes and their descendants in
-   *     a breadth-first manner; can represent a tree, a cyclic graph, or any other kind of graph
+   *     a breadth-first manner; can represent any kind of graph, including cyclic graphs
    * @param <N> the type of the nodes
-   * @return an immutable directed graph representing the breadth-first traversal of the successors function
-   *     with the given starting nodes
+   * @return an immutable directed graph representing the breadth-first traversal of the successors
+   *     function with the given starting nodes
    * @see <a href='https://stackoverflow.com/a/58457785/2252930'>this StackOverflow answer for the
    *     origin of this method</a>
    */

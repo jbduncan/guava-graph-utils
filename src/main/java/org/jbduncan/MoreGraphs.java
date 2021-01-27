@@ -67,7 +67,7 @@ public class MoreGraphs {
     while (!nodesRemaining.isEmpty()) {
       N next = nodesRemaining.remove();
       for (N successor : successorsFunction.successors(next)) {
-        if (!result.nodes().contains(successor)) {
+        if (!result.edges().contains(EndpointPair.ordered(next, successor))) {
           nodesRemaining.add(successor);
           result.putEdge(next, successor);
         }

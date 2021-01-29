@@ -143,23 +143,70 @@ public class MoreGraphs {
    *       and the pair's {@linkplain EndpointPair#source() source} and {@linkplain
    *       EndpointPair#target() target} are the cell's row key and column key respectively. The
    *       order of the edges is undefined.
-   *   <li>{@link ValueGraph#predecessors(Object) predecessors(row key)}: returns an unmodifiable
-   *       set view of the column keys associated with the row key; the order is undefined.
-   *   <li>{@link ValueGraph#predecessors(Object) predecessors(column key)}: returns an empty
-   *       immutable set.
-   *   <li>{@link ValueGraph#predecessors(Object) predecessors(other value)}: throws an {@code
-   *       IllegalArgumentException}.
-   *   <li>{@link ValueGraph#successors(Object) successors(row key)}: returns an empty immutable
+   *   <li>{@link ValueGraph#successors(Object) successors(rowKey)}: returns an unmodifiable set
+   *       view of the column keys that share a cell value with the row key; the order is undefined.
+   *   <li>{@link ValueGraph#successors(Object) successors(columnKey)}: returns an empty immutable
    *       set.
-   *   <li>{@link ValueGraph#successors(Object) successors(column key)}: returns an unmodifiable set
-   *       view of the row keys associated with the column key; the order is undefined.
-   *   <li>{@link ValueGraph#successors(Object) predecessors(other value)}: throws an {@code
+   *   <li>{@link ValueGraph#successors(Object) successors(otherValue)}: throws an {@code
    *       IllegalArgumentException}.
-   *   <li>{@link ValueGraph#adjacentNodes(Object) adjacentNodes(some value)}: returns an
-   *       unmodifiable set union view of {@link ValueGraph#predecessors(Object) predecessors(some
-   *       value)} and {@link ValueGraph#successors(Object) successors(some value)}; the order is
+   *   <li>{@link ValueGraph#predecessors(Object) predecessors(rowKey)}: returns an empty immutable
+   *       set.
+   *   <li>{@link ValueGraph#predecessors(Object) predecessors(columnKey)}: returns an unmodifiable
+   *       set view of the row keys that share a cell value with the column key; the order is
    *       undefined.
-   *   <li>TODO: Describe the behaviour of the other methods of this value graph.
+   *   <li>{@link ValueGraph#predecessors(Object) predecessors(otherValue)}: throws an {@code
+   *       IllegalArgumentException}.
+   *   <li>{@link ValueGraph#adjacentNodes(Object) adjacentNodes(rowKey)}: returns an unmodifiable
+   *       set view of the column keys that share a cell value with the row key; the order is
+   *       undefined.
+   *   <li>{@link ValueGraph#adjacentNodes(Object) adjacentNodes(columnKey)}: returns an
+   *       unmodifiable set view of the row keys that share a cell value with the column key; the
+   *       order is undefined.
+   *   <li>{@link ValueGraph#adjacentNodes(Object) adjacentNodes(otherValue)}: throws an {@code
+   *       IllegalArgumentException}.
+   *   <li>{@link ValueGraph#inDegree(Object) inDegree(rowKey)}: 0
+   *   <li>{@link ValueGraph#inDegree(Object) inDegree(columnKey)}: the number of row keys that
+   *       share a cell value with the column key.
+   *   <li>{@link ValueGraph#inDegree(Object) inDegree(otherValue)}: throws an {@code
+   *       IllegalArgumentException}.
+   *   <li>{@link ValueGraph#outDegree(Object) outDegree(rowKey)}: the number of column keys that
+   *       share a cell value with the row key.
+   *   <li>{@link ValueGraph#outDegree(Object) outDegree(columnKey)}: 0
+   *   <li>{@link ValueGraph#outDegree(Object) outDegree(otherValue)}: throws an {@code
+   *       IllegalArgumentException}.
+   *   <li>{@link ValueGraph#degree(Object) degree(rowKey)}: the number of column keys that share a
+   *       cell value with the row key.
+   *   <li>{@link ValueGraph#degree(Object) degree(columnKey)}: the number of row keys that share a
+   *       cell value with the column key.
+   *   <li>{@link ValueGraph#degree(Object) degree(otherValue)}: throws an {@code
+   *       IllegalArgumentException}.
+   *   <li>{@link ValueGraph#edgeValue(Object, Object) edgeValue(firstValue, secondValue)}: if the
+   *       first value is not a row key or the second value is not a column key, then this method
+   *       throws an {@code IllegalArgumentException}; otherwise if the row key and column key share
+   *       a cell value in the table then it returns the cell value as an {@code Optional};
+   *       otherwise it returns an empty {@code Optional}.
+   *   <li>{@link ValueGraph#edgeValue(EndpointPair) edgeValue(someEndpointPair)}: equivalent to
+   *       {@code edgeValue(someEndpointPair.source(), someEndpointPair.target())}.
+   *   <li>{@link ValueGraph#edgeValueOrDefault(Object, Object, Object)
+   *       edgeValueOrDefault(firstValue, secondValue, defaultValue)}: if the first value is not a
+   *       row key or the second value is not a column key, then this method throws an {@code
+   *       IllegalArgumentException}; otherwise if the row key and column key share a cell value in
+   *       the table then it returns the cell value; otherwise it returns the default value.
+   *   <li>{@link ValueGraph#edgeValueOrDefault(EndpointPair, Object)
+   *       edgeValueOrDefault(someEndpointPair, default)}: equivalent to {@code
+   *       edgeValueOrDefault(someEndpointPair.source(), someEndpointPair.target(), default)}.
+   *   <li>{@link ValueGraph#hasEdgeConnecting(Object, Object) hasEdgeConnecting(firstValue,
+   *       secondValue)}: returns {@code true} if the first value is a row key, the second value is
+   *       a column key, and if the row key and column key share a cell value in the table;
+   *       otherwise returns {@code false}.
+   *   <li>{@link ValueGraph#hasEdgeConnecting(EndpointPair) hasEdgeConnecting(someEndpointPair)}:
+   *       equivalent to {@code hasEdgeConnecting(someEndpointPair.source(),
+   *       someEndpointPair.target())}, except it does not throw an {@code IllegalArgumentException}
+   *       if the endpoint pair is {@linkplain EndpointPair#unordered(Object, Object)} undirected}.
+   *   <li>{@link ValueGraph#asGraph() asGraph()}: returns a {@code Graph} view that contains the
+   *       nodes and edge connections of this value graph, but not the edge values.
+   *   <li>{@link ValueGraph#toString() toString()}: returns a string representation of this value
+   *       graph; the value and format is undefined.
    * </ul>
    *
    * <p>The methods of this value graph require all input parameters to be non-null (except for

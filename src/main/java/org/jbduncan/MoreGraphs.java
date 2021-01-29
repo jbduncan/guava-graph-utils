@@ -128,6 +128,19 @@ public class MoreGraphs {
    *
    * <p>The given table must be non-null, otherwise a {@code NullPointerException} will be thrown.
    *
+   * <p>The methods of this value graph require all input parameters to be non-null (except for
+   * those parameters annotated with {@code @Nullable} in the {@link ValueGraph ValueGraph}
+   * interface), otherwise a {@code NullPointerException} will be thrown.
+   *
+   * <p>If you need this value graph's directed edges to point in the other direction, then pass
+   * this value graph to {@link com.google.common.graph.Graphs#transpose(ValueGraph)
+   * Graphs.transpose} and use the result of that method instead.
+   *
+   * <p>The row keys and column keys in the given table must have {@link #equals(Object) equals()}
+   * and {@link #hashCode() hashCode()} implementations as described in "<a
+   * href='https://github.com/google/guava/wiki/GraphsExplained#graph-elements-nodes-and-edges'>Graphs
+   * Explained</a>", otherwise the behaviour of this graph is undefined.
+   *
    * <p>This value graph's methods have the following behaviour:
    *
    * <ul>
@@ -208,19 +221,6 @@ public class MoreGraphs {
    *   <li>{@link ValueGraph#toString() toString()}: returns a string representation of this value
    *       graph; the value and format is undefined.
    * </ul>
-   *
-   * <p>The methods of this value graph require all input parameters to be non-null (except for
-   * those parameters annotated with {@code @Nullable} in the {@link ValueGraph ValueGraph}
-   * interface), otherwise a {@code NullPointerException} will be thrown.
-   *
-   * <p>If you need this value graph's directed edges to point in the other direction, then pass
-   * this value graph to {@link com.google.common.graph.Graphs#transpose(ValueGraph)
-   * Graphs.transpose} and use the result of that method instead.
-   *
-   * <p>The row keys and column keys in the given table must have {@link #equals(Object) equals()}
-   * and {@link #hashCode() hashCode()} implementations as described in "<a
-   * href='https://github.com/google/guava/wiki/GraphsExplained#graph-elements-nodes-and-edges'>Graphs
-   * Explained</a>", otherwise the behaviour of this graph is undefined.
    *
    * @param table the table to adapt into a {@code ValueGraph} view; must not be null
    * @param <N> the node type; must have {@link #equals(Object) equals()} and {@link #hashCode()

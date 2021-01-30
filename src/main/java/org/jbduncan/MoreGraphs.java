@@ -1,6 +1,7 @@
 package org.jbduncan;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
@@ -12,13 +13,19 @@ import com.google.common.graph.ImmutableGraph;
 import com.google.common.graph.MutableGraph;
 import com.google.common.graph.SuccessorsFunction;
 import com.google.common.graph.ValueGraph;
+import java.util.AbstractSet;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toSet;
 
 public class MoreGraphs {
 
@@ -232,29 +239,63 @@ public class MoreGraphs {
    */
   // TODO: Rewrite the implementation of this method using TDD
   public static <N, E> ValueGraph<N, E> asValueGraph(Table<N, N, E> table) {
-    requireNonNull(table);
+    checkNotNull(table, "table");
 
     return new AbstractValueGraph<>() {
       @Override
       public @Nullable E edgeValueOrDefault(N nodeU, N nodeV, @Nullable E defaultValue) {
-        requireNonNull(nodeU);
-        requireNonNull(nodeV);
-        checkArgument(table.containsRow(nodeU));
-        checkArgument(table.containsColumn(nodeV));
-        return table.contains(nodeU, nodeV)
-            ? requireNonNull(table.get(nodeU, nodeV))
-            : defaultValue;
+        throw new UnsupportedOperationException("Not yet implemented");
       }
 
       @Override
       public @Nullable E edgeValueOrDefault(EndpointPair<N> endpoints, @Nullable E defaultValue) {
-        requireNonNull(endpoints);
-        return edgeValueOrDefault(endpoints.nodeU(), endpoints.nodeV(), defaultValue);
+        throw new UnsupportedOperationException("Not yet implemented");
       }
 
       @Override
       public Set<N> nodes() {
         return Sets.union(table.rowKeySet(), table.columnKeySet());
+      }
+
+      @Override
+      public Set<EndpointPair<N>> edges() {
+        return new AbstractSet<>() {
+          @Override
+          public Iterator<EndpointPair<N>> iterator() {
+            return Iterators.transform(
+                Iterators.unmodifiableIterator(table.cellSet().iterator()),
+                c -> EndpointPair.ordered(c.getRowKey(), c.getColumnKey()));
+          }
+
+          @Override
+          public int size() {
+            return table.size();
+          }
+        };
+      }
+
+      @Override
+      public Set<N> successors(N node) {
+        checkNotNull(node, "node");
+        checkArgument(nodes().contains(node));
+        return Collections.unmodifiableSet(table.row(node).keySet());
+      }
+
+      @Override
+      public Set<N> predecessors(N node) {
+        checkNotNull(node, "node");
+        checkArgument(nodes().contains(node));
+        return Collections.unmodifiableSet(table.column(node).keySet());
+      }
+
+      @Override
+      public Set<N> adjacentNodes(N node) {
+        checkNotNull(node, "node");
+        checkArgument(nodes().contains(node));
+        return Collections.unmodifiableSet(
+            table.rowKeySet().contains(node)
+                ? table.row(node).keySet()
+                : table.column(node).keySet());
       }
 
       @Override
@@ -270,29 +311,6 @@ public class MoreGraphs {
       @Override
       public ElementOrder<N> nodeOrder() {
         return ElementOrder.unordered();
-      }
-
-      @Override
-      public Set<N> adjacentNodes(N node) {
-        return Sets.union(predecessors(node), successors(node));
-      }
-
-      @Override
-      public Set<N> predecessors(N node) {
-        requireNonNull(node);
-        checkArgument(nodes().contains(node));
-        return table.containsColumn(node)
-            ? Collections.unmodifiableSet(table.column(node).keySet())
-            : ImmutableSet.of();
-      }
-
-      @Override
-      public Set<N> successors(N node) {
-        requireNonNull(node);
-        checkArgument(nodes().contains(node));
-        return table.containsRow(node)
-            ? Collections.unmodifiableSet(table.row(node).keySet())
-            : ImmutableSet.of();
       }
     };
   }

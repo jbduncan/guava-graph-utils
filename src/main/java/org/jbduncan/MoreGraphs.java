@@ -96,9 +96,7 @@ public class MoreGraphs {
    *       the graph.
    * </ul>
    *
-   * <p>For example, the following table is viewed as the value graph beneath it.
-   *
-   * <h2>Table</h2>
+   * <p>For example, this table...
    *
    * <pre>{@code
    * +---+---+---+---+
@@ -110,7 +108,7 @@ public class MoreGraphs {
    * +---+---+---+---+
    * }</pre>
    *
-   * <h2>Graph</h2>
+   * <p>...is viewed as this graph.
    *
    * <pre>{@code
    *     [e]
@@ -177,15 +175,15 @@ public class MoreGraphs {
    *       order is undefined.
    *   <li>{@link ValueGraph#adjacentNodes(Object) adjacentNodes(otherValue)}: throws an {@code
    *       IllegalArgumentException}.
-   *   <li>{@link ValueGraph#inDegree(Object) inDegree(rowKey)}: 0
-   *   <li>{@link ValueGraph#inDegree(Object) inDegree(columnKey)}: the number of row keys that
-   *       share a cell value with the column key.
-   *   <li>{@link ValueGraph#inDegree(Object) inDegree(otherValue)}: throws an {@code
-   *       IllegalArgumentException}.
    *   <li>{@link ValueGraph#outDegree(Object) outDegree(rowKey)}: the number of column keys that
    *       share a cell value with the row key.
    *   <li>{@link ValueGraph#outDegree(Object) outDegree(columnKey)}: 0
    *   <li>{@link ValueGraph#outDegree(Object) outDegree(otherValue)}: throws an {@code
+   *       IllegalArgumentException}.
+   *   <li>{@link ValueGraph#inDegree(Object) inDegree(rowKey)}: 0
+   *   <li>{@link ValueGraph#inDegree(Object) inDegree(columnKey)}: the number of row keys that
+   *       share a cell value with the column key.
+   *   <li>{@link ValueGraph#inDegree(Object) inDegree(otherValue)}: throws an {@code
    *       IllegalArgumentException}.
    *   <li>{@link ValueGraph#degree(Object) degree(rowKey)}: the number of column keys that share a
    *       cell value with the row key.

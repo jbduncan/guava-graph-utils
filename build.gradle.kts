@@ -1,6 +1,7 @@
 plugins {
     java
     id("com.github.ben-manes.versions") version ("0.36.0")
+    id("com.diffplug.spotless") version ("5.9.0")
 }
 
 group = "org.jbduncan"
@@ -24,5 +25,11 @@ tasks.test {
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(11))
+    }
+}
+
+spotless {
+    java {
+        googleJavaFormat("1.9")
     }
 }

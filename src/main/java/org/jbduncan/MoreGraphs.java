@@ -1,6 +1,8 @@
 package org.jbduncan;
 
-import com.google.common.collect.ImmutableSet;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
@@ -18,14 +20,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Queue;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.Nullable;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.toSet;
 
 public class MoreGraphs {
 
@@ -76,6 +71,8 @@ public class MoreGraphs {
    */
   public static <N> ImmutableGraph<N> buildGraphWithBreadthFirstTraversal(
       Iterable<N> startingNodes, SuccessorsFunction<N> successorsFunction) {
+    checkNotNull(startingNodes, "startingNodes");
+    checkNotNull(successorsFunction, "successorsFunction");
     MutableGraph<N> result = GraphBuilder.directed().allowsSelfLoops(true).build();
     startingNodes.forEach(result::addNode);
     Queue<N> nodesRemaining = Queues.newArrayDeque(startingNodes);

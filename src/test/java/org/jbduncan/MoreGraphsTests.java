@@ -12,6 +12,7 @@ import com.google.common.graph.ElementOrder;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.ImmutableGraph;
+import java.util.Set;
 import java.util.stream.Stream;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+@SuppressWarnings("UnstableApiUsage")
 class MoreGraphsTests {
 
   private static final String UNUSED = "unused-cell-value";
@@ -31,7 +33,7 @@ class MoreGraphsTests {
             ImmutableList.of(), node -> ImmutableList.of("any old node"));
 
     // then
-    assertThat(result).isEqualTo(GraphBuilder.directed().allowsSelfLoops(true).build());
+    assertThat(result).isEqualTo(GraphBuilder.directed().allowsSelfLoops(true).immutable().build());
   }
 
   @Test
@@ -108,6 +110,36 @@ class MoreGraphsTests {
                 .putEdge(1, 2)
                 .putEdge(2, 1)
                 .build());
+  }
+
+  @Test
+  void whenBuildingGraphWithBftAndNullSuccessorsFunction_thenThrowNpeImmediately() {
+    // when
+    ThrowingCallable codeUnderTest =
+        () -> MoreGraphs.buildGraphWithBreadthFirstTraversal(Set.of(), null);
+
+    // then
+    assertThatCode(codeUnderTest)
+        .as(
+            "MoreGraphs.buildGraphWithBreadthFirstTraversal(anyStartingNodes, null) "
+                + "throws NullPointerException")
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("successorsFunction");
+  }
+
+  @Test
+  void whenBuildingGraphWithBftAndNullStartingNodes_thenThrowNpeImmediately() {
+    // when
+    ThrowingCallable codeUnderTest =
+        () -> MoreGraphs.buildGraphWithBreadthFirstTraversal(null, element -> Set.of());
+
+    // then
+    assertThatCode(codeUnderTest)
+        .as(
+            "MoreGraphs.buildGraphWithBreadthFirstTraversal(null, anySuccessorsFunction) "
+                + "throws NullPointerException")
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("startingNodes");
   }
 
   @Test
@@ -499,8 +531,7 @@ class MoreGraphsTests {
   }
 
   @Test
-  void
-      givenTable_whenViewingAsValueGraph_andGettingAdjacentNodesOfKeyNotInTable_thenThrowsIae() {
+  void givenTable_whenViewingAsValueGraph_andGettingAdjacentNodesOfKeyNotInTable_thenThrowsIae() {
     // given
     var table = ImmutableTable.of("1", "A", UNUSED);
 

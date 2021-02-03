@@ -94,9 +94,9 @@ public class MoreGraphs {
    *
    * <ul>
    *   <li>The row keys and column keys of the table are viewed as the graph's nodes.
-   *   <li>Every row-and-column mapping in the table is viewed as a directed edge from the row key
-   *       to the column key in the graph.
-   *   <li>Every cell value is viewed as the edge value of its row and column's respective edge in
+   *   <li>Each row key / column key / cell value mapping in the table is viewed in the graph as a
+   *       directed edge from the row key to the column key.
+   *   <li>Each cell value is viewed as the edge value of its row and column's respective edge in
    *       the graph.
    * </ul>
    *

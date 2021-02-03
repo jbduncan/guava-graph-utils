@@ -20,7 +20,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-@SuppressWarnings("UnstableApiUsage")
 class MoreGraphsTests {
 
   private static final String UNUSED = "unused-cell-value";
@@ -113,7 +112,7 @@ class MoreGraphsTests {
   }
 
   @Test
-  void whenBuildingGraphWithBftAndNullSuccessorsFunction_thenThrowNpeImmediately() {
+  void whenBuildingGraphWithBftAndNullSuccessorsFunction_thenNpeIsThrown() {
     // when
     ThrowingCallable codeUnderTest =
         () -> MoreGraphs.buildGraphWithBreadthFirstTraversal(Set.of(), null);
@@ -122,13 +121,13 @@ class MoreGraphsTests {
     assertThatCode(codeUnderTest)
         .as(
             "MoreGraphs.buildGraphWithBreadthFirstTraversal(anyStartingNodes, null) "
-                + "throws NullPointerException")
+                + "expected to throw NullPointerException")
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("successorsFunction");
   }
 
   @Test
-  void whenBuildingGraphWithBftAndNullStartingNodes_thenThrowNpeImmediately() {
+  void whenBuildingGraphWithBftAndNullStartingNodes_thenNpeIsThrown() {
     // when
     ThrowingCallable codeUnderTest =
         () -> MoreGraphs.buildGraphWithBreadthFirstTraversal(null, element -> Set.of());
@@ -137,7 +136,7 @@ class MoreGraphsTests {
     assertThatCode(codeUnderTest)
         .as(
             "MoreGraphs.buildGraphWithBreadthFirstTraversal(null, anySuccessorsFunction) "
-                + "throws NullPointerException")
+                + "expected to throw NullPointerException")
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("startingNodes");
   }
@@ -149,7 +148,7 @@ class MoreGraphsTests {
 
     // then
     assertThatCode(codeUnderTest)
-        .as("MoreGraphs.asValueGraph(null) throws NullPointerException")
+        .as("MoreGraphs.asValueGraph(null) expected to throw NullPointerException")
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("table");
   }
@@ -163,7 +162,7 @@ class MoreGraphsTests {
     var result = MoreGraphs.asValueGraph(table);
 
     // then
-    assertThat(result.isDirected()).as("graph.isDirected() is true").isTrue();
+    assertThat(result.isDirected()).as("graph.isDirected() expected to be true").isTrue();
   }
 
   @Test
@@ -175,7 +174,9 @@ class MoreGraphsTests {
     var result = MoreGraphs.asValueGraph(table);
 
     // then
-    assertThat(result.allowsSelfLoops()).as("graph.allowsSelfLoops() is false").isFalse();
+    assertThat(result.allowsSelfLoops())
+        .as("graph.allowsSelfLoops() expected to be false")
+        .isFalse();
   }
 
   @Test
@@ -188,7 +189,7 @@ class MoreGraphsTests {
 
     // then
     assertThat(result.nodeOrder())
-        .as("graph.nodeOrder() is unordered")
+        .as("graph.nodeOrder() expected to be unordered")
         .isEqualTo(ElementOrder.unordered());
   }
 
@@ -202,7 +203,7 @@ class MoreGraphsTests {
 
     // then
     assertThat(result.incidentEdgeOrder())
-        .as("graph.incidentEdgeOrder() is unordered")
+        .as("graph.incidentEdgeOrder() expected to be unordered")
         .isEqualTo(ElementOrder.unordered());
   }
 
@@ -215,7 +216,7 @@ class MoreGraphsTests {
     var result = MoreGraphs.asValueGraph(table);
 
     // then
-    assertThat(result.nodes()).as("graph.nodes() is empty").isEmpty();
+    assertThat(result.nodes()).as("graph.nodes() expected to be empty").isEmpty();
   }
 
   @Test
@@ -228,7 +229,7 @@ class MoreGraphsTests {
 
     // then
     assertThat(result.nodes())
-        .as("graph.nodes() contains row key and column key")
+        .as("graph.nodes() expected to contain row key and column key")
         .containsExactlyInAnyOrder("1", "A");
   }
 
@@ -242,7 +243,7 @@ class MoreGraphsTests {
     mutableTable.put("2", "A", UNUSED);
 
     // then
-    assertThat(result).as("graph.nodes() is mutated").containsExactlyInAnyOrder("1", "2", "A");
+    assertThat(result).as("graph.nodes() to be mutated").containsExactlyInAnyOrder("1", "2", "A");
   }
 
   @Test
@@ -256,7 +257,7 @@ class MoreGraphsTests {
 
     // then
     assertThatCode(codeUnderTest)
-        .as("graph.nodes() is unmodifiable")
+        .as("graph.nodes() to be unmodifiable")
         .isInstanceOf(UnsupportedOperationException.class);
   }
 
@@ -269,7 +270,7 @@ class MoreGraphsTests {
     var result = MoreGraphs.asValueGraph(table);
 
     // then
-    assertThat(result.edges()).as("graph.edges() is empty").isEmpty();
+    assertThat(result.edges()).as("graph.edges() expected to be empty").isEmpty();
   }
 
   @Test
@@ -282,312 +283,320 @@ class MoreGraphsTests {
 
     // then
     assertThat(result.edges())
-        .as("graph.edges() has one edge")
+        .as("graph.edges() expected to have one edge")
         .containsExactly(EndpointPair.ordered("1", "A"));
   }
 
   @Test
-  void givenMutableTable_whenViewingAsValueGraph_andTableIsMutated_thenEdgesIsMutatedToo() {
+  void givenMutableTableAsValueGraph_whenTableIsMutated_thenEdgesIsMutatedToo() {
     // given
     var mutableTable = HashBasedTable.create(ImmutableTable.of("1", "A", UNUSED));
+    var result = MoreGraphs.asValueGraph(mutableTable).edges();
 
     // when
-    var result = MoreGraphs.asValueGraph(mutableTable).edges();
     mutableTable.put("2", "A", UNUSED);
 
     // then
     assertThat(result)
-        .as("graph.edges() is mutated")
+        .as("graph.edges() expected to be mutated")
         .containsExactlyInAnyOrder(EndpointPair.ordered("1", "A"), EndpointPair.ordered("2", "A"));
   }
 
   @Test
-  void givenEmptyTable_whenViewingAsValueGraph_andGettingEdgesSize_thenItIsEqualToZero() {
+  void givenEmptyTableAsValueGraph_whenGettingEdgesSize_thenItIsEqualToZero() {
     // given
     var table = ImmutableTable.of();
+    var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var result = MoreGraphs.asValueGraph(table).edges().size();
+    var result = graph.edges().size();
 
     // then
-    assertThat(result).as("graph.edges().size() is 0").isEqualTo(0);
+    assertThat(result).as("graph.edges().size() expected to be 0").isZero();
   }
 
   @Test
-  void givenTableWithOneCell_whenViewingAsValueGraph_andGettingEdgesSize_thenItIsEqualToOne() {
+  void givenTableWithOneCellAsValueGraph_whenGettingEdgesSize_thenItIsEqualToOne() {
     // given
     var table = ImmutableTable.of("1", "A", UNUSED);
+    var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var result = MoreGraphs.asValueGraph(table).edges().size();
+    var result = graph.edges().size();
 
     // then
-    assertThat(result).as("graph.edges().size() is 1").isEqualTo(1);
+    assertThat(result).as("graph.edges().size() expected to be 1").isOne();
   }
 
   @Test
-  void givenMutableTable_whenViewingAsValueGraph_andGettingEdgesIterator_thenItIsUnmodifiable() {
+  void givenMutableTableAsValueGraph_whenGettingEdgesIterator_thenItIsUnmodifiable() {
     // given
     var mutableTable = HashBasedTable.create();
+    var graph = MoreGraphs.asValueGraph(mutableTable);
 
     // when
-    var edgesIterator = MoreGraphs.asValueGraph(mutableTable).edges().iterator();
-    ThrowingCallable codeUnderTest = edgesIterator::remove;
+    var edgesIterator = graph.edges().iterator();
 
     // then
-    assertThatCode(codeUnderTest)
-        .as("graph.edges() has unmodifiable iterator")
+    assertThatCode(edgesIterator::remove)
+        .as("graph.edges() expected to have unmodifiable iterator")
         .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
-  void givenTable_whenViewingAsValueGraph_andGettingSuccessorsOfNullNode_thenThrowsNpe() {
+  void givenTableAsValueGraph_whenGettingSuccessorsOfNullNode_thenThrowsNpe() {
     // given
     var table = ImmutableTable.of();
+    var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var graph = MoreGraphs.asValueGraph(table);
     ThrowingCallable codeUnderTest = () -> graph.successors(null);
 
     // then
     assertThatCode(codeUnderTest)
-        .as("graph.successors(null) throws NullPointerException")
+        .as("graph.successors(null) expected to throw NullPointerException")
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("node");
   }
 
   @Test
-  void givenTable_whenViewingAsValueGraph_andGettingSuccessorsOfRowKey_thenContainsColumnKey() {
+  void givenTableAsValueGraph_whenGettingSuccessorsOfRowKey_thenContainsColumnKey() {
     // given
     var table = ImmutableTable.of("1", "A", UNUSED);
+    var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var result = MoreGraphs.asValueGraph(table).successors("1");
+    var result = graph.successors("1");
 
     // then
     assertThat(result)
-        .as("graph.successors(aRowKey) contains associated column key")
+        .as("graph.successors(aRowKey) expected to contain associated column key")
         .containsExactly("A");
   }
 
   @Test
-  void givenTable_whenViewingAsValueGraph_andGettingSuccessorsOfColumnKey_thenIsEmpty() {
+  void givenTableAsValueGraph_whenGettingSuccessorsOfColumnKey_thenIsEmpty() {
     // given
     var table = ImmutableTable.of("1", "A", UNUSED);
+    var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var result = MoreGraphs.asValueGraph(table).successors("A");
+    var result = graph.successors("A");
 
     // then
-    assertThat(result).as("graph.successors(aColumnKey) is empty").isEmpty();
+    assertThat(result).as("graph.successors(aColumnKey) expected to be empty").isEmpty();
   }
 
   @Test
-  void givenTable_whenViewingAsValueGraph_andGettingSuccessorsOfKeyNotInTable_thenThrowsIae() {
+  void givenTableAsValueGraph_whenGettingSuccessorsOfKeyNotInTable_thenThrowsIae() {
     // given
     var table = ImmutableTable.of("1", "A", UNUSED);
+    var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var graph = MoreGraphs.asValueGraph(table);
     ThrowingCallable codeUnderTest = () -> graph.successors("other");
 
     // then
     assertThatCode(codeUnderTest)
-        .as("graph.successors(aKeyNotInTable) throws IllegalArgumentException")
+        .as("graph.successors(aKeyNotInTable) expected to throw IllegalArgumentException")
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  void
-      givenMutableTable_whenViewingAsValueGraph_andGettingSuccessorsOfAnyNode_thenItIsUnmodifiable() {
+  void givenMutableTableAsValueGraph_whenGettingSuccessorsOfAnyNode_thenItIsUnmodifiable() {
     // given
     var mutableTable = HashBasedTable.create(ImmutableTable.of("1", "A", UNUSED));
+    var graph = MoreGraphs.asValueGraph(mutableTable);
 
     // when
-    var successors = MoreGraphs.asValueGraph(mutableTable).successors("1");
-    ThrowingCallable codeUnderTest = successors::clear;
+    var successors = graph.successors("1");
 
     // then
-    assertThatCode(codeUnderTest)
-        .as("graph.successors(aNode) is unmodifiable")
+    assertThatCode(successors::clear)
+        .as("graph.successors(aNode) expected to be unmodifiable")
         .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
-  void givenTable_whenViewingAsValueGraph_andGettingPredecessorsOfNullNode_thenThrowsNpe() {
+  void givenTableAsValueGraph_whenGettingPredecessorsOfNullNode_thenThrowsNpe() {
     // given
     var table = ImmutableTable.of();
+    var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var graph = MoreGraphs.asValueGraph(table);
     ThrowingCallable codeUnderTest = () -> graph.predecessors(null);
 
     // then
     assertThatCode(codeUnderTest)
-        .as("graph.predecessors(null) throws NullPointerException")
+        .as("graph.predecessors(null) expected to throw NullPointerException")
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("node");
   }
 
   @Test
-  void givenTable_whenViewingAsValueGraph_andGettingPredecessorsOfColumnKey_thenContainsRowKey() {
+  void givenTableAsValueGraph_whenGettingPredecessorsOfColumnKey_thenContainsRowKey() {
     // given
     var table = ImmutableTable.of("1", "A", UNUSED);
+    var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var result = MoreGraphs.asValueGraph(table).predecessors("A");
+    var result = graph.predecessors("A");
 
     // then
     assertThat(result)
-        .as("graph.predecessors(aColumnKey) contains associated row key")
+        .as("graph.predecessors(aColumnKey) expected to contain associated row key")
         .containsExactly("1");
   }
 
   @Test
-  void givenTable_whenViewingAsValueGraph_andGettingPredecessorsOfRowKey_thenIsEmpty() {
+  void givenTableAsValueGraph_whenGettingPredecessorsOfRowKey_thenIsEmpty() {
     // given
     var table = ImmutableTable.of("1", "A", UNUSED);
+    var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var result = MoreGraphs.asValueGraph(table).predecessors("1");
+    var result = graph.predecessors("1");
 
     // then
-    assertThat(result).as("graph.predecessors(aRowKey) is empty").isEmpty();
+    assertThat(result).as("graph.predecessors(aRowKey) expected to be empty").isEmpty();
   }
 
   @Test
-  void givenTable_whenViewingAsValueGraph_andGettingPredecessorsOfKeyNotInTable_thenThrowsIae() {
+  void givenTableAsValueGraph_whenGettingPredecessorsOfKeyNotInTable_thenThrowsIae() {
     // given
     var table = ImmutableTable.of("1", "A", UNUSED);
+    var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var graph = MoreGraphs.asValueGraph(table);
     ThrowingCallable codeUnderTest = () -> graph.predecessors("other");
 
     // then
     assertThatCode(codeUnderTest)
-        .as("graph.predecessors(aKeyNotInTable) throws IllegalArgumentException")
+        .as("graph.predecessors(aKeyNotInTable) expected to throw IllegalArgumentException")
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  void
-      givenMutableTable_whenViewingAsValueGraph_andGettingPredecessorsOfAnyNode_thenItIsUnmodifiable() {
+  void givenMutableTableAsValueGraph_whenGettingPredecessorsOfAnyNode_thenItIsUnmodifiable() {
     // given
     var mutableTable = HashBasedTable.create(ImmutableTable.of("1", "A", UNUSED));
+    var graph = MoreGraphs.asValueGraph(mutableTable);
 
     // when
-    var successors = MoreGraphs.asValueGraph(mutableTable).predecessors("A");
-    ThrowingCallable codeUnderTest = successors::clear;
+    var successors = graph.predecessors("A");
 
     // then
-    assertThatCode(codeUnderTest)
-        .as("graph.predecessors(aNode) is unmodifiable")
+    assertThatCode(successors::clear)
+        .as("graph.predecessors(aNode) expected to be unmodifiable")
         .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
-  void givenTable_whenViewingAsValueGraph_andGettingAdjacentNodesOfNullNode_thenThrowsNpe() {
+  void givenTableAsValueGraph_whenGettingAdjacentNodesOfNullNode_thenThrowsNpe() {
     // given
     var table = ImmutableTable.of();
+    var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var graph = MoreGraphs.asValueGraph(table);
     ThrowingCallable codeUnderTest = () -> graph.adjacentNodes(null);
 
     // then
     assertThatCode(codeUnderTest)
-        .as("graph.adjacentNodes(null) throws NullPointerException")
+        .as("graph.adjacentNodes(null) expected to throw NullPointerException")
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("node");
   }
 
   @Test
-  void givenTable_whenViewingAsValueGraph_andGettingAdjacentNodesOfRowKey_thenContainsColumnKey() {
+  void givenTableAsValueGraph_whenGettingAdjacentNodesOfRowKey_thenContainsColumnKey() {
     // given
     var table = ImmutableTable.of("1", "A", UNUSED);
+    var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var result = MoreGraphs.asValueGraph(table).adjacentNodes("1");
+    var result = graph.adjacentNodes("1");
 
     // then
     assertThat(result)
-        .as("graph.adjacentNode(aRowKey) contains associated column key")
+        .as("graph.adjacentNode(aRowKey) expected to contain associated column key")
         .containsExactly("A");
   }
 
   @Test
-  void givenTable_whenViewingAsValueGraph_andGettingAdjacentNodesOfColumnKey_thenContainsRowKey() {
+  void givenTableAsValueGraph_whenGettingAdjacentNodesOfColumnKey_thenContainsRowKey() {
     // given
     var table = ImmutableTable.of("1", "A", UNUSED);
+    var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var result = MoreGraphs.asValueGraph(table).adjacentNodes("A");
+    var result = graph.adjacentNodes("A");
 
     // then
     assertThat(result)
-        .as("graph.adjacentNode(aColumnKey) contains associated row key")
+        .as("graph.adjacentNode(aColumnKey) expected to contain associated row key")
         .containsExactly("1");
   }
 
   @Test
-  void givenTable_whenViewingAsValueGraph_andGettingAdjacentNodesOfKeyNotInTable_thenThrowsIae() {
+  void givenTableAsValueGraph_whenGettingAdjacentNodesOfKeyNotInTable_thenThrowsIae() {
     // given
     var table = ImmutableTable.of("1", "A", UNUSED);
+    var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var graph = MoreGraphs.asValueGraph(table);
     ThrowingCallable codeUnderTest = () -> graph.predecessors("other");
 
     // then
     assertThatCode(codeUnderTest)
-        .as("graph.successors(aKeyNotInTable) throws IllegalArgumentException")
+        .as("graph.successors(aKeyNotInTable) expected to throw IllegalArgumentException")
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  void
-      givenMutableTable_whenViewingAsValueGraph_andGettingAdjacentNodesOfAnyNode_thenItIsUnmodifiable() {
+  void givenMutableTableAsValueGraph_whenGettingAdjacentNodesOfAnyNode_thenItIsUnmodifiable() {
     // given
     var mutableTable = HashBasedTable.create(ImmutableTable.of("1", "A", UNUSED));
+    var graph = MoreGraphs.asValueGraph(mutableTable);
 
     // when
-    var successors = MoreGraphs.asValueGraph(mutableTable).adjacentNodes("1");
-    ThrowingCallable codeUnderTest = successors::clear;
+    var successors = graph.adjacentNodes("1");
 
     // then
-    assertThatCode(codeUnderTest)
-        .as("graph.adjacentNodes(aNode) is unmodifiable")
+    assertThatCode(successors::clear)
+        .as("graph.adjacentNodes(aNode) expected to be unmodifiable")
         .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
-  void givenTable_whenViewingAsValueGraph_andGettingOutDegreeOfNullNode_thenThrowsNpe() {
+  void givenTableAsValueGraph_whenGettingOutDegreeOfNullNode_thenThrowsNpe() {
     // given
     var table = ImmutableTable.of();
+    var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var graph = MoreGraphs.asValueGraph(table);
     ThrowingCallable codeUnderTest = () -> graph.outDegree(null);
 
     // then
     assertThatCode(codeUnderTest)
-        .as("graph.outDegree(null) throws NullPointerException")
+        .as("graph.outDegree(null) expected to throw NullPointerException")
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("node");
   }
 
   @ParameterizedTest
   @MethodSource("tablesAndOutDegrees")
-  void
-      givenTable_whenViewingAsValueGraph_andGettingOutDegreeOfRowKey_thenEqualToNumAssociatedColumnKeys(
-          Table<String, String, String> table, int expectedOutDegree) {
+  void givenTableAsValueGraph_whenGettingOutDegreeOfRowKey_thenEqualToNumAssociatedColumnKeys(
+      Table<String, String, String> table, int expectedOutDegree) {
+
+    // given
+    var graph = MoreGraphs.asValueGraph(table);
+
     // when
-    var result = MoreGraphs.asValueGraph(table).outDegree("1");
+    var result = graph.outDegree("1");
 
     // then
     assertThat(result)
-        .as("graph.outDegree(aRowKey) is %s", expectedOutDegree)
+        .as("graph.outDegree(aRowKey) expected to be %s", expectedOutDegree)
         .isEqualTo(expectedOutDegree);
   }
 
@@ -598,29 +607,30 @@ class MoreGraphsTests {
   }
 
   @Test
-  void givenTable_whenViewingAsValueGraph_andGettingOutDegreeOfColumnKey_thenItIsZero() {
+  void givenTableAsValueGraph_whenGettingOutDegreeOfColumnKey_thenItIsZero() {
     // given
     var table = ImmutableTable.of("1", "A", UNUSED);
+    var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var result = MoreGraphs.asValueGraph(table).outDegree("A");
+    var result = graph.outDegree("A");
 
     // then
-    assertThat(result).as("graph.outDegree(aColumnKey) is zero").isZero();
+    assertThat(result).as("graph.outDegree(aColumnKey) expected to be zero").isZero();
   }
 
   @Test
-  void givenTable_whenViewingAsValueGraph_andGettingOutDegreeOfKeyNotInTable_thenThrowsIae() {
+  void givenTableAsValueGraph_whenGettingOutDegreeOfKeyNotInTable_thenThrowsIae() {
     // given
     var table = ImmutableTable.of("1", "A", UNUSED);
+    var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var graph = MoreGraphs.asValueGraph(table);
     ThrowingCallable codeUnderTest = () -> graph.outDegree("other");
 
     // then
     assertThatCode(codeUnderTest)
-        .as("graph.outDegree(aKeyNotInTable) throws IllegalArgumentException")
+        .as("graph.outDegree(aKeyNotInTable) expected to throw IllegalArgumentException")
         .isInstanceOf(IllegalArgumentException.class);
   }
 }

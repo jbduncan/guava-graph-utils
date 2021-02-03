@@ -234,12 +234,13 @@ class MoreGraphsTests {
   }
 
   @Test
-  void givenMutableTable_whenViewingAsValueGraph_andTableIsMutated_thenNodesIsMutatedToo() {
+  void givenMutableTableAsValueGraph_whenTableIsMutated_thenNodesIsMutatedToo() {
     // given
     var mutableTable = HashBasedTable.create(ImmutableTable.of("1", "A", UNUSED));
+    var graph = MoreGraphs.asValueGraph(mutableTable);
+    var result = graph.nodes();
 
     // when
-    var result = MoreGraphs.asValueGraph(mutableTable).nodes();
     mutableTable.put("2", "A", UNUSED);
 
     // then
@@ -247,16 +248,16 @@ class MoreGraphsTests {
   }
 
   @Test
-  void givenMutableTable_whenViewingAsValueGraph_andGettingNodes_thenItIsUnmodifiable() {
+  void givenMutableTableAsValueGraph_whenGettingNodes_thenItIsUnmodifiable() {
     // given
     var mutableTable = HashBasedTable.create(ImmutableTable.of());
+    var graph = MoreGraphs.asValueGraph(mutableTable);
 
     // when
-    var nodes = MoreGraphs.asValueGraph(mutableTable).nodes();
-    ThrowingCallable codeUnderTest = nodes::clear;
+    var nodes = graph.nodes();
 
     // then
-    assertThatCode(codeUnderTest)
+    assertThatCode(nodes::clear)
         .as("graph.nodes() to be unmodifiable")
         .isInstanceOf(UnsupportedOperationException.class);
   }

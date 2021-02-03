@@ -2,23 +2,16 @@ package org.jbduncan;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableTable;
-import com.google.common.collect.Table;
 import com.google.common.graph.ElementOrder;
-import com.google.common.graph.EndpointPair;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.ImmutableGraph;
 import java.util.Set;
-import java.util.stream.Stream;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 
 class MoreGraphsTests {
 
@@ -263,88 +256,6 @@ class MoreGraphsTests {
   }
 
   @Test
-  void givenEmptyTable_whenViewingAsValueGraph_thenEdgesIsEmpty() {
-    // given
-    var table = ImmutableTable.of();
-
-    // when
-    var result = MoreGraphs.asValueGraph(table);
-
-    // then
-    assertThat(result.edges()).as("graph.edges() expected to be empty").isEmpty();
-  }
-
-  @Test
-  void givenTableWithOneCell_whenViewingAsValueGraph_thenEdgesHasOneRespectiveEdge() {
-    // given
-    var table = ImmutableTable.of("1", "A", "cell-value");
-
-    // when
-    var result = MoreGraphs.asValueGraph(table);
-
-    // then
-    assertThat(result.edges())
-        .as("graph.edges() expected to have one edge")
-        .containsExactly(EndpointPair.ordered("1", "A"));
-  }
-
-  @Test
-  void givenMutableTableAsValueGraph_whenTableIsMutated_thenEdgesIsMutatedToo() {
-    // given
-    var mutableTable = HashBasedTable.create(ImmutableTable.of("1", "A", UNUSED));
-    var result = MoreGraphs.asValueGraph(mutableTable).edges();
-
-    // when
-    mutableTable.put("2", "A", UNUSED);
-
-    // then
-    assertThat(result)
-        .as("graph.edges() expected to be mutated")
-        .containsExactlyInAnyOrder(EndpointPair.ordered("1", "A"), EndpointPair.ordered("2", "A"));
-  }
-
-  @Test
-  void givenEmptyTableAsValueGraph_whenGettingEdgesSize_thenItIsEqualToZero() {
-    // given
-    var table = ImmutableTable.of();
-    var graph = MoreGraphs.asValueGraph(table);
-
-    // when
-    var result = graph.edges().size();
-
-    // then
-    assertThat(result).as("graph.edges().size() expected to be 0").isZero();
-  }
-
-  @Test
-  void givenTableWithOneCellAsValueGraph_whenGettingEdgesSize_thenItIsEqualToOne() {
-    // given
-    var table = ImmutableTable.of("1", "A", UNUSED);
-    var graph = MoreGraphs.asValueGraph(table);
-
-    // when
-    var result = graph.edges().size();
-
-    // then
-    assertThat(result).as("graph.edges().size() expected to be 1").isOne();
-  }
-
-  @Test
-  void givenMutableTableAsValueGraph_whenGettingEdgesIterator_thenItIsUnmodifiable() {
-    // given
-    var mutableTable = HashBasedTable.create();
-    var graph = MoreGraphs.asValueGraph(mutableTable);
-
-    // when
-    var edgesIterator = graph.edges().iterator();
-
-    // then
-    assertThatCode(edgesIterator::remove)
-        .as("graph.edges() expected to have unmodifiable iterator")
-        .isInstanceOf(UnsupportedOperationException.class);
-  }
-
-  @Test
   void givenTableAsValueGraph_whenGettingSuccessorsOfNullNode_thenThrowsNpe() {
     // given
     var table = ImmutableTable.of();
@@ -566,72 +477,5 @@ class MoreGraphsTests {
     assertThatCode(successors::clear)
         .as("graph.adjacentNodes(aNode) expected to be unmodifiable")
         .isInstanceOf(UnsupportedOperationException.class);
-  }
-
-  @Test
-  void givenTableAsValueGraph_whenGettingOutDegreeOfNullNode_thenThrowsNpe() {
-    // given
-    var table = ImmutableTable.of();
-    var graph = MoreGraphs.asValueGraph(table);
-
-    // when
-    ThrowingCallable codeUnderTest = () -> graph.outDegree(null);
-
-    // then
-    assertThatCode(codeUnderTest)
-        .as("graph.outDegree(null) expected to throw NullPointerException")
-        .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("node");
-  }
-
-  @ParameterizedTest
-  @MethodSource("tablesAndOutDegrees")
-  void givenTableAsValueGraph_whenGettingOutDegreeOfRowKey_thenEqualToNumAssociatedColumnKeys(
-      Table<String, String, String> table, int expectedOutDegree) {
-
-    // given
-    var graph = MoreGraphs.asValueGraph(table);
-
-    // when
-    var result = graph.outDegree("1");
-
-    // then
-    assertThat(result)
-        .as("graph.outDegree(aRowKey) expected to be %s", expectedOutDegree)
-        .isEqualTo(expectedOutDegree);
-  }
-
-  private static Stream<Arguments> tablesAndOutDegrees() {
-    return Stream.of(
-        arguments(ImmutableTable.of("1", "A", UNUSED), 1),
-        arguments(ImmutableTable.builder().put("1", "A", UNUSED).put("1", "B", UNUSED).build(), 2));
-  }
-
-  @Test
-  void givenTableAsValueGraph_whenGettingOutDegreeOfColumnKey_thenItIsZero() {
-    // given
-    var table = ImmutableTable.of("1", "A", UNUSED);
-    var graph = MoreGraphs.asValueGraph(table);
-
-    // when
-    var result = graph.outDegree("A");
-
-    // then
-    assertThat(result).as("graph.outDegree(aColumnKey) expected to be zero").isZero();
-  }
-
-  @Test
-  void givenTableAsValueGraph_whenGettingOutDegreeOfKeyNotInTable_thenThrowsIae() {
-    // given
-    var table = ImmutableTable.of("1", "A", UNUSED);
-    var graph = MoreGraphs.asValueGraph(table);
-
-    // when
-    ThrowingCallable codeUnderTest = () -> graph.outDegree("other");
-
-    // then
-    assertThatCode(codeUnderTest)
-        .as("graph.outDegree(aKeyNotInTable) expected to throw IllegalArgumentException")
-        .isInstanceOf(IllegalArgumentException.class);
   }
 }

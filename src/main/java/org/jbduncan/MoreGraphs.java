@@ -3,7 +3,6 @@ package org.jbduncan;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
@@ -15,9 +14,7 @@ import com.google.common.graph.ImmutableGraph;
 import com.google.common.graph.MutableGraph;
 import com.google.common.graph.SuccessorsFunction;
 import com.google.common.graph.ValueGraph;
-import java.util.AbstractSet;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Queue;
 import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -255,20 +252,8 @@ public class MoreGraphs {
       }
 
       @Override
-      public Set<EndpointPair<N>> edges() {
-        return new AbstractSet<>() {
-          @Override
-          public Iterator<EndpointPair<N>> iterator() {
-            return Iterators.transform(
-                Iterators.unmodifiableIterator(table.cellSet().iterator()),
-                c -> EndpointPair.ordered(c.getRowKey(), c.getColumnKey()));
-          }
-
-          @Override
-          public int size() {
-            return table.size();
-          }
-        };
+      protected long edgeCount() {
+        return table.size();
       }
 
       @Override

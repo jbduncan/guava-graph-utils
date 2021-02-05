@@ -504,4 +504,118 @@ class MoreGraphsTests {
         .as("graph.adjacentNodes(aNode) expected to be unmodifiable")
         .isInstanceOf(UnsupportedOperationException.class);
   }
+
+  @Test
+  void givenTableAsValueGraph_whenGettingEdgeValueOrDefaultOfRowAndColumnKey_thenIsCellValue() {
+    // given
+    var table = ImmutableTable.of("1", "A", "theCellValue");
+    var graph = MoreGraphs.asValueGraph(table);
+
+    // when
+    var result = graph.edgeValueOrDefault("1", "A", "anyDefault");
+
+    // then
+    assertThat(result)
+        .as(
+            "graph.edgeValueOrDefault(aRowKey, aColumnKey, anyDefault) "
+                + "expected to return theCellValue")
+        .isEqualTo("theCellValue");
+  }
+
+  @Test
+  void
+      givenTableAsValueGraph_whenGettingEdgeValueOrDefaultOfUnrelatedRowAndColumnKey_thenIsDefault() {
+    // given
+    var table =
+        ImmutableTable.builder() //
+            .put("1", "A", UNUSED)
+            .put("2", "B", UNUSED)
+            .build();
+    var graph = MoreGraphs.asValueGraph(table);
+
+    // when
+    var result = graph.edgeValueOrDefault("1", "B", "theDefault");
+
+    // then
+    assertThat(result)
+        .as(
+            "graph.edgeValueOrDefault(aRowKey, unrelatedColumnKey, theDefault) "
+                + "expected to return theDefault")
+        .isEqualTo("theDefault");
+  }
+
+  @Test
+  void givenTableAsValueGraph_whenGettingEdgeValueOrDefaultWhereRowKeyIsNull_thenThrowsNpe() {
+    // given
+    var table = ImmutableTable.of("1", "A", UNUSED);
+    var graph = MoreGraphs.asValueGraph(table);
+
+    // when
+    ThrowingCallable codeUnderTest = () -> graph.edgeValueOrDefault(null, "A", "anyDefault");
+
+    // then
+    assertThatCode(codeUnderTest)
+        .as(
+            "graph.adjacentNodes(null, aColumnKey, anyDefault) "
+                + "expected to throw NullPointerException")
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("nodeU");
+  }
+
+  @Test
+  void givenTableAsValueGraph_whenGettingEdgeValueOrDefaultWhereColumnKeyIsNull_thenThrowsNpe() {
+    // given
+    var table = ImmutableTable.of("1", "A", UNUSED);
+    var graph = MoreGraphs.asValueGraph(table);
+
+    // when
+    ThrowingCallable codeUnderTest = () -> graph.edgeValueOrDefault("1", null, "anyDefault");
+
+    // then
+    assertThatCode(codeUnderTest)
+        .as(
+            "graph.adjacentNodes(aRowKey, null, anyDefault) "
+                + "expected to throw NullPointerException")
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("nodeV");
+  }
+
+  @Test
+  void givenTableAsValueGraph_whenGettingEdgeValueOrDefaultWhereRowKeyNotInTable_thenThrowsIae() {
+    // given
+    var table = ImmutableTable.of("1", "A", UNUSED);
+    var graph = MoreGraphs.asValueGraph(table);
+
+    // when
+    ThrowingCallable codeUnderTest =
+        () -> graph.edgeValueOrDefault("keyNotInTable", "A", "anyDefault");
+
+    // then
+    assertThatCode(codeUnderTest)
+        .as(
+            "graph.edgeValueOrDefault(keyNotInTable, aColumnKey, anyDefault) "
+                + "expected to throw IllegalArgumentException")
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("keyNotInTable");
+  }
+
+  @Test
+  void
+      givenTableAsValueGraph_whenGettingEdgeValueOrDefaultWhereColumnKeyNotInTable_thenThrowsIae() {
+    // given
+    var table = ImmutableTable.of("1", "A", UNUSED);
+    var graph = MoreGraphs.asValueGraph(table);
+
+    // when
+    ThrowingCallable codeUnderTest =
+        () -> graph.edgeValueOrDefault("1", "keyNotInTable", "anyDefault");
+
+    // then
+    assertThatCode(codeUnderTest)
+        .as(
+            "graph.edgeValueOrDefault(aRowKey, keyNotInThisTable, anyDefault) "
+                + "expected to throw IllegalArgumentException")
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("keyNotInTable");
+  }
 }

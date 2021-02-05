@@ -237,16 +237,6 @@ public class MoreGraphs {
 
     return new AbstractValueGraph<>() {
       @Override
-      public @Nullable E edgeValueOrDefault(N nodeU, N nodeV, @Nullable E defaultValue) {
-        throw new UnsupportedOperationException("Not yet implemented");
-      }
-
-      @Override
-      public @Nullable E edgeValueOrDefault(EndpointPair<N> endpoints, @Nullable E defaultValue) {
-        throw new UnsupportedOperationException("Not yet implemented");
-      }
-
-      @Override
       public Set<N> nodes() {
         return Sets.union(table.rowKeySet(), table.columnKeySet());
       }
@@ -293,6 +283,23 @@ public class MoreGraphs {
       @Override
       public ElementOrder<N> nodeOrder() {
         return ElementOrder.unordered();
+      }
+
+      @Override
+      public @Nullable E edgeValueOrDefault(N nodeU, N nodeV, @Nullable E defaultValue) {
+        checkNotNull(nodeU, "nodeU");
+        checkNotNull(nodeV, "nodeV");
+        checkArgument(nodes().contains(nodeU), "Node '%s' is not in this graph", nodeU);
+        checkArgument(nodes().contains(nodeV), "Node '%s' is not in this graph", nodeV);
+        if (table.contains(nodeU, nodeV)) {
+          return table.get(nodeU, nodeV);
+        }
+        return defaultValue;
+      }
+
+      @Override
+      public @Nullable E edgeValueOrDefault(EndpointPair<N> endpoints, @Nullable E defaultValue) {
+        throw new UnsupportedOperationException("Not yet implemented");
       }
     };
   }

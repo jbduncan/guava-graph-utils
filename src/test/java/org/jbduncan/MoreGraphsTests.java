@@ -308,7 +308,7 @@ class MoreGraphsTests {
 
     // then
     assertThat(result)
-        .as("graph.successors(aRowKey) expected to contain associated column key")
+        .as("graph.successors(aRowKey) expected to aColumnKey")
         .containsExactly("A");
   }
 
@@ -332,12 +332,13 @@ class MoreGraphsTests {
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    ThrowingCallable codeUnderTest = () -> graph.successors("other");
+    ThrowingCallable codeUnderTest = () -> graph.successors("aKeyNotInTable");
 
     // then
     assertThatCode(codeUnderTest)
         .as("graph.successors(aKeyNotInTable) expected to throw IllegalArgumentException")
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("aKeyNotInTable");
   }
 
   @Test
@@ -382,7 +383,7 @@ class MoreGraphsTests {
 
     // then
     assertThat(result)
-        .as("graph.predecessors(aColumnKey) expected to contain associated row key")
+        .as("graph.predecessors(aColumnKey) expected to aRowKey")
         .containsExactly("1");
   }
 
@@ -406,12 +407,13 @@ class MoreGraphsTests {
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    ThrowingCallable codeUnderTest = () -> graph.predecessors("other");
+    ThrowingCallable codeUnderTest = () -> graph.predecessors("aKeyNotInTable");
 
     // then
     assertThatCode(codeUnderTest)
         .as("graph.predecessors(aKeyNotInTable) expected to throw IllegalArgumentException")
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("aKeyNotInTable");
   }
 
   @Test
@@ -456,7 +458,7 @@ class MoreGraphsTests {
 
     // then
     assertThat(result)
-        .as("graph.adjacentNode(aRowKey) expected to contain associated column key")
+        .as("graph.adjacentNode(aRowKey) expected to contain aColumnKey")
         .containsExactly("A");
   }
 
@@ -471,7 +473,7 @@ class MoreGraphsTests {
 
     // then
     assertThat(result)
-        .as("graph.adjacentNode(aColumnKey) expected to contain associated row key")
+        .as("graph.adjacentNode(aColumnKey) expected to aRowKey")
         .containsExactly("1");
   }
 
@@ -482,12 +484,13 @@ class MoreGraphsTests {
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    ThrowingCallable codeUnderTest = () -> graph.predecessors("other");
+    ThrowingCallable codeUnderTest = () -> graph.predecessors("aKeyNotInTable");
 
     // then
     assertThatCode(codeUnderTest)
         .as("graph.successors(aKeyNotInTable) expected to throw IllegalArgumentException")
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("aKeyNotInTable");
   }
 
   @Test
@@ -497,10 +500,10 @@ class MoreGraphsTests {
     var graph = MoreGraphs.asValueGraph(mutableTable);
 
     // when
-    var successors = graph.adjacentNodes("1");
+    var result = graph.adjacentNodes("1");
 
     // then
-    assertThatCode(successors::clear)
+    assertThatCode(result::clear)
         .as("graph.adjacentNodes(aNode) expected to be unmodifiable")
         .isInstanceOf(UnsupportedOperationException.class);
   }

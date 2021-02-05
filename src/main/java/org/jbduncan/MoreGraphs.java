@@ -249,21 +249,21 @@ public class MoreGraphs {
       @Override
       public Set<N> successors(N node) {
         checkNotNull(node, "node");
-        checkArgument(nodes().contains(node));
+        checkArgument(nodes().contains(node), "Node '%s' is not in this graph", node);
         return Collections.unmodifiableSet(table.row(node).keySet());
       }
 
       @Override
       public Set<N> predecessors(N node) {
         checkNotNull(node, "node");
-        checkArgument(nodes().contains(node));
+        checkArgument(nodes().contains(node), "Node '%s' is not in this graph", node);
         return Collections.unmodifiableSet(table.column(node).keySet());
       }
 
       @Override
       public Set<N> adjacentNodes(N node) {
         checkNotNull(node, "node");
-        checkArgument(nodes().contains(node));
+        checkArgument(nodes().contains(node), "Node '%s' is not in this graph", node);
         return Collections.unmodifiableSet(
             table.rowKeySet().contains(node)
                 ? table.row(node).keySet()

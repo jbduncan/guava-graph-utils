@@ -17,7 +17,27 @@ import org.junit.jupiter.api.Test;
 @SuppressWarnings("UnstableApiUsage")
 class MoreGraphsTests {
 
-  private static final String UNUSED = "unused-cell-value";
+  private static final String A_ROW_KEY = "aRowKey";
+  private static final String A_COLUMN_KEY = "aColumnKey";
+  private static final String A_CELL_VALUE = "aCellValue";
+  private static final String ANOTHER_ROW_KEY = "anotherRowKey";
+  private static final String ANOTHER_COLUMN_KEY = "anotherColumnKey";
+
+  private static ImmutableTable<String, String, String> singleCellTable() {
+    return ImmutableTable.of(A_ROW_KEY, A_COLUMN_KEY, A_CELL_VALUE);
+  }
+
+  private HashBasedTable<String, String, String> mutableSingleCellTable() {
+    return HashBasedTable.create(singleCellTable());
+  }
+
+  private static <R, C, V> ImmutableTable<R, C, V> emptyTable() {
+    return ImmutableTable.of();
+  }
+
+  private static <R, C, V> HashBasedTable<R, C, V> emptyMutableTable() {
+    return HashBasedTable.create(emptyTable());
+  }
 
   @Test
   void whenBuildingGraphWithBftAndEmptyStartingNodes_thenResultIsEmptyGraph() {
@@ -53,10 +73,7 @@ class MoreGraphsTests {
     var result =
         MoreGraphs.buildGraphWithBreadthFirstTraversal(
             ImmutableList.of(1),
-            node -> {
-              int nextNode = node * 2;
-              return nextNode <= 4 ? ImmutableList.of(nextNode) : ImmutableList.of(1);
-            });
+            node -> (node * 2) <= 4 ? ImmutableList.of(node * 2) : ImmutableList.of(1));
 
     // then
     assertThat(result)
@@ -175,7 +192,7 @@ class MoreGraphsTests {
   @Test
   void givenAnyTable_whenViewingAsValueGraph_thenIsDirectedIsTrue() {
     // given
-    var table = ImmutableTable.of();
+    var table = emptyTable();
 
     // when
     var result = MoreGraphs.asValueGraph(table);
@@ -187,7 +204,7 @@ class MoreGraphsTests {
   @Test
   void givenAnyTable_whenViewingAsValueGraph_thenAllowsSelfLoopsIsFalse() {
     // given
-    var table = ImmutableTable.of();
+    var table = emptyTable();
 
     // when
     var result = MoreGraphs.asValueGraph(table);
@@ -201,7 +218,7 @@ class MoreGraphsTests {
   @Test
   void givenAnyTable_whenViewingAsValueGraph_thenNodeOrderIsUnordered() {
     // given
-    var table = ImmutableTable.of();
+    var table = emptyTable();
 
     // when
     var result = MoreGraphs.asValueGraph(table);
@@ -215,7 +232,7 @@ class MoreGraphsTests {
   @Test
   void givenAnyTable_whenViewingAsValueGraph_thenIncidentEdgeOrderIsUnordered() {
     // given
-    var table = ImmutableTable.of();
+    var table = emptyTable();
 
     // when
     var result = MoreGraphs.asValueGraph(table);
@@ -229,7 +246,7 @@ class MoreGraphsTests {
   @Test
   void givenEmptyTable_whenViewingAsValueGraph_thenNodesIsEmpty() {
     // given
-    var table = ImmutableTable.of();
+    var table = emptyTable();
 
     // when
     var result = MoreGraphs.asValueGraph(table);
@@ -239,9 +256,9 @@ class MoreGraphsTests {
   }
 
   @Test
-  void givenTableWithOneCell_whenViewingAsValueGraph_thenNodesContainsTheRowAndColumnKeysOfCell() {
+  void givenTableWithOneCell_whenViewingAsValueGraph_thenNodesEqualsTheRowAndColumnKeysOfTheCell() {
     // given
-    var table = ImmutableTable.of("1", "A", "cell-value");
+    var table = singleCellTable();
 
     // when
     var result = MoreGraphs.asValueGraph(table);
@@ -249,27 +266,29 @@ class MoreGraphsTests {
     // then
     assertThat(result.nodes())
         .as("graph.nodes() expected to contain row key and column key")
-        .containsExactlyInAnyOrder("1", "A");
+        .containsExactlyInAnyOrder(A_ROW_KEY, A_COLUMN_KEY);
   }
 
   @Test
   void givenMutableTableAsValueGraph_whenTableIsMutated_thenNodesIsMutatedToo() {
     // given
-    var mutableTable = HashBasedTable.create(ImmutableTable.of("1", "A", UNUSED));
+    var mutableTable = mutableSingleCellTable();
     var graph = MoreGraphs.asValueGraph(mutableTable);
     var result = graph.nodes();
 
     // when
-    mutableTable.put("2", "A", UNUSED);
+    mutableTable.put(ANOTHER_ROW_KEY, A_COLUMN_KEY, A_CELL_VALUE);
 
     // then
-    assertThat(result).as("graph.nodes() to be mutated").containsExactlyInAnyOrder("1", "2", "A");
+    assertThat(result)
+        .as("graph.nodes() to be mutated")
+        .containsExactlyInAnyOrder(A_ROW_KEY, ANOTHER_ROW_KEY, A_COLUMN_KEY);
   }
 
   @Test
   void givenMutableTableAsValueGraph_whenGettingNodes_thenItIsUnmodifiable() {
     // given
-    var mutableTable = HashBasedTable.create(ImmutableTable.of());
+    var mutableTable = emptyMutableTable();
     var graph = MoreGraphs.asValueGraph(mutableTable);
 
     // when
@@ -284,7 +303,7 @@ class MoreGraphsTests {
   @Test
   void givenTableAsValueGraph_whenGettingSuccessorsOfNullNode_thenThrowsNpe() {
     // given
-    var table = ImmutableTable.of();
+    var table = emptyTable();
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
@@ -300,26 +319,26 @@ class MoreGraphsTests {
   @Test
   void givenTableAsValueGraph_whenGettingSuccessorsOfRowKey_thenContainsColumnKey() {
     // given
-    var table = ImmutableTable.of("1", "A", UNUSED);
+    var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var result = graph.successors("1");
+    var result = graph.successors(A_ROW_KEY);
 
     // then
     assertThat(result)
         .as("graph.successors(aRowKey) expected to aColumnKey")
-        .containsExactly("A");
+        .containsExactly(A_COLUMN_KEY);
   }
 
   @Test
   void givenTableAsValueGraph_whenGettingSuccessorsOfColumnKey_thenIsEmpty() {
     // given
-    var table = ImmutableTable.of("1", "A", UNUSED);
+    var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var result = graph.successors("A");
+    var result = graph.successors(A_COLUMN_KEY);
 
     // then
     assertThat(result).as("graph.successors(aColumnKey) expected to be empty").isEmpty();
@@ -328,7 +347,7 @@ class MoreGraphsTests {
   @Test
   void givenTableAsValueGraph_whenGettingSuccessorsOfKeyNotInTable_thenThrowsIae() {
     // given
-    var table = ImmutableTable.of("1", "A", UNUSED);
+    var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
@@ -344,11 +363,11 @@ class MoreGraphsTests {
   @Test
   void givenMutableTableAsValueGraph_whenGettingSuccessorsOfAnyNode_thenItIsUnmodifiable() {
     // given
-    var mutableTable = HashBasedTable.create(ImmutableTable.of("1", "A", UNUSED));
+    var mutableTable = mutableSingleCellTable();
     var graph = MoreGraphs.asValueGraph(mutableTable);
 
     // when
-    var successors = graph.successors("1");
+    var successors = graph.successors(A_ROW_KEY);
 
     // then
     assertThatCode(successors::clear)
@@ -359,7 +378,7 @@ class MoreGraphsTests {
   @Test
   void givenTableAsValueGraph_whenGettingPredecessorsOfNullNode_thenThrowsNpe() {
     // given
-    var table = ImmutableTable.of();
+    var table = emptyTable();
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
@@ -375,26 +394,26 @@ class MoreGraphsTests {
   @Test
   void givenTableAsValueGraph_whenGettingPredecessorsOfColumnKey_thenContainsRowKey() {
     // given
-    var table = ImmutableTable.of("1", "A", UNUSED);
+    var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var result = graph.predecessors("A");
+    var result = graph.predecessors(A_COLUMN_KEY);
 
     // then
     assertThat(result)
         .as("graph.predecessors(aColumnKey) expected to aRowKey")
-        .containsExactly("1");
+        .containsExactly(A_ROW_KEY);
   }
 
   @Test
   void givenTableAsValueGraph_whenGettingPredecessorsOfRowKey_thenIsEmpty() {
     // given
-    var table = ImmutableTable.of("1", "A", UNUSED);
+    var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var result = graph.predecessors("1");
+    var result = graph.predecessors(A_ROW_KEY);
 
     // then
     assertThat(result).as("graph.predecessors(aRowKey) expected to be empty").isEmpty();
@@ -403,7 +422,7 @@ class MoreGraphsTests {
   @Test
   void givenTableAsValueGraph_whenGettingPredecessorsOfKeyNotInTable_thenThrowsIae() {
     // given
-    var table = ImmutableTable.of("1", "A", UNUSED);
+    var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
@@ -419,11 +438,11 @@ class MoreGraphsTests {
   @Test
   void givenMutableTableAsValueGraph_whenGettingPredecessorsOfAnyNode_thenItIsUnmodifiable() {
     // given
-    var mutableTable = HashBasedTable.create(ImmutableTable.of("1", "A", UNUSED));
+    var mutableTable = mutableSingleCellTable();
     var graph = MoreGraphs.asValueGraph(mutableTable);
 
     // when
-    var successors = graph.predecessors("A");
+    var successors = graph.predecessors(A_COLUMN_KEY);
 
     // then
     assertThatCode(successors::clear)
@@ -434,7 +453,7 @@ class MoreGraphsTests {
   @Test
   void givenTableAsValueGraph_whenGettingAdjacentNodesOfNullNode_thenThrowsNpe() {
     // given
-    var table = ImmutableTable.of();
+    var table = emptyTable();
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
@@ -450,37 +469,37 @@ class MoreGraphsTests {
   @Test
   void givenTableAsValueGraph_whenGettingAdjacentNodesOfRowKey_thenContainsColumnKey() {
     // given
-    var table = ImmutableTable.of("1", "A", UNUSED);
+    var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var result = graph.adjacentNodes("1");
+    var result = graph.adjacentNodes(A_ROW_KEY);
 
     // then
     assertThat(result)
         .as("graph.adjacentNode(aRowKey) expected to contain aColumnKey")
-        .containsExactly("A");
+        .containsExactly(A_COLUMN_KEY);
   }
 
   @Test
   void givenTableAsValueGraph_whenGettingAdjacentNodesOfColumnKey_thenContainsRowKey() {
     // given
-    var table = ImmutableTable.of("1", "A", UNUSED);
+    var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var result = graph.adjacentNodes("A");
+    var result = graph.adjacentNodes(A_COLUMN_KEY);
 
     // then
     assertThat(result)
         .as("graph.adjacentNode(aColumnKey) expected to aRowKey")
-        .containsExactly("1");
+        .containsExactly(A_ROW_KEY);
   }
 
   @Test
   void givenTableAsValueGraph_whenGettingAdjacentNodesOfKeyNotInTable_thenThrowsIae() {
     // given
-    var table = ImmutableTable.of("1", "A", UNUSED);
+    var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
@@ -496,11 +515,11 @@ class MoreGraphsTests {
   @Test
   void givenMutableTableAsValueGraph_whenGettingAdjacentNodesOfAnyNode_thenItIsUnmodifiable() {
     // given
-    var mutableTable = HashBasedTable.create(ImmutableTable.of("1", "A", UNUSED));
+    var mutableTable = mutableSingleCellTable();
     var graph = MoreGraphs.asValueGraph(mutableTable);
 
     // when
-    var result = graph.adjacentNodes("1");
+    var result = graph.adjacentNodes(A_ROW_KEY);
 
     // then
     assertThatCode(result::clear)
@@ -511,18 +530,18 @@ class MoreGraphsTests {
   @Test
   void givenTableAsValueGraph_whenGettingEdgeValueOrDefaultOfRowAndColumnKey_thenIsCellValue() {
     // given
-    var table = ImmutableTable.of("1", "A", "theCellValue");
+    var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var result = graph.edgeValueOrDefault("1", "A", "anyDefault");
+    var result = graph.edgeValueOrDefault(A_ROW_KEY, A_COLUMN_KEY, "anyDefault");
 
     // then
     assertThat(result)
         .as(
             "graph.edgeValueOrDefault(aRowKey, aColumnKey, anyDefault) "
-                + "expected to return theCellValue")
-        .isEqualTo("theCellValue");
+                + "expected to return aCellValue")
+        .isEqualTo(A_CELL_VALUE);
   }
 
   @Test
@@ -531,30 +550,31 @@ class MoreGraphsTests {
     // given
     var table =
         ImmutableTable.builder() //
-            .put("1", "A", UNUSED)
-            .put("2", "B", UNUSED)
+            .put(A_ROW_KEY, A_COLUMN_KEY, A_CELL_VALUE)
+            .put(ANOTHER_ROW_KEY, ANOTHER_COLUMN_KEY, A_CELL_VALUE)
             .build();
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var result = graph.edgeValueOrDefault("1", "B", "theDefault");
+    var result = graph.edgeValueOrDefault(A_ROW_KEY, ANOTHER_COLUMN_KEY, "theDefaultEdgeValue");
 
     // then
     assertThat(result)
         .as(
             "graph.edgeValueOrDefault(aRowKey, unrelatedColumnKey, theDefault) "
-                + "expected to return theDefault")
-        .isEqualTo("theDefault");
+                + "expected to return theDefaultEdgeValue")
+        .isEqualTo("theDefaultEdgeValue");
   }
 
   @Test
   void givenTableAsValueGraph_whenGettingEdgeValueOrDefaultWhereRowKeyIsNull_thenThrowsNpe() {
     // given
-    var table = ImmutableTable.of("1", "A", UNUSED);
+    var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    ThrowingCallable codeUnderTest = () -> graph.edgeValueOrDefault(null, "A", "anyDefault");
+    ThrowingCallable codeUnderTest =
+        () -> graph.edgeValueOrDefault(null, A_COLUMN_KEY, "anyDefault");
 
     // then
     assertThatCode(codeUnderTest)
@@ -568,11 +588,11 @@ class MoreGraphsTests {
   @Test
   void givenTableAsValueGraph_whenGettingEdgeValueOrDefaultWhereColumnKeyIsNull_thenThrowsNpe() {
     // given
-    var table = ImmutableTable.of("1", "A", UNUSED);
+    var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    ThrowingCallable codeUnderTest = () -> graph.edgeValueOrDefault("1", null, "anyDefault");
+    ThrowingCallable codeUnderTest = () -> graph.edgeValueOrDefault(A_ROW_KEY, null, "anyDefault");
 
     // then
     assertThatCode(codeUnderTest)
@@ -586,12 +606,12 @@ class MoreGraphsTests {
   @Test
   void givenTableAsValueGraph_whenGettingEdgeValueOrDefaultWhereRowKeyNotInTable_thenThrowsIae() {
     // given
-    var table = ImmutableTable.of("1", "A", UNUSED);
+    var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
     ThrowingCallable codeUnderTest =
-        () -> graph.edgeValueOrDefault("keyNotInTable", "A", "anyDefault");
+        () -> graph.edgeValueOrDefault("keyNotInTable", A_COLUMN_KEY, "anyDefault");
 
     // then
     assertThatCode(codeUnderTest)
@@ -606,12 +626,12 @@ class MoreGraphsTests {
   void
       givenTableAsValueGraph_whenGettingEdgeValueOrDefaultWhereColumnKeyNotInTable_thenThrowsIae() {
     // given
-    var table = ImmutableTable.of("1", "A", UNUSED);
+    var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
     ThrowingCallable codeUnderTest =
-        () -> graph.edgeValueOrDefault("1", "keyNotInTable", "anyDefault");
+        () -> graph.edgeValueOrDefault(A_ROW_KEY, "keyNotInTable", "anyDefault");
 
     // then
     assertThatCode(codeUnderTest)

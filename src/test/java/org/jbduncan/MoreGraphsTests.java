@@ -13,6 +13,8 @@ import java.util.Set;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.Test;
 
+// We test methods that purposefully extend an unstable Guava API
+@SuppressWarnings("UnstableApiUsage")
 class MoreGraphsTests {
 
   private static final String UNUSED = "unused-cell-value";
@@ -65,6 +67,30 @@ class MoreGraphsTests {
                 .putEdge(1, 2)
                 .putEdge(2, 4)
                 .putEdge(4, 1)
+                .build());
+  }
+
+  @Test
+  void whenBuildingGraphWithBftAndTreeShapedSuccessorsFunction_thenResultContainsTree() {
+    // when
+    var result =
+        MoreGraphs.buildGraphWithBreadthFirstTraversal(
+            ImmutableList.of(1),
+            node -> {
+              if (node == 1) {
+                return ImmutableList.of(2, 3);
+              }
+              return ImmutableList.of();
+            });
+
+    // then
+    assertThat(result)
+        .isEqualTo(
+            GraphBuilder.directed()
+                .allowsSelfLoops(true)
+                .immutable()
+                .putEdge(1, 2)
+                .putEdge(1, 3)
                 .build());
   }
 

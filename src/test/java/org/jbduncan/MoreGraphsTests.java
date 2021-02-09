@@ -7,6 +7,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.graph.ElementOrder;
+import com.google.common.graph.EndpointPair;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.ImmutableGraph;
 import java.util.Set;
@@ -22,6 +23,8 @@ class MoreGraphsTests {
   private static final String A_CELL_VALUE = "aCellValue";
   private static final String ANOTHER_ROW_KEY = "anotherRowKey";
   private static final String ANOTHER_COLUMN_KEY = "anotherColumnKey";
+  private static final String A_KEY_NOT_IN_TABLE = "aKeyNotInTable";
+  private static final String THE_DEFAULT_EDGE_VALUE = "theDefaultEdgeValue";
 
   private static ImmutableTable<String, String, String> singleCellTable() {
     return ImmutableTable.of(A_ROW_KEY, A_COLUMN_KEY, A_CELL_VALUE);
@@ -351,13 +354,13 @@ class MoreGraphsTests {
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    ThrowingCallable codeUnderTest = () -> graph.successors("aKeyNotInTable");
+    ThrowingCallable codeUnderTest = () -> graph.successors(A_KEY_NOT_IN_TABLE);
 
     // then
     assertThatCode(codeUnderTest)
         .as("graph.successors(aKeyNotInTable) expected to throw IllegalArgumentException")
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("aKeyNotInTable");
+        .hasMessageContaining(A_KEY_NOT_IN_TABLE);
   }
 
   @Test
@@ -426,13 +429,13 @@ class MoreGraphsTests {
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    ThrowingCallable codeUnderTest = () -> graph.predecessors("aKeyNotInTable");
+    ThrowingCallable codeUnderTest = () -> graph.predecessors(A_KEY_NOT_IN_TABLE);
 
     // then
     assertThatCode(codeUnderTest)
         .as("graph.predecessors(aKeyNotInTable) expected to throw IllegalArgumentException")
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("aKeyNotInTable");
+        .hasMessageContaining(A_KEY_NOT_IN_TABLE);
   }
 
   @Test
@@ -503,13 +506,13 @@ class MoreGraphsTests {
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    ThrowingCallable codeUnderTest = () -> graph.predecessors("aKeyNotInTable");
+    ThrowingCallable codeUnderTest = () -> graph.predecessors(A_KEY_NOT_IN_TABLE);
 
     // then
     assertThatCode(codeUnderTest)
         .as("graph.successors(aKeyNotInTable) expected to throw IllegalArgumentException")
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("aKeyNotInTable");
+        .hasMessageContaining(A_KEY_NOT_IN_TABLE);
   }
 
   @Test
@@ -528,25 +531,25 @@ class MoreGraphsTests {
   }
 
   @Test
-  void givenTableAsValueGraph_whenGettingEdgeValueOrDefaultOfRowAndColumnKey_thenIsCellValue() {
+  void givenTableAsValueGraph_whenGettingEdgeValueOrDefaultOfRowAndColumnKeys_thenIsCellValue() {
     // given
     var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var result = graph.edgeValueOrDefault(A_ROW_KEY, A_COLUMN_KEY, "anyDefault");
+    var result = graph.edgeValueOrDefault(A_ROW_KEY, A_COLUMN_KEY, THE_DEFAULT_EDGE_VALUE);
 
     // then
     assertThat(result)
         .as(
-            "graph.edgeValueOrDefault(aRowKey, aColumnKey, anyDefault) "
+            "graph.edgeValueOrDefault(aRowKey, aColumnKey, theDefaultEdgeValue) "
                 + "expected to return aCellValue")
         .isEqualTo(A_CELL_VALUE);
   }
 
   @Test
   void
-      givenTableAsValueGraph_whenGettingEdgeValueOrDefaultOfUnrelatedRowAndColumnKey_thenIsDefault() {
+      givenTableAsValueGraph_whenGettingEdgeValueOrDefaultOfUnrelatedRowAndColumnKeys_thenIsDefaultEdgeValue() {
     // given
     var table =
         ImmutableTable.builder() //
@@ -556,14 +559,14 @@ class MoreGraphsTests {
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    var result = graph.edgeValueOrDefault(A_ROW_KEY, ANOTHER_COLUMN_KEY, "theDefaultEdgeValue");
+    var result = graph.edgeValueOrDefault(A_ROW_KEY, ANOTHER_COLUMN_KEY, THE_DEFAULT_EDGE_VALUE);
 
     // then
     assertThat(result)
         .as(
-            "graph.edgeValueOrDefault(aRowKey, unrelatedColumnKey, theDefault) "
+            "graph.edgeValueOrDefault(aRowKey, unrelatedColumnKey, theDefaultEdgeValue) "
                 + "expected to return theDefaultEdgeValue")
-        .isEqualTo("theDefaultEdgeValue");
+        .isEqualTo(THE_DEFAULT_EDGE_VALUE);
   }
 
   @Test
@@ -574,12 +577,12 @@ class MoreGraphsTests {
 
     // when
     ThrowingCallable codeUnderTest =
-        () -> graph.edgeValueOrDefault(null, A_COLUMN_KEY, "anyDefault");
+        () -> graph.edgeValueOrDefault(null, A_COLUMN_KEY, THE_DEFAULT_EDGE_VALUE);
 
     // then
     assertThatCode(codeUnderTest)
         .as(
-            "graph.adjacentNodes(null, aColumnKey, anyDefault) "
+            "graph.adjacentNodes(null, aColumnKey, theDefaultEdgeValue) "
                 + "expected to throw NullPointerException")
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("nodeU");
@@ -592,12 +595,13 @@ class MoreGraphsTests {
     var graph = MoreGraphs.asValueGraph(table);
 
     // when
-    ThrowingCallable codeUnderTest = () -> graph.edgeValueOrDefault(A_ROW_KEY, null, "anyDefault");
+    ThrowingCallable codeUnderTest =
+        () -> graph.edgeValueOrDefault(A_ROW_KEY, null, THE_DEFAULT_EDGE_VALUE);
 
     // then
     assertThatCode(codeUnderTest)
         .as(
-            "graph.adjacentNodes(aRowKey, null, anyDefault) "
+            "graph.adjacentNodes(aRowKey, null, theDefaultEdgeValue) "
                 + "expected to throw NullPointerException")
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("nodeV");
@@ -611,15 +615,15 @@ class MoreGraphsTests {
 
     // when
     ThrowingCallable codeUnderTest =
-        () -> graph.edgeValueOrDefault("keyNotInTable", A_COLUMN_KEY, "anyDefault");
+        () -> graph.edgeValueOrDefault(A_KEY_NOT_IN_TABLE, A_COLUMN_KEY, THE_DEFAULT_EDGE_VALUE);
 
     // then
     assertThatCode(codeUnderTest)
         .as(
-            "graph.edgeValueOrDefault(keyNotInTable, aColumnKey, anyDefault) "
+            "graph.edgeValueOrDefault(aKeyNotInTable, aColumnKey, theDefaultEdgeValue) "
                 + "expected to throw IllegalArgumentException")
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("keyNotInTable");
+        .hasMessageContaining(A_KEY_NOT_IN_TABLE);
   }
 
   @Test
@@ -631,14 +635,140 @@ class MoreGraphsTests {
 
     // when
     ThrowingCallable codeUnderTest =
-        () -> graph.edgeValueOrDefault(A_ROW_KEY, "keyNotInTable", "anyDefault");
+        () -> graph.edgeValueOrDefault(A_ROW_KEY, A_KEY_NOT_IN_TABLE, THE_DEFAULT_EDGE_VALUE);
 
     // then
     assertThatCode(codeUnderTest)
         .as(
-            "graph.edgeValueOrDefault(aRowKey, keyNotInThisTable, anyDefault) "
+            "graph.edgeValueOrDefault(aRowKey, keyNotInThisTable, theDefaultEdgeValue) "
                 + "expected to throw IllegalArgumentException")
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("keyNotInTable");
+        .hasMessageContaining(A_KEY_NOT_IN_TABLE);
+  }
+
+  @Test
+  void givenTableAsValueGraph_whenGettingEdgeValueOrDefaultOfEdgeEndpoints_thenIsCellValue() {
+    // given
+    var table = singleCellTable();
+    var graph = MoreGraphs.asValueGraph(table);
+
+    // when
+    var result =
+        graph.edgeValueOrDefault(
+            EndpointPair.ordered(A_ROW_KEY, A_COLUMN_KEY), THE_DEFAULT_EDGE_VALUE);
+
+    // then
+    assertThat(result)
+        .as(
+            "graph.edgeValueOfDefault(endpoints(aRowKey, aColumnKey), theDefaultEdgeValue) "
+                + "expected to return aCellValue")
+        .isEqualTo(A_CELL_VALUE);
+  }
+
+  @Test
+  void
+      givenTableAsValueGraph_whenGettingEdgeValueOrDefaultOfAbsentEndpointsEdge_thenIsDefaultEdgeValue() {
+    // given
+    var table =
+        ImmutableTable.builder() //
+            .put(A_ROW_KEY, A_COLUMN_KEY, A_CELL_VALUE)
+            .put(ANOTHER_ROW_KEY, ANOTHER_COLUMN_KEY, A_CELL_VALUE)
+            .build();
+    var graph = MoreGraphs.asValueGraph(table);
+
+    // when
+    var result =
+        graph.edgeValueOrDefault(
+            EndpointPair.ordered(A_ROW_KEY, ANOTHER_COLUMN_KEY), THE_DEFAULT_EDGE_VALUE);
+
+    // then
+    assertThat(result)
+        .as(
+            "graph.edgeValueOrDefault(endpoints(aRowKey, unrelatedColumnKey), theDefaultEdgeValue) "
+                + "expected to return theDefaultEdgeValue")
+        .isEqualTo(THE_DEFAULT_EDGE_VALUE);
+  }
+
+  @Test
+  void givenTableAsValueGraph_whenGettingEdgeValueOrDefaultOfNullEndpoints_thenThrowsNpe() {
+    // given
+    var table = singleCellTable();
+    var graph = MoreGraphs.asValueGraph(table);
+
+    // when
+    ThrowingCallable codeUnderTest = () -> graph.edgeValueOrDefault(null, THE_DEFAULT_EDGE_VALUE);
+
+    // then
+    assertThatCode(codeUnderTest)
+        .as(
+            "graph.adjacentNodes(nullEndpoints, theDefaultEdgeValue) "
+                + "expected to throw NullPointerException")
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("endpoints");
+  }
+
+  @Test
+  void givenTableAsValueGraph_whenGettingEdgeValueOrDefaultOfUnorderedEndpoints_thenThrowsIae() {
+    // given
+    var table = singleCellTable();
+    var graph = MoreGraphs.asValueGraph(table);
+
+    // when
+    ThrowingCallable codeUnderTest =
+        () ->
+            graph.edgeValueOrDefault(
+                EndpointPair.unordered(A_ROW_KEY, A_COLUMN_KEY), THE_DEFAULT_EDGE_VALUE);
+
+    // then
+    assertThatCode(codeUnderTest)
+        .as(
+            "graph.adjacentNodes(unorderedEndpoints, theDefaultEdgeValue) "
+                + "expected to throw IllegalArgumentException")
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("ordered");
+  }
+
+  @Test
+  void
+      givenTableAsValueGraph_whenGettingEdgeValueOrDefaultWhereFirstEndpointNotInTable_thenThrowsIae() {
+    // given
+    var table = singleCellTable();
+    var graph = MoreGraphs.asValueGraph(table);
+
+    // when
+    ThrowingCallable codeUnderTest =
+        () ->
+            graph.edgeValueOrDefault(
+                EndpointPair.ordered(A_KEY_NOT_IN_TABLE, A_COLUMN_KEY), THE_DEFAULT_EDGE_VALUE);
+
+    // then
+    assertThatCode(codeUnderTest)
+        .as(
+            "graph.adjacentNodes(endpoints(aKeyNotInTable, aColumnKey), theDefaultEdgeValue) "
+                + "expected to throw IllegalArgumentException")
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining(A_KEY_NOT_IN_TABLE);
+  }
+
+  @Test
+  void
+      givenTableAsValueGraph_whenGettingEdgeValueOrDefaultWhereLastEndpointNotInTable_thenThrowsIae() {
+    // given
+    var table = singleCellTable();
+    var graph = MoreGraphs.asValueGraph(table);
+
+    // when
+    ThrowingCallable codeUnderTest =
+        () ->
+            graph.edgeValueOrDefault(
+                EndpointPair.ordered(A_ROW_KEY, A_KEY_NOT_IN_TABLE), THE_DEFAULT_EDGE_VALUE);
+
+    // then
+    assertThatCode(codeUnderTest)
+        .as(
+            "graph.adjacentNodes(endpoints(aRowKey, aKeyNotInTable), theDefaultEdgeValue) "
+                + "expected to throw IllegalArgumentException")
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining(A_KEY_NOT_IN_TABLE);
   }
 }

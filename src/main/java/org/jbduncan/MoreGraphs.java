@@ -198,7 +198,9 @@ public class MoreGraphs {
    *       a cell value in the table then it returns the cell value as an {@code Optional};
    *       otherwise it returns an empty {@code Optional}.
    *   <li>{@link ValueGraph#edgeValue(EndpointPair) edgeValue(someEndpointPair)}: equivalent to
-   *       {@code edgeValue(someEndpointPair.source(), someEndpointPair.target())}.
+   *       {@code edgeValue(someEndpointPair.source(), someEndpointPair.target())}. Note that this
+   *       throws an {@code IllegalArgumentException} if the endpoint pair is {@linkplain
+   *       EndpointPair#unordered(Object, Object) not ordered}.
    *   <li>{@link ValueGraph#edgeValueOrDefault(Object, Object, Object)
    *       edgeValueOrDefault(firstValue, secondValue, defaultValue)}: if the first value is not a
    *       row key or the second value is not a column key, then this method throws an {@code
@@ -206,15 +208,18 @@ public class MoreGraphs {
    *       the table then it returns the cell value; otherwise it returns the default value.
    *   <li>{@link ValueGraph#edgeValueOrDefault(EndpointPair, Object)
    *       edgeValueOrDefault(someEndpointPair, default)}: equivalent to {@code
-   *       edgeValueOrDefault(someEndpointPair.source(), someEndpointPair.target(), default)}.
+   *       edgeValueOrDefault(someEndpointPair.source(), someEndpointPair.target(), default)}. Note
+   *       that this throws an {@code IllegalArgumentException} if the endpoint pair is {@linkplain
+   *       EndpointPair#unordered(Object, Object) not ordered}.
    *   <li>{@link ValueGraph#hasEdgeConnecting(Object, Object) hasEdgeConnecting(firstValue,
    *       secondValue)}: returns {@code true} if the first value is a row key, the second value is
    *       a column key, and if the row key and column key share a cell value in the table;
    *       otherwise returns {@code false}.
    *   <li>{@link ValueGraph#hasEdgeConnecting(EndpointPair) hasEdgeConnecting(someEndpointPair)}:
-   *       equivalent to {@code hasEdgeConnecting(someEndpointPair.source(),
-   *       someEndpointPair.target())}, except it does not throw an {@code IllegalArgumentException}
-   *       if the endpoint pair is {@linkplain EndpointPair#unordered(Object, Object)} undirected}.
+   *       almost equivalent to {@code hasEdgeConnecting(someEndpointPair.source(),
+   *       someEndpointPair.target())}, except it does <i>not</i> throw an {@code
+   *       IllegalArgumentException} if the endpoint pair is {@linkplain
+   *       EndpointPair#unordered(Object, Object) not ordered}.
    *   <li>{@link ValueGraph#asGraph() asGraph()}: returns a {@code Graph} view that contains the
    *       nodes and edge connections of this value graph, but not the edge values.
    *   <li>{@link ValueGraph#toString() toString()}: returns a string representation of this value
@@ -231,7 +236,6 @@ public class MoreGraphs {
    * @return a {@code ValueGraph} view of the given table; never null
    * @see <a href='https://github.com/google/guava/wiki/GraphsExplained'>Graphs Explained</a>
    */
-  // TODO: Rewrite the implementation of this method using TDD
   public static <N, E> ValueGraph<N, E> asValueGraph(Table<N, N, E> table) {
     checkNotNull(table, "table");
 
@@ -289,8 +293,8 @@ public class MoreGraphs {
       public @Nullable E edgeValueOrDefault(N nodeU, N nodeV, @Nullable E defaultValue) {
         checkNotNull(nodeU, "nodeU");
         checkNotNull(nodeV, "nodeV");
-        checkArgument(nodes().contains(nodeU), "Node '%s' is not in this graph", nodeU);
-        checkArgument(nodes().contains(nodeV), "Node '%s' is not in this graph", nodeV);
+        checkArgument(nodes().contains(nodeU), "First node '%s' is not in this graph", nodeU);
+        checkArgument(nodes().contains(nodeV), "Second node '%s' is not in this graph", nodeV);
         if (table.contains(nodeU, nodeV)) {
           return table.get(nodeU, nodeV);
         }
@@ -299,7 +303,20 @@ public class MoreGraphs {
 
       @Override
       public @Nullable E edgeValueOrDefault(EndpointPair<N> endpoints, @Nullable E defaultValue) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        checkNotNull(endpoints, "endpoints");
+        checkArgument(endpoints.isOrdered(), "Endpoints are not ordered");
+        checkArgument(
+            nodes().contains(endpoints.source()),
+            "Source endpoint '%s' is not in this graph",
+            endpoints.source());
+        checkArgument(
+            nodes().contains(endpoints.target()),
+            "Target endpoint '%s' is not in this graph",
+            endpoints.target());
+        if (table.contains(endpoints.source(), endpoints.target())) {
+          return table.get(endpoints.source(), endpoints.target());
+        }
+        return defaultValue;
       }
     };
   }

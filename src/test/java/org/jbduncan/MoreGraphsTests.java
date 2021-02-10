@@ -771,4 +771,30 @@ class MoreGraphsTests {
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining(A_KEY_NOT_IN_TABLE);
   }
+
+  @Test
+  void givenEmptyTableAsValueGraph_whenGettingEdges_thenNumElementsIsEqualToZero() {
+    // given
+    var table = emptyTable();
+    var graph = MoreGraphs.asValueGraph(table);
+
+    // when
+    var edges = graph.edges();
+
+    // then
+    assertThat(edges).size().as("graph.edges().size() expected to be 0").isZero();
+  }
+
+  @Test
+  void givenSingleCellTableAsValueGraph_whenGettingEdges_thenNumElementsIsEqualToOne() {
+    // given
+    var table = singleCellTable();
+    var graph = MoreGraphs.asValueGraph(table);
+
+    // when
+    var edges = graph.edges();
+
+    // then
+    assertThat(edges).size().as("graph.edges().size() expected to be 1").isOne();
+  }
 }

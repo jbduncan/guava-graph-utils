@@ -10,12 +10,12 @@ import com.google.common.graph.EndpointPair;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.Test;
 
-
 @SuppressWarnings({
-    // We test a method that purposefully uses an unstable Guava API.
-    "UnstableApiUsage",
-    // We also test that the method reacts gracefully in the face of nulls.
-    "ConstantConditions"})
+  // We test a method that purposefully uses an unstable Guava API.
+  "UnstableApiUsage",
+  // We also test that the method reacts gracefully in the face of nulls.
+  "ConstantConditions"
+})
 class MoreGraphsAsValueGraphTests {
 
   private static final String A_ROW_KEY = "aRowKey";
@@ -411,7 +411,7 @@ class MoreGraphsAsValueGraphTests {
 
   @Test
   void
-  givenTableAsValueGraph_whenGettingEdgeValueOrDefaultOfUnrelatedRowAndColumnKeys_thenIsDefaultEdgeValue() {
+      givenTableAsValueGraph_whenGettingEdgeValueOrDefaultOfUnrelatedRowAndColumnKeys_thenIsDefaultEdgeValue() {
     // given
     var table =
         ImmutableTable.builder() //
@@ -490,7 +490,7 @@ class MoreGraphsAsValueGraphTests {
 
   @Test
   void
-  givenTableAsValueGraph_whenGettingEdgeValueOrDefaultWhereColumnKeyNotInTable_thenThrowsIae() {
+      givenTableAsValueGraph_whenGettingEdgeValueOrDefaultWhereColumnKeyNotInTable_thenThrowsIae() {
     // given
     var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
@@ -529,7 +529,7 @@ class MoreGraphsAsValueGraphTests {
 
   @Test
   void
-  givenTableAsValueGraph_whenGettingEdgeValueOrDefaultOfAbsentEndpointsEdge_thenIsDefaultEdgeValue() {
+      givenTableAsValueGraph_whenGettingEdgeValueOrDefaultOfAbsentEndpointsEdge_thenIsDefaultEdgeValue() {
     // given
     var table =
         ImmutableTable.builder() //
@@ -592,7 +592,7 @@ class MoreGraphsAsValueGraphTests {
 
   @Test
   void
-  givenTableAsValueGraph_whenGettingEdgeValueOrDefaultWhereFirstEndpointNotInTable_thenThrowsIae() {
+      givenTableAsValueGraph_whenGettingEdgeValueOrDefaultWhereFirstEndpointNotInTable_thenThrowsIae() {
     // given
     var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
@@ -614,7 +614,7 @@ class MoreGraphsAsValueGraphTests {
 
   @Test
   void
-  givenTableAsValueGraph_whenGettingEdgeValueOrDefaultWhereLastEndpointNotInTable_thenThrowsIae() {
+      givenTableAsValueGraph_whenGettingEdgeValueOrDefaultWhereLastEndpointNotInTable_thenThrowsIae() {
     // given
     var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);

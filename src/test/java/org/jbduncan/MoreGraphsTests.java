@@ -10,7 +10,7 @@ import java.util.Set;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.Test;
 
-// We test methods that purposefully use a unstable Guava API
+// We test methods that purposefully use an unstable Guava API
 @SuppressWarnings("UnstableApiUsage")
 class MoreGraphsTests {
 

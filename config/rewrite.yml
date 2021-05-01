@@ -1,0 +1,29 @@
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.jbduncan.rewrite.CodeCleanup
+recipeList:
+  - org.openrewrite.java.cleanup.CovariantEquals
+  - org.openrewrite.java.cleanup.EmptyBlock
+  - org.openrewrite.java.cleanup.EqualsAvoidsNull
+  - org.openrewrite.java.cleanup.ExplicitInitialization
+  - org.openrewrite.java.cleanup.HideUtilityClassConstructor
+  - org.openrewrite.java.cleanup.ModifierOrder
+  - org.openrewrite.java.cleanup.RedundantFileCreation
+  - org.openrewrite.java.cleanup.SimplifyBooleanReturn
+  - org.openrewrite.java.cleanup.StaticMethodNotFinal
+  - org.openrewrite.java.cleanup.UnnecessaryExplicitTypeArguments
+  - org.openrewrite.java.cleanup.UnnecessaryParentheses
+  - org.openrewrite.java.cleanup.UnnecessaryThrows
+  - org.openrewrite.java.cleanup.UseDiamondOperator
+  - org.openrewrite.java.cleanup.PrimitiveWrapperClassConstructorToValueOf
+  - org.openrewrite.java.cleanup.BigDecimalRoundingConstantsToEnums
+  - org.openrewrite.java.testing.assertj.Assertj
+  - org.openrewrite.java.testing.cleanup.BestPractices
+  - org.openrewrite.java.testing.junit5.JUnit5BestPractices
+  - org.openrewrite.java.testing.mockito.Mockito1to3Migration
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: org.jbduncan.rewrite.SecurityBestPractices
+recipeList:
+  - org.openrewrite.java.search.FindSecrets
+  - org.openrewrite.java.security.JavaSecurityBestPractices

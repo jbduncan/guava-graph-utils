@@ -21,6 +21,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class MoreGraphs {
 
+  private static final String NODE_IS_NOT_IN_THIS_GRAPH = "Node '%s' is not in this graph";
+
   /**
    * Returns an immutable directed graph from a given set of starting nodes and a {@linkplain
    * SuccessorsFunction successors function}. The successors function is applied to the starting
@@ -253,21 +255,21 @@ public class MoreGraphs {
       @Override
       public Set<N> successors(N node) {
         checkNotNull(node, "node");
-        checkArgument(nodes().contains(node), "Node '%s' is not in this graph", node);
+        checkArgument(nodes().contains(node), NODE_IS_NOT_IN_THIS_GRAPH, node);
         return Collections.unmodifiableSet(table.row(node).keySet());
       }
 
       @Override
       public Set<N> predecessors(N node) {
         checkNotNull(node, "node");
-        checkArgument(nodes().contains(node), "Node '%s' is not in this graph", node);
+        checkArgument(nodes().contains(node), NODE_IS_NOT_IN_THIS_GRAPH, node);
         return Collections.unmodifiableSet(table.column(node).keySet());
       }
 
       @Override
       public Set<N> adjacentNodes(N node) {
         checkNotNull(node, "node");
-        checkArgument(nodes().contains(node), "Node '%s' is not in this graph", node);
+        checkArgument(nodes().contains(node), NODE_IS_NOT_IN_THIS_GRAPH, node);
         return Collections.unmodifiableSet(
             table.rowKeySet().contains(node)
                 ? table.row(node).keySet()
@@ -320,4 +322,6 @@ public class MoreGraphs {
       }
     };
   }
+
+  private MoreGraphs() {}
 }

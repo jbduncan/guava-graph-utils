@@ -15,7 +15,6 @@ import com.google.common.graph.MutableGraph;
 import com.google.common.graph.SuccessorsFunction;
 import com.google.common.graph.ValueGraph;
 import java.util.Collections;
-import java.util.Queue;
 import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
 

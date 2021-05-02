@@ -4,13 +4,12 @@ import org.openrewrite.gradle.RewriteDryRunTask
 plugins {
     java
 
-    id("com.diffplug.spotless") version "5.12.4"
-    id("com.github.ben-manes.versions") version "0.38.0"
-    id("org.openrewrite.rewrite") version "4.1.4"
+    id("com.github.ben-manes.versions")
+    id("org.openrewrite.rewrite")
 }
 
 group = "org.jbduncan"
-version = "1.0-SNAPSHOT"
+version = "0.1.0-SNAPSHOT"
 
 java {
     toolchain {
@@ -28,7 +27,6 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
     testImplementation("org.assertj:assertj-core:3.19.0")
 
-    rewrite("org.openrewrite.recipe:rewrite-spring:4.1.2")
     rewrite("org.openrewrite.recipe:rewrite-testing-frameworks:1.2.1")
 }
 
@@ -39,13 +37,6 @@ tasks.test {
 tasks.withType<AbstractArchiveTask>().configureEach {
     isPreserveFileTimestamps = false
     isReproducibleFileOrder = true
-}
-
-spotless {
-    java {
-        target("src/**/*.java")
-        googleJavaFormat("1.10.0")
-    }
 }
 
 tasks.withType<DependencyUpdatesTask>().configureEach {

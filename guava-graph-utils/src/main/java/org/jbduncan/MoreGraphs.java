@@ -74,7 +74,7 @@ public class MoreGraphs {
     checkNotNull(successorsFunction, "successorsFunction");
     MutableGraph<N> result = GraphBuilder.directed().allowsSelfLoops(true).build();
     startingNodes.forEach(result::addNode);
-    Queue<N> nodesRemaining = Queues.newArrayDeque(startingNodes);
+    var nodesRemaining = Queues.newArrayDeque(startingNodes);
     while (!nodesRemaining.isEmpty()) {
       N next = nodesRemaining.remove();
       for (N successor : successorsFunction.successors(next)) {

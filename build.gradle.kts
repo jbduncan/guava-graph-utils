@@ -6,7 +6,7 @@ plugins {
 
     id("com.diffplug.spotless") version "5.12.4"
     id("com.github.ben-manes.versions") version "0.38.0"
-    id("org.openrewrite.rewrite") version "4.1.4"
+    id("org.openrewrite.rewrite") version "4.2.2"
 }
 
 group = "org.jbduncan"
@@ -28,8 +28,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
     testImplementation("org.assertj:assertj-core:3.19.0")
 
-    rewrite("org.openrewrite.recipe:rewrite-spring:4.1.2")
-    rewrite("org.openrewrite.recipe:rewrite-testing-frameworks:1.2.1")
+    rewrite("org.openrewrite.recipe:rewrite-testing-frameworks:1.3.1")
 }
 
 tasks.test {
@@ -64,26 +63,9 @@ rewrite {
     activeRecipe("org.jbduncan.rewrite.CodeCleanup", "org.jbduncan.rewrite.SecurityBestPractices")
 
     configFile = file("$rootDir/config/rewrite.yml")
+    failOnDryRunResults = true
 }
 
 tasks.named("check").configure {
     dependsOn(tasks.named("rewriteDryRun"))
-}
-
-tasks.withType<RewriteDryRunTask>().configureEach {
-    val outputFiles = fileTree("$buildDir/reports/rewrite") { include("*.patch") }
-
-    doFirst {
-        outputFiles.forEach {
-            if (!it.delete()) {
-                throw GradleException("Failed to delete '$it'")
-            }
-        }
-    }
-
-    doLast {
-        outputFiles.forEach {
-            throw GradleException("Not all refactorings have been applied. See '$it'.")
-        }
-    }
 }

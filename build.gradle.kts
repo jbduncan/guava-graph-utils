@@ -1,5 +1,4 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
-import org.openrewrite.gradle.RewriteDryRunTask
 
 plugins {
     java
@@ -9,7 +8,7 @@ plugins {
     id("org.openrewrite.rewrite") version "4.2.2"
 }
 
-group = "org.jbduncan"
+group = "me.jbduncan.guavagraphutils"
 version = "1.0-SNAPSHOT"
 
 java {

@@ -1,6 +1,6 @@
 package me.jbduncan.guavagraphutils;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static me.jbduncan.guavagraphutils.GraphAssert.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import com.google.common.collect.ImmutableList;
@@ -9,6 +9,9 @@ import com.google.common.graph.ImmutableGraph;
 import java.util.Set;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.converter.ConvertWith;
+import org.junit.jupiter.params.provider.ValueSource;
 
 // We test methods that purposefully use an unstable Guava API
 @SuppressWarnings("UnstableApiUsage")
@@ -150,5 +153,60 @@ class MoreGraphsTests {
                 + "expected to throw NullPointerException")
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("startingNodes");
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        "digraph G {}",
+        "digraph G {\n"
+            + "    one -> two;\n"
+            + "    one -> three;\n"
+            + "    one -> four;\n"
+            + "    one -> five;\n"
+            + "    five -> six;\n"
+            + "    five -> seven;\n"
+            + "}"
+      })
+  void givenAGraph_whenCalculatingTopologicalOrdering_thenOrderIsValid(
+      // given
+      @ConvertWith(DotToStringImmutableGraphArgumentConverter.class) ImmutableGraph<String> graph) {
+
+    // when, then
+    assertThat(graph).hasValidTopologicalOrdering();
+  }
+
+  @Test
+  void whenCalculatingTopologicalOrderingOfNullGraph_thenNpeIsThrown() {
+    // when
+    ThrowingCallable codeUnderTest = () -> MoreGraphs.topologicalOrdering(null);
+
+    // then
+    assertThatCode(codeUnderTest)
+        .as("MoreGraphs.topologicalOrdering(null) expected to throw NullPointerException")
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("graph");
+  }
+
+  @Test
+  void givenCyclicGraph_whenCalculatingTopologicalOrdering_thenIaeIsThrown() {
+    // given
+    ImmutableGraph<String> graph = DotImporter.importGraph("digraph G { a -> b; b -> a; }");
+
+    // when
+    ThrowingCallable codeUnderTest =
+        () -> {
+          // Iterate over the topological ordering to force it to be evaluated.
+          MoreGraphs.topologicalOrdering(graph).forEach(__ -> {});
+        };
+
+    // then
+    assertThatCode(codeUnderTest)
+        .as(
+            "Iterating over MoreGraphs.topologicalOrdering(cyclicGraph) expected to throw "
+                + "IllegalArgumentException")
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("graph")
+        .hasMessageContaining("cycle");
   }
 }

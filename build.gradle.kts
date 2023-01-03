@@ -24,6 +24,9 @@ repositories {
 dependencies {
     implementation("com.google.guava:guava:30.1.1-jre")
 
+    testImplementation("org.jgrapht:jgrapht-io:1.5.1")
+    testImplementation("org.jgrapht:jgrapht-guava:1.5.1")
+    testImplementation("org.jgrapht:jgrapht-core:1.5.1")
     testImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
     testImplementation("org.assertj:assertj-core:3.19.0")
 
@@ -34,7 +37,7 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.withType<AbstractArchiveTask>().configureEach {
+tasks.withType<AbstractArchiveTask>() {
     isPreserveFileTimestamps = false
     isReproducibleFileOrder = true
 }
@@ -46,7 +49,7 @@ spotless {
     }
 }
 
-tasks.withType<DependencyUpdatesTask>().configureEach {
+tasks.withType<DependencyUpdatesTask>() {
     fun isStable(version: String): Boolean {
         val regex = "^[0-9,.v-]+(-r)?$".toRegex()
         val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.toUpperCase().contains(it) }

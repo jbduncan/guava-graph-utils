@@ -2,18 +2,29 @@ package me.jbduncan.guavagraphutils;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Multisets.toMultiset;
+import static java.util.stream.Collectors.toCollection;
 
+import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
+import com.google.common.collect.UnmodifiableIterator;
 import com.google.common.graph.AbstractValueGraph;
 import com.google.common.graph.ElementOrder;
 import com.google.common.graph.EndpointPair;
+import com.google.common.graph.Graph;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.ImmutableGraph;
 import com.google.common.graph.MutableGraph;
 import com.google.common.graph.SuccessorsFunction;
 import com.google.common.graph.ValueGraph;
+import java.util.AbstractSet;
+import java.util.ArrayDeque;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Queue;
 import java.util.Set;
@@ -88,8 +99,8 @@ public class MoreGraphs {
   }
 
   /**
-   * Returns an unmodifiable directed {@linkplain ValueGraph value graph} view of the given table
-   * where:
+   * Returns an <i>unmodifiable, directed {@linkplain ValueGraph value graph} view</i> of the given
+   * table where:
    *
    * <ul>
    *   <li>The row keys and column keys of the table are viewed as the graph's nodes.
@@ -224,7 +235,7 @@ public class MoreGraphs {
    *       EndpointPair#unordered(Object, Object) not ordered}.
    *   <li>{@link ValueGraph#asGraph() asGraph()}: returns a {@code Graph} view that contains the
    *       nodes and edge connections of this value graph, but not the edge values.
-   *   <li>{@link ValueGraph#toString() toString()}: returns a string representation of this value
+   *   <li>{@link Object#toString() toString()}: returns a string representation of this value
    *       graph; the value and format is undefined.
    * </ul>
    *
@@ -319,6 +330,100 @@ public class MoreGraphs {
           return table.get(endpoints.source(), endpoints.target());
         }
         return defaultValue;
+      }
+    };
+  }
+
+  /**
+   * Returns a set representing the topological ordering of the given graph; that is, a traversal of
+   * the graph in which each node is visited only after all its predecessors and other ancestors
+   * have been visited.
+   *
+   * <p>The given graph must be non-null, otherwise a {@code NullPointerException} will be thrown.
+   *
+   * <p>The returned set is an <i>unmodifiable, lazy view</i> of the graph's nodes, and each
+   * iteration over the set recalculates the topological ordering. So if the set is used multiple
+   * times, immediately pass it to {@link com.google.common.collect.ImmutableSet#copyOf(Collection)
+   * ImmutableSet.copyOf} and use that set instead.
+   *
+   * <p>Furthermore, the given graph may have multiple valid topological orderings. This method does
+   * not guarantee which topological ordering is returned on any iteration, or even that the same
+   * ordering is returned on subsequent iterations.
+   *
+   * <p>For example, given this graph...
+   *
+   * <pre>{@code
+   * b <--- a ---> d
+   * |      |
+   * v      v
+   * e ---> c ---> f
+   * }</pre>
+   *
+   * ...the topological ordering returned from an iteration could be any of:
+   *
+   * <ul>
+   *   <li>{@code [a, b, e, c, d, f]}
+   *   <li>{@code [a, b, e, c, f, d]}
+   *   <li>{@code [a, d, b, e, c, f]}
+   * </ul>
+   *
+   * <p>This method only works on directed acyclic graphs. If a cycle is discovered when traversing
+   * the graph, an {@code IllegalArgumentException} is thrown.
+   *
+   * <p>Iterations over the returned set run in linear time, specifically {@code O(N + E)}, where
+   * {@code N} is the number of nodes in the graph and {@code E} is the number of edges.
+   *
+   * @param graph the graph to return a topological ordering for; must not be null
+   * @param <N> the node type; must have {@link #equals(Object) equals()} and {@link #hashCode()
+   *     hashCode()} implementations as described in "<a
+   *     href='https://github.com/google/guava/wiki/GraphsExplained#graph-elements-nodes-and-edges'>
+   *     Graphs Explained</a>".
+   * @return an unmodifiable, lazy set view of a topological ordering of the graph
+   * @throws IllegalArgumentException if the graph has a directed cycle
+   * @see <a href='https://en.wikipedia.org/wiki/Topological_sorting'>Wikipedia, "Topological
+   *     sorting"</a>
+   * @see <a href='https://github.com/google/guava/wiki/GraphsExplained'>Graphs Explained</a>
+   */
+  public static <N> Set<N> topologicalOrdering(Graph<N> graph) {
+    checkNotNull(graph, "graph");
+
+    return new AbstractSet<>() {
+      @Override
+      public UnmodifiableIterator<N> iterator() {
+        // Kahn's algorithm: https://en.wikipedia.org/wiki/Topological_sorting#Kahn's_algorithm
+
+        Queue<N> roots =
+            graph.nodes().stream()
+                .filter(n -> graph.inDegree(n) == 0)
+                .collect(toCollection(ArrayDeque::new));
+        Multiset<N> nonRoots =
+            graph.nodes().stream()
+                .filter(node -> graph.inDegree(node) > 0)
+                .collect(toMultiset(node -> node, graph::inDegree, HashMultiset::create));
+
+        return new AbstractIterator<>() {
+          @Override
+          protected N computeNext() {
+            if (!roots.isEmpty()) {
+              N next = roots.remove();
+              for (N successor : graph.successors(next)) {
+                int newInDegree = nonRoots.count(successor) - 1;
+                nonRoots.setCount(successor, newInDegree);
+                if (newInDegree == 0) {
+                  roots.add(successor);
+                }
+              }
+              return next;
+            }
+            checkState(nonRoots.isEmpty(), "graph has at least one cycle");
+            return endOfData();
+          }
+        };
+      }
+
+      @Override
+      public int size() {
+        return graph.nodes().size();
       }
     };
   }

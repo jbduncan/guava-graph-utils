@@ -7,5 +7,8 @@ This is a Java library with a few utilities for working with Guava graphs. Speci
   traversed.
 - [`MoreGraphs.asValueGraph`](src/main/java/me/jbduncan/guavagraphutils/MoreGraphs.java): wraps a Guava `Table` as
   a `ValueGraph`.
+- [`MoreGraphs.topologicalOrdering`](src/main/java/me/jbduncan/guavagraphutils/MoreGraphs.java): returns a
+  topological ordering of the given graph; that is, a traversal of the graph in which each node is visited only
+  after all its predecessors and other ancestors have been visited.
   
 See these methods' javadocs for more information.

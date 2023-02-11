@@ -1,6 +1,6 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.jbduncan.rewrite.CodeCleanup
+name: me.jbduncan.rewrite.CodeCleanup
 recipeList:
   - org.openrewrite.java.cleanup.CovariantEquals
   - org.openrewrite.java.cleanup.EmptyBlock
@@ -17,13 +17,13 @@ recipeList:
   - org.openrewrite.java.cleanup.UseDiamondOperator
   - org.openrewrite.java.cleanup.PrimitiveWrapperClassConstructorToValueOf
   - org.openrewrite.java.cleanup.BigDecimalRoundingConstantsToEnums
-  - org.openrewrite.java.testing.assertj.Assertj
+  - org.openrewrite.java.testing.assertj.JUnitToAssertj
   - org.openrewrite.java.testing.cleanup.BestPractices
   - org.openrewrite.java.testing.junit5.JUnit5BestPractices
   - org.openrewrite.java.testing.mockito.Mockito1to3Migration
 ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.jbduncan.rewrite.SecurityBestPractices
+name: me.jbduncan.rewrite.SecurityBestPractices
 recipeList:
   - org.openrewrite.java.search.FindSecrets
   - org.openrewrite.java.security.JavaSecurityBestPractices

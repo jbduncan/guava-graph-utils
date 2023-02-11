@@ -2,7 +2,6 @@ package me.jbduncan.guavagraphutils;
 
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.Graph;
-import java.util.Set;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.BooleanAssert;
 import org.assertj.core.api.IterableAssert;
@@ -19,9 +18,8 @@ public class GraphAssert<N> extends AbstractAssert<GraphAssert<N>, Graph<N>> {
   public GraphAssert<N> hasValidTopologicalOrdering() {
     isNotNull();
 
-    Set<N> topologicalOrdering = MoreGraphs.topologicalOrdering(actual);
+    Iterable<N> topologicalOrdering = MoreGraphs.topologicalOrdering(actual);
     assertThatTopologicalOrdering(topologicalOrdering)
-        .hasSize(actual.nodes().size()) // test .size()
         .containsExactlyInAnyOrderElementsOf(actual.nodes()); // test .iterator()
 
     for (EndpointPair<N> edge : actual.edges()) {
@@ -37,7 +35,8 @@ public class GraphAssert<N> extends AbstractAssert<GraphAssert<N>, Graph<N>> {
     return new BooleanAssert(edge.isOrdered()).as("edge %s is ordered", edge);
   }
 
-  private static <N> IterableAssert<N> assertThatTopologicalOrdering(Set<N> topologicalOrdering) {
+  private static <N> IterableAssert<N> assertThatTopologicalOrdering(
+      Iterable<N> topologicalOrdering) {
     return new IterableAssert<>(topologicalOrdering).as("topological ordering");
   }
 }

@@ -1,17 +1,13 @@
 package me.jbduncan.guavagraphutils;
 
-import static me.jbduncan.guavagraphutils.GraphAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.ImmutableGraph;
 import java.util.Set;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.converter.ConvertWith;
-import org.junit.jupiter.params.provider.ValueSource;
 
 // We test methods that purposefully use an unstable Guava API
 @SuppressWarnings("UnstableApiUsage")
@@ -21,8 +17,7 @@ class MoreGraphsTests {
   void whenBuildingGraphWithBftAndEmptyStartingNodes_thenResultIsEmptyGraph() {
     // when
     var result =
-        MoreGraphs.buildGraphWithBreadthFirstTraversal(
-            ImmutableList.of(), node -> ImmutableList.of("any old node"));
+        MoreGraphs.buildGraphWithBreadthFirstTraversal(Set.of(), node -> Set.of("any old node"));
 
     // then
     assertThat(result).isEqualTo(GraphBuilder.directed().allowsSelfLoops(true).immutable().build());
@@ -32,8 +27,7 @@ class MoreGraphsTests {
   void whenBuildingGraphWithBftAndEmptySuccessorsFunction_thenResultIsEqualToStartingNodes() {
     // when
     var result =
-        MoreGraphs.buildGraphWithBreadthFirstTraversal(
-            ImmutableList.of("any old node"), node -> ImmutableList.of());
+        MoreGraphs.buildGraphWithBreadthFirstTraversal(Set.of("any old node"), node -> Set.of());
 
     // then
     assertThat(result)
@@ -50,8 +44,7 @@ class MoreGraphsTests {
     // when
     var result =
         MoreGraphs.buildGraphWithBreadthFirstTraversal(
-            ImmutableList.of(1),
-            node -> (node * 2) <= 4 ? ImmutableList.of(node * 2) : ImmutableList.of(1));
+            Set.of(1), node -> (node * 2) <= 4 ? Set.of(node * 2) : Set.of(1));
 
     // then
     assertThat(result)
@@ -70,12 +63,12 @@ class MoreGraphsTests {
     // when
     var result =
         MoreGraphs.buildGraphWithBreadthFirstTraversal(
-            ImmutableList.of(1),
+            Set.of(1),
             node -> {
               if (node == 1) {
-                return ImmutableList.of(2, 3);
+                return Set.of(2, 3);
               }
-              return ImmutableList.of();
+              return Set.of();
             });
 
     // then
@@ -96,7 +89,7 @@ class MoreGraphsTests {
         GraphBuilder.directed().allowsSelfLoops(true).<Integer>immutable().putEdge(1, 1).build();
 
     // when
-    var result = MoreGraphs.buildGraphWithBreadthFirstTraversal(ImmutableList.of(1), expectedGraph);
+    var result = MoreGraphs.buildGraphWithBreadthFirstTraversal(Set.of(1), expectedGraph);
 
     // then
     assertThat(result).isEqualTo(expectedGraph);
@@ -112,7 +105,7 @@ class MoreGraphsTests {
 
     // when
     ImmutableGraph<Integer> result =
-        MoreGraphs.buildGraphWithBreadthFirstTraversal(ImmutableList.of(1), successorsFunction);
+        MoreGraphs.buildGraphWithBreadthFirstTraversal(Set.of(1), successorsFunction);
 
     // then
     assertThat(result)
@@ -144,7 +137,7 @@ class MoreGraphsTests {
   void whenBuildingGraphWithBftAndNullStartingNodes_thenNpeIsThrown() {
     // when
     ThrowingCallable codeUnderTest =
-        () -> MoreGraphs.buildGraphWithBreadthFirstTraversal(null, element -> Set.of());
+        () -> MoreGraphs.buildGraphWithBreadthFirstTraversal(null, __ -> Set.of());
 
     // then
     assertThatCode(codeUnderTest)
@@ -155,29 +148,37 @@ class MoreGraphsTests {
         .hasMessageContaining("startingNodes");
   }
 
-  @ParameterizedTest
-  @ValueSource(
-      strings = {
-        "digraph G {}",
-        "digraph G {\n"
-            + "    one -> two;\n"
-            + "    one -> three;\n"
-            + "    one -> four;\n"
-            + "    one -> five;\n"
-            + "    five -> six;\n"
-            + "    five -> seven;\n"
-            + "}"
-      })
-  void givenAGraph_whenCalculatingTopologicalOrdering_thenOrderIsValid(
-      // given
-      @ConvertWith(DotToStringImmutableGraphArgumentConverter.class) ImmutableGraph<String> graph) {
+  // TODO: Change the below unit test into a property-based test with jqwik.net, where the graph
+  // inputs are generated with JGraphT's graph generators. Preferably allow jqwik to use any of
+  // them, but at the very least allow it to use the following:
+  //
+  // https://jgrapht.org/javadoc/org.jgrapht.core/org/jgrapht/generate/EmptyGraphGenerator.html
+  // https://jgrapht.org/javadoc/org.jgrapht.core/org/jgrapht/generate/GnmRandomGraphGenerator.html
+  // https://jgrapht.org/javadoc/org.jgrapht.core/org/jgrapht/generate/GnpRandomGraphGenerator.html
 
-    // when, then
-    assertThat(graph).hasValidTopologicalOrdering();
+  @Test
+  void givenAGraph_whenCalculatingTopologicalOrdering_thenOrderingIsValid() {
+    // given
+    ImmutableGraph<String> graph =
+        DotImporter.importGraph(
+            "digraph G {\n"
+                + "    one -> two;\n"
+                + "    one -> three;\n"
+                + "    one -> four;\n"
+                + "    one -> five;\n"
+                + "    five -> six;\n"
+                + "    five -> seven;\n"
+                + "}");
+
+    // when
+    var topologicalOrdering = MoreGraphs.topologicalOrdering(graph);
+
+    // then
+    assertThatTopologicalOrderingIsValid(graph, topologicalOrdering);
   }
 
   @Test
-  void whenCalculatingTopologicalOrderingOfNullGraph_thenNpeIsThrown() {
+  void givenNullGraph_whenCalculatingTopologicalOrdering_thenNpeIsThrown() {
     // when
     ThrowingCallable codeUnderTest = () -> MoreGraphs.topologicalOrdering(null);
 
@@ -194,18 +195,100 @@ class MoreGraphsTests {
     ImmutableGraph<String> graph = DotImporter.importGraph("digraph G { a -> b; b -> a; }");
 
     // when
-    ThrowingCallable codeUnderTest =
-        () -> {
-          // Iterate over the topological ordering to force it to be evaluated.
-          MoreGraphs.topologicalOrdering(graph).forEach(__ -> {});
-        };
+    Iterable<String> topologicalOrdering = MoreGraphs.topologicalOrdering(graph);
+    // Iterate over the topological ordering to force it to be evaluated.
+    ThrowingCallable codeUnderTest = () -> topologicalOrdering.forEach(__ -> {});
 
     // then
     assertThatCode(codeUnderTest)
         .as(
-            "Iterating over MoreGraphs.topologicalOrdering(cyclicGraph) expected to throw "
+            "Evaluating MoreGraphs.topologicalOrdering(cyclicGraph) expected to throw "
                 + "IllegalArgumentException")
-        .isInstanceOf(IllegalStateException.class)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("graph")
+        .hasMessageContaining("cycle");
+  }
+
+  // TODO: Change the below unit test into a property-based test with jqwik.net, where the graph
+  // inputs are generated with JGraphT's graph generators. Preferably allow jqwik to use any of
+  // them, but at the very least allow it to use the following:
+  //
+  // https://jgrapht.org/javadoc/org.jgrapht.core/org/jgrapht/generate/EmptyGraphGenerator.html
+  // https://jgrapht.org/javadoc/org.jgrapht.core/org/jgrapht/generate/GnmRandomGraphGenerator.html
+  // https://jgrapht.org/javadoc/org.jgrapht.core/org/jgrapht/generate/GnpRandomGraphGenerator.html
+
+  @Test
+  void
+      givenStartingNodesAndSuccessorsFunction_whenCalculatingTopologicalOrdering_thenOrderIsValid() {
+    // given
+    ImmutableGraph<String> graph =
+        DotImporter.importGraph(
+            "digraph G {\n"
+                + "    one -> two;\n"
+                + "    one -> three;\n"
+                + "    one -> four;\n"
+                + "    one -> five;\n"
+                + "    five -> six;\n"
+                + "    five -> seven;\n"
+                + "}");
+
+    // when
+    var topologicalOrdering = MoreGraphs.topologicalOrderingStartingFrom(Set.of("one"), graph);
+
+    // then
+    assertThatTopologicalOrderingIsValid(graph, topologicalOrdering);
+  }
+
+  private static void assertThatTopologicalOrderingIsValid(
+      ImmutableGraph<String> graph, Iterable<String> topologicalOrdering) {
+    assertThat(topologicalOrdering).containsExactlyInAnyOrderElementsOf(graph.nodes());
+    for (var edge : graph.edges()) {
+      assertThat(edge.isOrdered()).isTrue();
+      assertThat(topologicalOrdering).containsSubsequence(edge.source(), edge.target());
+    }
+  }
+
+  @Test
+  void givenNullSuccessorsFunction_whenCalculatingTopologicalOrdering_thenNpeIsThrown() {
+    // when
+    ThrowingCallable codeUnderTest =
+        () -> MoreGraphs.topologicalOrderingStartingFrom(Set.of(), null);
+
+    // then
+    assertThatCode(codeUnderTest)
+        .as("MoreGraphs.topologicalOrdering(nodes, null) expected to throw NullPointerException")
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("successorsFunction");
+  }
+
+  @Test
+  void givenNullStartingNodes_whenCalculatingTopologicalOrdering_thenNpeIsThrown() {
+    // when
+    ThrowingCallable codeUnderTest =
+        () -> MoreGraphs.topologicalOrderingStartingFrom(null, __ -> Set.of());
+
+    // then
+    assertThatCode(codeUnderTest)
+        .as("MoreGraphs.topologicalOrdering(nodes, null) expected to throw NullPointerException")
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("startingNodes");
+  }
+
+  @Test
+  void givenCyclicSuccessorsFunction_whenCalculatingTopologicalOrdering_thenIaeIsThrown() {
+    // given
+    ImmutableGraph<String> graph = DotImporter.importGraph("digraph G { a -> b; b -> a; }");
+
+    // when
+    ThrowingCallable codeUnderTest =
+        () -> MoreGraphs.topologicalOrderingStartingFrom(Set.of("a"), graph);
+
+    // then
+    assertThatCode(codeUnderTest)
+        .as(
+            "Evaluating MoreGraphs.topologicalOrdering(cyclicGraph) expected to throw "
+                + "IllegalArgumentException")
+        .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("graph")
         .hasMessageContaining("cycle");
   }

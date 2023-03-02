@@ -53,8 +53,8 @@ tasks.withType<AbstractArchiveTask>().configureEach {
 
 spotless {
     java {
-        target("src/**/*.java")
-        googleJavaFormat("1.15.0")
+        googleJavaFormat("1.16.0").reflowLongStrings()
+        formatAnnotations()
     }
 }
 

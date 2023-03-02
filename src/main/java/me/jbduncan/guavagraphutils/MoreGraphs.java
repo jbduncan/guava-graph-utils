@@ -2,12 +2,12 @@ package me.jbduncan.guavagraphutils;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Multisets.toMultiset;
 import static java.util.stream.Collectors.toCollection;
 
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
@@ -23,6 +23,8 @@ import com.google.common.graph.SuccessorsFunction;
 import com.google.common.graph.ValueGraph;
 import java.util.ArrayDeque;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -30,6 +32,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class MoreGraphs {
 
   private static final String NODE_IS_NOT_IN_THIS_GRAPH = "Node '%s' is not in this graph";
+  private static final String GRAPH_HAS_AT_LEAST_ONE_CYCLE = "graph has at least one cycle";
 
   /**
    * Returns an immutable directed graph from a given set of starting nodes and a {@linkplain
@@ -80,6 +83,7 @@ public class MoreGraphs {
       Iterable<N> startingNodes, SuccessorsFunction<N> successorsFunction) {
     checkNotNull(startingNodes, "startingNodes");
     checkNotNull(successorsFunction, "successorsFunction");
+
     MutableGraph<N> result = GraphBuilder.directed().allowsSelfLoops(true).build();
     startingNodes.forEach(result::addNode);
     Queue<N> nodesRemaining = Queues.newArrayDeque(startingNodes);
@@ -367,8 +371,8 @@ public class MoreGraphs {
    *   <li>{@code [a, d, b, e, c, f]}
    * </ul>
    *
-   * <p>This method only works on acyclic graphs. If a cycle is discovered when traversing the
-   * graph, an {@code IllegalArgumentException} is thrown.
+   * <p>This method only works on directed acyclic graphs. If a cycle is discovered when traversing
+   * the graph, an {@code IllegalArgumentException} is thrown.
    *
    * <p>Iterations over the returned iterable run in linear time, specifically {@code O(N + E)},
    * where {@code N} is the number of nodes in the graph and {@code E} is the number of edges.
@@ -379,7 +383,7 @@ public class MoreGraphs {
    *     href='https://github.com/google/guava/wiki/GraphsExplained#graph-elements-nodes-and-edges'>
    *     Graphs Explained</a>".
    * @return an unmodifiable, lazy iterable view of a topological ordering of the graph
-   * @throws IllegalArgumentException if the graph has a directed cycle
+   * @throws IllegalArgumentException if the graph has a cycle
    * @see <a href='https://en.wikipedia.org/wiki/Topological_sorting'>Wikipedia, "Topological
    *     sorting"</a>
    * @see <a href='https://github.com/google/guava/wiki/GraphsExplained'>Graphs Explained</a>
@@ -388,7 +392,12 @@ public class MoreGraphs {
     checkNotNull(graph, "graph");
 
     return () -> {
-      // Kahn's algorithm: https://en.wikipedia.org/wiki/Topological_sorting#Kahn's_algorithm
+      /*
+       * Kahn's algorithm. Derived from [1], in turn derived from [2].
+       *
+       * [1] https://web.archive.org/web/20230225053309/https://en.wikipedia.org/wiki/Topological_sorting#Kahn's_algorithm
+       * [2] https://dl.acm.org/doi/pdf/10.1145/368996.369025
+       */
 
       Queue<N> roots =
           graph.nodes().stream()
@@ -413,11 +422,66 @@ public class MoreGraphs {
             }
             return next;
           }
-          checkState(nonRoots.isEmpty(), "graph has at least one cycle");
+          checkArgument(nonRoots.isEmpty(), GRAPH_HAS_AT_LEAST_ONE_CYCLE);
           return endOfData();
         }
       };
     };
+  }
+
+  // TODO: Javadoc
+  public static <N> ImmutableList<N> topologicalOrderingStartingFrom(
+      Iterable<N> startingNodes, SuccessorsFunction<N> successorsFunction) {
+    checkNotNull(startingNodes, "startingNodes");
+    checkNotNull(successorsFunction, "successorsFunction");
+
+    // TODO: Turn into an iterative algorithm. This will allow the algorithm to scale beyond the
+    // size of the stack. Refer to the following sources for inspiration:
+    //
+    // https://github.com/google/mug/blob/master/mug/src/main/java/com/google/mu/util/stream/Iteration.java
+    // https://www.baeldung.com/cs/convert-recursion-to-iteration
+
+    /*
+     * Depth-first-search-based algorithm. Derived from [1], in turn derived from Introduction to Algorithms (2nd ed.)
+     * by Cormen et al.
+     *
+     * [1] https://web.archive.org/web/20230225053309/https://en.wikipedia.org/wiki/Topological_sorting#Depth-first_search
+     */
+
+    ImmutableList.Builder<N> accumulator = ImmutableList.builder();
+    var nodeToVisitState = new HashMap<N, VisitState>();
+    for (N startingNode : startingNodes) {
+      visit(startingNode, successorsFunction, nodeToVisitState, accumulator);
+    }
+    return accumulator.build().reverse();
+  }
+
+  private static <N> void visit(
+      N node,
+      SuccessorsFunction<N> successorsFunction,
+      Map<N, VisitState> nodeToVisitState,
+      ImmutableList.Builder<N> accumulator) {
+    var visitState = nodeToVisitState.get(node);
+    if (visitState == VisitState.FULLY_VISITED) {
+      return;
+    }
+    if (visitState == VisitState.PARTIALLY_VISITED) {
+      throw new IllegalArgumentException(GRAPH_HAS_AT_LEAST_ONE_CYCLE);
+    }
+
+    nodeToVisitState.put(node, VisitState.PARTIALLY_VISITED);
+
+    for (N successor : successorsFunction.successors(node)) {
+      visit(successor, successorsFunction, nodeToVisitState, accumulator);
+    }
+
+    nodeToVisitState.put(node, VisitState.FULLY_VISITED);
+    accumulator.add(node);
+  }
+
+  private enum VisitState {
+    PARTIALLY_VISITED,
+    FULLY_VISITED
   }
 
   private MoreGraphs() {}

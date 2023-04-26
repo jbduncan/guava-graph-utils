@@ -1,4 +1,5 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
+import org.gradle.api.tasks.compile.JavaCompile
 
 plugins {
     java
@@ -8,6 +9,8 @@ plugins {
     id("org.openrewrite.rewrite") version "5.35.0"
 }
 
+// TODO: Consider moving to a reverse URL that we actually own, like
+//       "com.github.jbduncan...".
 group = "me.jbduncan.guavagraphutils"
 version = "0.1.0-SNAPSHOT"
 
@@ -24,17 +27,11 @@ repositories {
 dependencies {
     implementation("com.google.guava:guava:31.1-jre")
 
-    testImplementation("org.jgrapht:jgrapht-io:1.5.1")
-    constraints {
-        testImplementation("org.apache.commons:commons-text:1.10.0") {
-            because("it forces jgrapht-io to avoid Apache Commons Text 1.8, which has a security vulnerability")
-        }
-    }
+    testImplementation("net.jqwik:jqwik:1.7.3")
     testImplementation("org.jgrapht:jgrapht-guava:1.5.1")
     testImplementation("org.jgrapht:jgrapht-core:1.5.1")
     testImplementation(platform("org.junit:junit-bom:5.9.2"))
-    testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
+    testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.assertj:assertj-core:3.24.2")
 
     rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:1.14.0"))
@@ -43,7 +40,13 @@ dependencies {
 }
 
 tasks.test.configure {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        includeEngines("junit-jupiter", "jqwik")
+    }
+}
+
+tasks.withType<JavaCompile>().named("compileTestJava").configure {
+    options.compilerArgs.add("-parameters")
 }
 
 tasks.withType<AbstractArchiveTask>().configureEach {

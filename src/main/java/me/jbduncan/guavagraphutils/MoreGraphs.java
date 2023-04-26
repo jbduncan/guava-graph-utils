@@ -2,6 +2,7 @@ package me.jbduncan.guavagraphutils;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.Multisets.toMultiset;
 import static java.util.stream.Collectors.toCollection;
 
@@ -23,16 +24,23 @@ import com.google.common.graph.SuccessorsFunction;
 import com.google.common.graph.ValueGraph;
 import java.util.ArrayDeque;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-public class MoreGraphs {
+// This class purposefully expands upon an unstable Guava API
+@SuppressWarnings("UnstableApiUsage")
+public final class MoreGraphs {
 
   private static final String NODE_IS_NOT_IN_THIS_GRAPH = "Node '%s' is not in this graph";
   private static final String GRAPH_HAS_AT_LEAST_ONE_CYCLE = "graph has at least one cycle";
+  private static final String SUCCESSORS_FUNCTION_HAS_AT_LEAST_ONE_CYCLE =
+      "successors function has at least one cycle";
 
   /**
    * Returns an immutable directed graph from a given set of starting nodes and a {@linkplain
@@ -79,6 +87,9 @@ public class MoreGraphs {
    * @see <a href='https://stackoverflow.com/a/58457785/2252930'>this StackOverflow answer for the
    *     origin of this method</a>
    */
+  // TODO: Can we make a version of common.graph.Traverser with an API like
+  //   "Traverser.forGraph(successorsFunction).toGraphBreadthFirst(startingNodes)"
+  //   that replaces this static method?
   public static <N> ImmutableGraph<N> buildGraphWithBreadthFirstTraversal(
       Iterable<N> startingNodes, SuccessorsFunction<N> successorsFunction) {
     checkNotNull(startingNodes, "startingNodes");
@@ -361,7 +372,7 @@ public class MoreGraphs {
    * e ---> c ---> f
    * }</pre>
    *
-   * ...the topological ordering returned from an iteration could be any of:
+   * <p>...the topological ordering returned from an iteration could be any of:
    *
    * <ul>
    *   <li>{@code [a, b, d, e, c, f]}
@@ -388,6 +399,7 @@ public class MoreGraphs {
    *     sorting"</a>
    * @see <a href='https://github.com/google/guava/wiki/GraphsExplained'>Graphs Explained</a>
    */
+  // TODO: Rename to lazyTopologicalOrdering
   public static <N> Iterable<N> topologicalOrdering(Graph<N> graph) {
     checkNotNull(graph, "graph");
 
@@ -435,12 +447,6 @@ public class MoreGraphs {
     checkNotNull(startingNodes, "startingNodes");
     checkNotNull(successorsFunction, "successorsFunction");
 
-    // TODO: Turn into an iterative algorithm. This will allow the algorithm to scale beyond the
-    // size of the stack. Refer to the following sources for inspiration:
-    //
-    // https://github.com/google/mug/blob/master/mug/src/main/java/com/google/mu/util/stream/Iteration.java
-    // https://www.baeldung.com/cs/convert-recursion-to-iteration
-
     /*
      * Depth-first-search-based algorithm. Derived from [1], in turn derived from Introduction to Algorithms (2nd ed.)
      * by Cormen et al.
@@ -448,41 +454,113 @@ public class MoreGraphs {
      * [1] https://web.archive.org/web/20230225053309/https://en.wikipedia.org/wiki/Topological_sorting#Depth-first_search
      */
 
-    ImmutableList.Builder<N> accumulator = ImmutableList.builder();
-    var nodeToVisitState = new HashMap<N, VisitState>();
-    for (N startingNode : startingNodes) {
-      visit(startingNode, successorsFunction, nodeToVisitState, accumulator);
-    }
-    return accumulator.build().reverse();
-  }
+    class DeepRecursiveTopo {
+      private final Deque<Object> intermediateStack = new ArrayDeque<>();
+      private final Deque<Object> frameStack = new ArrayDeque<>();
 
-  private static <N> void visit(
-      N node,
-      SuccessorsFunction<N> successorsFunction,
-      Map<N, VisitState> nodeToVisitState,
-      ImmutableList.Builder<N> accumulator) {
-    var visitState = nodeToVisitState.get(node);
-    if (visitState == VisitState.FULLY_VISITED) {
-      return;
-    }
-    if (visitState == VisitState.PARTIALLY_VISITED) {
-      throw new IllegalArgumentException(GRAPH_HAS_AT_LEAST_ONE_CYCLE);
+      private DeepRecursiveTopo() {
+        Map<N, VisitState> nodeToVisitState = new HashMap<>();
+        for (N startingNode : startingNodes) {
+          yieldContinuation(() -> visit(startingNode, successorsFunction, nodeToVisitState));
+        }
+      }
+
+      private void visit(
+          N node, SuccessorsFunction<N> successorsFunction, Map<N, VisitState> nodeToVisitState) {
+        var visitState = nodeToVisitState.get(node);
+        if (visitState == VisitState.FULLY_VISITED) {
+          return;
+        }
+        if (visitState == VisitState.PARTIALLY_VISITED) {
+          throw new IllegalArgumentException(SUCCESSORS_FUNCTION_HAS_AT_LEAST_ONE_CYCLE);
+        }
+
+        nodeToVisitState.put(node, VisitState.PARTIALLY_VISITED);
+
+        for (N successor : successorsFunction.successors(node)) {
+          yieldContinuation(() -> visit(successor, successorsFunction, nodeToVisitState));
+        }
+
+        yieldContinuation(() -> nodeToVisitState.put(node, VisitState.FULLY_VISITED));
+        yieldValue(node);
+      }
+
+      void yieldContinuation(Continuation continuation) {
+        intermediateStack.push(continuation);
+      }
+
+      void yieldValue(N value) {
+        intermediateStack.push(value);
+      }
+
+      ImmutableList<N> recurse() {
+        return Stream.generate(this::next)
+            .takeWhile(Objects::nonNull)
+            .collect(toImmutableList())
+            .reverse();
+      }
+
+      private N next() {
+        while (true) {
+          transfer();
+
+          if (!frameStack.isEmpty()) {
+            var next = frameStack.pop();
+            if (next instanceof Continuation) {
+              ((Continuation) next).run();
+            } else {
+              // pollStack only contains Ns and Continuations, so the type
+              // is guaranteed to be N here.
+              @SuppressWarnings("unchecked")
+              N result = (N) next;
+              return result;
+            }
+          }
+
+          if (intermediateStack.isEmpty() && frameStack.isEmpty()) {
+            return null;
+          }
+        }
+      }
+
+      private void transfer() {
+        while (!intermediateStack.isEmpty()) {
+          frameStack.push(intermediateStack.pop());
+        }
+      }
     }
 
-    nodeToVisitState.put(node, VisitState.PARTIALLY_VISITED);
-
-    for (N successor : successorsFunction.successors(node)) {
-      visit(successor, successorsFunction, nodeToVisitState, accumulator);
-    }
-
-    nodeToVisitState.put(node, VisitState.FULLY_VISITED);
-    accumulator.add(node);
+    return new DeepRecursiveTopo().recurse();
   }
 
   private enum VisitState {
     PARTIALLY_VISITED,
     FULLY_VISITED
   }
+
+  @FunctionalInterface
+  private interface Continuation {
+    void run();
+  }
+
+  // TODO: Make a method to merge multiple graphs into one view.
+  //   - What about graphs with the same node(s)?
+  //   - We can use a property-based test: assert that merging a graph
+  //     with its complement makes a complete graph (will only work with
+  //     graphs with a node count >=5 according to
+  //     https://math.stackexchange.com/a/2961132/1067289).
+  //   - Assert that merging a graph with an empty graph returns the
+  //     first graph.
+  //   - Assert that merging a graph with a singleton graph returns the
+  //     first graph plus the node from the second graph, if said node
+  //     is not in the first graph already.
+  //   - Read https://johanneslink.net/how-to-specify-it. The lessons at
+  //     the very end recommended the following strategies first:
+  //       1. Use model-based properties combined with validity properties.
+  //          Perhaps a set of nodes and a multimap of source nodes to
+  //          sink nodes will suffice as the model?
+  //       2. If model is hard to define, then use many metamorphic
+  //          properties instead.
 
   private MoreGraphs() {}
 }

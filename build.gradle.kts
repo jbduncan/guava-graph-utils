@@ -4,9 +4,9 @@ import org.gradle.api.tasks.compile.JavaCompile
 plugins {
     java
 
-    id("com.diffplug.spotless") version "6.15.0"
-    id("com.github.ben-manes.versions") version "0.45.0"
-    id("org.openrewrite.rewrite") version "5.35.0"
+    id("com.diffplug.spotless") version "6.18.0"
+    id("com.github.ben-manes.versions") version "0.46.0"
+    id("org.openrewrite.rewrite") version "5.40.4"
 }
 
 // TODO: Consider moving to a reverse URL that we actually own, like
@@ -17,6 +17,7 @@ version = "0.1.0-SNAPSHOT"
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
+        vendor.set(JvmVendorSpec.AZUL)
     }
 }
 
@@ -30,11 +31,11 @@ dependencies {
     testImplementation("net.jqwik:jqwik:1.7.3")
     testImplementation("org.jgrapht:jgrapht-guava:1.5.1")
     testImplementation("org.jgrapht:jgrapht-core:1.5.1")
-    testImplementation(platform("org.junit:junit-bom:5.9.2"))
+    testImplementation(platform("org.junit:junit-bom:5.9.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.assertj:assertj-core:3.24.2")
 
-    rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:1.14.0"))
+    rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:1.19.3"))
     rewrite("org.openrewrite.recipe:rewrite-java-security")
     rewrite("org.openrewrite.recipe:rewrite-testing-frameworks")
 }
@@ -64,7 +65,7 @@ spotless {
 tasks.withType<DependencyUpdatesTask>().configureEach {
     fun isStable(version: String): Boolean {
         val regex = "^[0-9,.v-]+(-r)?$".toRegex()
-        val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.toUpperCase().contains(it) }
+        val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.uppercase().contains(it) }
         return stableKeyword || regex.matches(version)
     }
 

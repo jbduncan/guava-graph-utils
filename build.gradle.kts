@@ -15,7 +15,6 @@ version = "0.1.0-SNAPSHOT"
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
-        vendor.set(JvmVendorSpec.AZUL)
     }
 }
 
@@ -82,3 +81,11 @@ rewrite {
 tasks.named("check").configure {
     dependsOn(tasks.named("rewriteDryRun"))
 }
+
+// TODO: Use static analysis tools:
+//   - error-prone (errorprone.info)
+//   - Checkstyle (which can be automatically fixed with OpenRewrite:
+//     https://docs.openrewrite.org/running-recipes/popular-recipe-guides/automatically-fix-checkstyle-violations)
+//   - NullAway
+
+// TODO: Use CI

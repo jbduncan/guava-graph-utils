@@ -399,8 +399,7 @@ public final class MoreGraphs {
    *     sorting"</a>
    * @see <a href='https://github.com/google/guava/wiki/GraphsExplained'>Graphs Explained</a>
    */
-  // TODO: Rename to lazyTopologicalOrdering
-  public static <N> Iterable<N> topologicalOrdering(Graph<N> graph) {
+  public static <N> Iterable<N> lazyTopologicalOrdering(Graph<N> graph) {
     checkNotNull(graph, "graph");
 
     return () -> {
@@ -440,6 +439,8 @@ public final class MoreGraphs {
       };
     };
   }
+
+  // TODO: Make an eager version of lazyTopologicalOrdering
 
   // TODO: Javadoc
   public static <N> ImmutableList<N> topologicalOrderingStartingFrom(
@@ -502,7 +503,9 @@ public final class MoreGraphs {
 
       private N next() {
         while (true) {
-          transfer();
+          while (!intermediateStack.isEmpty()) {
+            frameStack.push(intermediateStack.pop());
+          }
 
           if (!frameStack.isEmpty()) {
             var next = frameStack.pop();
@@ -522,12 +525,6 @@ public final class MoreGraphs {
           }
         }
       }
-
-      private void transfer() {
-        while (!intermediateStack.isEmpty()) {
-          frameStack.push(intermediateStack.pop());
-        }
-      }
     }
 
     return new DeepRecursiveTopo().recurse();
@@ -544,7 +541,7 @@ public final class MoreGraphs {
   }
 
   // TODO: Make a method to merge multiple graphs into one view.
-  //   - What about graphs with the same node(s)?
+  //   - What about graphs with the same node(s) and/or edge(s)?
   //   - We can use a property-based test: assert that merging a graph
   //     with its complement makes a complete graph (will only work with
   //     graphs with a node count >=5 according to

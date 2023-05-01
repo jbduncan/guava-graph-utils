@@ -31,7 +31,7 @@ public class MoreGraphsPropertyBasedTests {
       // given
       @ForAll("directedAcyclicGraphs") ImmutableGraph<Integer> graph) {
     // when
-    var topologicalOrdering = MoreGraphs.topologicalOrdering(graph);
+    var topologicalOrdering = MoreGraphs.lazyTopologicalOrdering(graph);
 
     // then
     assertThatTopologicalOrderingIsValid(graph, topologicalOrdering);
@@ -51,7 +51,7 @@ public class MoreGraphsPropertyBasedTests {
   @Example
   void givenNullGraph_whenCalculatingTopologicalOrdering_thenNpeIsThrown() {
     // when
-    ThrowingCallable codeUnderTest = () -> MoreGraphs.topologicalOrdering(null);
+    ThrowingCallable codeUnderTest = () -> MoreGraphs.lazyTopologicalOrdering(null);
 
     // then
     assertThatCode(codeUnderTest)
@@ -68,7 +68,7 @@ public class MoreGraphsPropertyBasedTests {
     ThrowingCallable codeUnderTest =
         () -> {
           // Force the topological ordering to be evaluated.
-          MoreGraphs.topologicalOrdering(graph).forEach(__ -> {});
+          MoreGraphs.lazyTopologicalOrdering(graph).forEach(__ -> {});
         };
 
     // then

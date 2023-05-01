@@ -1,4 +1,4 @@
-package me.jbduncan.guavagraphutils;
+package com.github.jbduncan.guavagraphutils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

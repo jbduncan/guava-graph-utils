@@ -9,9 +9,7 @@ plugins {
     id("org.openrewrite.rewrite") version "5.40.4"
 }
 
-// TODO: Consider moving to a reverse URL that we actually own, like
-//       "com.github.jbduncan...".
-group = "me.jbduncan.guavagraphutils"
+group = "com.github.jbduncan.guavagraphutils"
 version = "0.1.0-SNAPSHOT"
 
 java {

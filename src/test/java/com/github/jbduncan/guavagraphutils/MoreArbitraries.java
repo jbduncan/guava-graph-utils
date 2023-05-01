@@ -1,4 +1,4 @@
-package me.jbduncan.guavagraphutils;
+package com.github.jbduncan.guavagraphutils;
 
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.GraphBuilder;

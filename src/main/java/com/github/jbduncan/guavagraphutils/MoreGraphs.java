@@ -1,4 +1,4 @@
-package me.jbduncan.guavagraphutils;
+package com.github.jbduncan.guavagraphutils;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;

@@ -34,6 +34,8 @@ dependencies {
 
     rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:2.2.1"))
     rewrite("org.openrewrite.recipe:rewrite-java-security")
+    rewrite("org.openrewrite.recipe:rewrite-migrate-java")
+    rewrite("org.openrewrite.recipe:rewrite-recommendations:1.0.1")
     rewrite("org.openrewrite.recipe:rewrite-testing-frameworks")
 }
 
@@ -72,7 +74,9 @@ tasks.withType<DependencyUpdatesTask>().configureEach {
 }
 
 rewrite {
-    activeRecipe("me.jbduncan.rewrite.CodeCleanup", "me.jbduncan.rewrite.SecurityBestPractices")
+    activeRecipe(
+            "com.github.jbduncan.rewrite.CodeCleanup",
+            "com.github.jbduncan.rewrite.SecurityBestPractices")
 
     configFile = file("$rootDir/config/rewrite.yml")
     failOnDryRunResults = true

@@ -490,8 +490,8 @@ public final class MoreGraphs {
 
           if (!frameStack.isEmpty()) {
             var next = frameStack.pop();
-            if (next instanceof Continuation) {
-              ((Continuation) next).run();
+            if (next instanceof Continuation continuation) {
+              continuation.run();
             } else {
               // frameStack only contains Ns and Continuations, so the type is
               // guaranteed to be N here.

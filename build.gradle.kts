@@ -4,9 +4,9 @@ import org.gradle.api.tasks.compile.JavaCompile
 plugins {
     java
 
-    id("com.diffplug.spotless") version "6.18.0"
-    id("com.github.ben-manes.versions") version "0.46.0"
-    id("org.openrewrite.rewrite") version "5.40.4"
+    id("com.diffplug.spotless") version "6.20.0"
+    id("com.github.ben-manes.versions") version "0.47.0"
+    id("org.openrewrite.rewrite") version "6.2.3"
 }
 
 group = "com.github.jbduncan.guavagraphutils"
@@ -23,16 +23,16 @@ repositories {
 }
 
 dependencies {
-    implementation("com.google.guava:guava:31.1-jre")
+    implementation("com.google.guava:guava:32.1.2-jre")
 
-    testImplementation("net.jqwik:jqwik:1.7.3")
-    testImplementation("org.jgrapht:jgrapht-guava:1.5.1")
-    testImplementation("org.jgrapht:jgrapht-core:1.5.1")
-    testImplementation(platform("org.junit:junit-bom:5.9.3"))
+    testImplementation("net.jqwik:jqwik:1.7.4")
+    testImplementation("org.jgrapht:jgrapht-guava:1.5.2")
+    testImplementation("org.jgrapht:jgrapht-core:1.5.2")
+    testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.assertj:assertj-core:3.24.2")
 
-    rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:1.19.3"))
+    rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:2.2.1"))
     rewrite("org.openrewrite.recipe:rewrite-java-security")
     rewrite("org.openrewrite.recipe:rewrite-testing-frameworks")
 }
@@ -54,7 +54,7 @@ tasks.withType<AbstractArchiveTask>().configureEach {
 
 spotless {
     java {
-        googleJavaFormat("1.16.0").reflowLongStrings()
+        googleJavaFormat("1.17.0").reflowLongStrings()
         formatAnnotations()
     }
 }

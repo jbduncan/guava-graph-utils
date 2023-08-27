@@ -2,7 +2,6 @@ package com.github.jbduncan.guavagraphutils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.collect.Range;
 import com.google.common.graph.Graphs;
 import com.google.common.graph.ImmutableGraph;
 import java.util.Set;
@@ -46,20 +45,21 @@ class MoreArbitrariesPropertyBasedTests {
   }
 
   private static String countStats(Set<?> values) {
-    String nodeCountStats;
-    if (Range.closedOpen(0, 20).contains(values.size())) {
-      nodeCountStats = "0 <= x < 20";
-    } else if (Range.closed(20, 40).contains(values.size())) {
-      nodeCountStats = "20 <= x < 40";
-    } else if (Range.closed(40, 60).contains(values.size())) {
-      nodeCountStats = "40 <= x < 60";
-    } else if (Range.closed(60, 80).contains(values.size())) {
-      nodeCountStats = "60 <= x < 80";
-    } else if (Range.closed(80, 100).contains(values.size())) {
-      nodeCountStats = "80 <= x < 100";
-    } else {
-      nodeCountStats = "100 <= x <= Integer.MAX_VALUE";
+    if (values.size() < 20) {
+      return "0 <= x < 20";
     }
-    return nodeCountStats;
+    if (values.size() < 40) {
+      return "20 <= x < 40";
+    }
+    if (values.size() < 60) {
+      return "40 <= x < 60";
+    }
+    if (values.size() < 80) {
+      return "60 <= x < 80";
+    }
+    if (values.size() < 100) {
+      return "80 <= x < 100";
+    }
+    return "100 <= x <= Integer.MAX_VALUE";
   }
 }

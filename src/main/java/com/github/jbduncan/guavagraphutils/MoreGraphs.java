@@ -452,39 +452,20 @@ public final class MoreGraphs {
      * Depth-first-search-based algorithm. Derived from [1], in turn derived from Introduction to Algorithms (2nd ed.)
      * by Cormen et al.
      *
+     * The original algorithm by Cormen et al. is recursive, which may throw StackOverflowErrors on large inputs, so
+     * this algorithm uses an iterative "deep recursion" technique to simulate the stack and avoid SOEs.
+     *
      * [1] https://web.archive.org/web/20230225053309/https://en.wikipedia.org/wiki/Topological_sorting#Depth-first_search
      */
 
-    class DeepRecursiveTopo {
+    abstract class DeepRecursion {
+      @FunctionalInterface
+      interface Continuation {
+        void run();
+      }
+
       private final Deque<Object> intermediateStack = new ArrayDeque<>();
       private final Deque<Object> frameStack = new ArrayDeque<>();
-
-      private DeepRecursiveTopo() {
-        Map<N, VisitState> nodeToVisitState = new HashMap<>();
-        for (N startingNode : startingNodes) {
-          yieldContinuation(() -> visit(startingNode, successorsFunction, nodeToVisitState));
-        }
-      }
-
-      private void visit(
-          N node, SuccessorsFunction<N> successorsFunction, Map<N, VisitState> nodeToVisitState) {
-        var visitState = nodeToVisitState.get(node);
-        if (visitState == VisitState.FULLY_VISITED) {
-          return;
-        }
-        if (visitState == VisitState.PARTIALLY_VISITED) {
-          throw new IllegalArgumentException(SUCCESSORS_FUNCTION_HAS_AT_LEAST_ONE_CYCLE);
-        }
-
-        nodeToVisitState.put(node, VisitState.PARTIALLY_VISITED);
-
-        for (N successor : successorsFunction.successors(node)) {
-          yieldContinuation(() -> visit(successor, successorsFunction, nodeToVisitState));
-        }
-
-        yieldContinuation(() -> nodeToVisitState.put(node, VisitState.FULLY_VISITED));
-        yieldValue(node);
-      }
 
       void yieldContinuation(Continuation continuation) {
         intermediateStack.push(continuation);
@@ -512,8 +493,8 @@ public final class MoreGraphs {
             if (next instanceof Continuation) {
               ((Continuation) next).run();
             } else {
-              // pollStack only contains Ns and Continuations, so the type
-              // is guaranteed to be N here.
+              // frameStack only contains Ns and Continuations, so the type is
+              // guaranteed to be N here.
               @SuppressWarnings("unchecked")
               N result = (N) next;
               return result;
@@ -527,24 +508,48 @@ public final class MoreGraphs {
       }
     }
 
+    class DeepRecursiveTopo extends DeepRecursion {
+      private enum VisitState {
+        PARTIALLY_VISITED,
+        FULLY_VISITED
+      }
+
+      DeepRecursiveTopo() {
+        var nodeToVisitState = new HashMap<N, VisitState>();
+        for (N startingNode : startingNodes) {
+          yieldContinuation(() -> visit(startingNode, successorsFunction, nodeToVisitState));
+        }
+      }
+
+      private void visit(
+          N node, SuccessorsFunction<N> successorsFunction, Map<N, VisitState> nodeToVisitState) {
+        var visitState = nodeToVisitState.get(node);
+        if (visitState == VisitState.FULLY_VISITED) {
+          return;
+        }
+        if (visitState == VisitState.PARTIALLY_VISITED) {
+          throw new IllegalArgumentException(SUCCESSORS_FUNCTION_HAS_AT_LEAST_ONE_CYCLE);
+        }
+
+        nodeToVisitState.put(node, VisitState.PARTIALLY_VISITED);
+
+        for (N successor : successorsFunction.successors(node)) {
+          yieldContinuation(() -> visit(successor, successorsFunction, nodeToVisitState));
+        }
+
+        yieldContinuation(() -> nodeToVisitState.put(node, VisitState.FULLY_VISITED));
+        yieldValue(node);
+      }
+    }
+
     return new DeepRecursiveTopo().recurse();
-  }
-
-  private enum VisitState {
-    PARTIALLY_VISITED,
-    FULLY_VISITED
-  }
-
-  @FunctionalInterface
-  private interface Continuation {
-    void run();
   }
 
   // TODO: Make a method to merge multiple graphs into one view.
   //   - What about graphs with the same node(s) and/or edge(s)?
   //   - We can use a property-based test: assert that merging a graph
   //     with its complement makes a complete graph (will only work with
-  //     graphs with a node count >=5 according to
+  //     graphs with a node count of >=5 according to
   //     https://math.stackexchange.com/a/2961132/1067289).
   //   - Assert that merging a graph with an empty graph returns the
   //     first graph.

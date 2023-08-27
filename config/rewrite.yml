@@ -4,6 +4,7 @@ name: com.github.jbduncan.rewrite.CodeCleanup
 recipeList:
   - org.openrewrite.java.ShortenFullyQualifiedTypeReferences
   - org.openrewrite.java.RemoveObjectsIsNull
+  - org.openrewrite.java.RemoveUnusedImports
   - org.openrewrite.java.format.BlankLines
   - org.openrewrite.java.format.MethodParamPad
   - org.openrewrite.java.format.RemoveTrailingWhitespace
@@ -14,12 +15,12 @@ recipeList:
   - org.openrewrite.java.testing.cleanup.BestPractices
   - org.openrewrite.java.testing.junit5.JUnit5BestPractices
   - org.openrewrite.java.testing.mockito.Mockito1to3Migration
-#  - org.openrewrite.java.migrate.UpgradeToJava17
+  - org.openrewrite.java.migrate.UpgradeToJava17
   - org.openrewrite.java.migrate.io.ReplaceFileInOrOutputStreamFinalizeWithClose
+  #  - org.openrewrite.java.migrate.lang.UseVar
   - org.openrewrite.recommendations.CodeHealth
   - org.openrewrite.staticanalysis.AddSerialVersionUidToSerializable
   - org.openrewrite.staticanalysis.AtomicPrimitiveEqualsUsesGet
-#  - org.openrewrite.staticanalysis.AvoidBoxedBooleanExpressions
   - org.openrewrite.staticanalysis.BigDecimalRoundingConstantsToEnums
   - org.openrewrite.staticanalysis.BooleanChecksNotInverted
   - org.openrewrite.staticanalysis.CaseInsensitiveComparisonsDoNotChangeCase

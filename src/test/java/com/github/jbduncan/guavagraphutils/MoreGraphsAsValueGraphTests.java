@@ -404,8 +404,10 @@ class MoreGraphsAsValueGraphTests {
     // then
     assertThat(result)
         .as(
-            "graph.edgeValueOrDefault(aRowKey, aColumnKey, theDefaultEdgeValue) "
-                + "expected to return aCellValue")
+            """
+            graph.edgeValueOrDefault(aRowKey, aColumnKey, theDefaultEdgeValue) \
+            expected to return aCellValue\
+            """)
         .isEqualTo(A_CELL_VALUE);
   }
 
@@ -426,8 +428,10 @@ class MoreGraphsAsValueGraphTests {
     // then
     assertThat(result)
         .as(
-            "graph.edgeValueOrDefault(aRowKey, unrelatedColumnKey, theDefaultEdgeValue) "
-                + "expected to return theDefaultEdgeValue")
+            """
+            graph.edgeValueOrDefault(aRowKey, unrelatedColumnKey, theDefaultEdgeValue) \
+            expected to return theDefaultEdgeValue\
+            """)
         .isEqualTo(THE_DEFAULT_EDGE_VALUE);
   }
 
@@ -444,8 +448,10 @@ class MoreGraphsAsValueGraphTests {
     // then
     assertThatCode(codeUnderTest)
         .as(
-            "graph.adjacentNodes(null, aColumnKey, theDefaultEdgeValue) "
-                + "expected to throw NullPointerException")
+            """
+            graph.adjacentNodes(null, aColumnKey, theDefaultEdgeValue) \
+            expected to throw NullPointerException\
+            """)
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("nodeU");
   }
@@ -463,8 +469,10 @@ class MoreGraphsAsValueGraphTests {
     // then
     assertThatCode(codeUnderTest)
         .as(
-            "graph.adjacentNodes(aRowKey, null, theDefaultEdgeValue) "
-                + "expected to throw NullPointerException")
+            """
+            graph.adjacentNodes(aRowKey, null, theDefaultEdgeValue) \
+            expected to throw NullPointerException\
+            """)
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("nodeV");
   }
@@ -482,8 +490,10 @@ class MoreGraphsAsValueGraphTests {
     // then
     assertThatCode(codeUnderTest)
         .as(
-            "graph.edgeValueOrDefault(aKeyNotInTable, aColumnKey, theDefaultEdgeValue) "
-                + "expected to throw IllegalArgumentException")
+            """
+            graph.edgeValueOrDefault(aKeyNotInTable, aColumnKey, theDefaultEdgeValue) \
+            expected to throw IllegalArgumentException\
+            """)
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining(A_KEY_NOT_IN_TABLE);
   }
@@ -502,8 +512,10 @@ class MoreGraphsAsValueGraphTests {
     // then
     assertThatCode(codeUnderTest)
         .as(
-            "graph.edgeValueOrDefault(aRowKey, keyNotInThisTable, theDefaultEdgeValue) "
-                + "expected to throw IllegalArgumentException")
+            """
+            graph.edgeValueOrDefault(aRowKey, keyNotInThisTable, theDefaultEdgeValue) \
+            expected to throw IllegalArgumentException\
+            """)
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining(A_KEY_NOT_IN_TABLE);
   }
@@ -522,8 +534,10 @@ class MoreGraphsAsValueGraphTests {
     // then
     assertThat(result)
         .as(
-            "graph.edgeValueOfDefault(endpoints(aRowKey, aColumnKey), theDefaultEdgeValue) "
-                + "expected to return aCellValue")
+            """
+            graph.edgeValueOfDefault(endpoints(aRowKey, aColumnKey), theDefaultEdgeValue) \
+            expected to return aCellValue\
+            """)
         .isEqualTo(A_CELL_VALUE);
   }
 
@@ -546,8 +560,10 @@ class MoreGraphsAsValueGraphTests {
     // then
     assertThat(result)
         .as(
-            "graph.edgeValueOrDefault(endpoints(aRowKey, unrelatedColumnKey), theDefaultEdgeValue) "
-                + "expected to return theDefaultEdgeValue")
+            """
+            graph.edgeValueOrDefault(endpoints(aRowKey, unrelatedColumnKey), theDefaultEdgeValue) \
+            expected to return theDefaultEdgeValue\
+            """)
         .isEqualTo(THE_DEFAULT_EDGE_VALUE);
   }
 
@@ -563,8 +579,10 @@ class MoreGraphsAsValueGraphTests {
     // then
     assertThatCode(codeUnderTest)
         .as(
-            "graph.adjacentNodes(nullEndpoints, theDefaultEdgeValue) "
-                + "expected to throw NullPointerException")
+            """
+            graph.adjacentNodes(nullEndpoints, theDefaultEdgeValue) \
+            expected to throw NullPointerException\
+            """)
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("endpoints");
   }
@@ -584,8 +602,10 @@ class MoreGraphsAsValueGraphTests {
     // then
     assertThatCode(codeUnderTest)
         .as(
-            "graph.adjacentNodes(unorderedEndpoints, theDefaultEdgeValue) "
-                + "expected to throw IllegalArgumentException")
+            """
+            graph.adjacentNodes(unorderedEndpoints, theDefaultEdgeValue) \
+            expected to throw IllegalArgumentException\
+            """)
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("ordered");
   }
@@ -606,8 +626,10 @@ class MoreGraphsAsValueGraphTests {
     // then
     assertThatCode(codeUnderTest)
         .as(
-            "graph.adjacentNodes(endpoints(aKeyNotInTable, aColumnKey), theDefaultEdgeValue) "
-                + "expected to throw IllegalArgumentException")
+            """
+            graph.adjacentNodes(endpoints(aKeyNotInTable, aColumnKey), theDefaultEdgeValue) \
+            expected to throw IllegalArgumentException\
+            """)
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining(A_KEY_NOT_IN_TABLE);
   }
@@ -628,8 +650,10 @@ class MoreGraphsAsValueGraphTests {
     // then
     assertThatCode(codeUnderTest)
         .as(
-            "graph.adjacentNodes(endpoints(aRowKey, aKeyNotInTable), theDefaultEdgeValue) "
-                + "expected to throw IllegalArgumentException")
+            """
+            graph.adjacentNodes(endpoints(aRowKey, aKeyNotInTable), theDefaultEdgeValue) \
+            expected to throw IllegalArgumentException\
+            """)
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining(A_KEY_NOT_IN_TABLE);
   }

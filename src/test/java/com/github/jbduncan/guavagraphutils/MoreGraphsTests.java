@@ -127,8 +127,10 @@ class MoreGraphsTests {
     // then
     assertThatCode(codeUnderTest)
         .as(
-            "MoreGraphs.buildGraphWithBreadthFirstTraversal(anyStartingNodes, null) "
-                + "expected to throw NullPointerException")
+            """
+            MoreGraphs.buildGraphWithBreadthFirstTraversal(anyStartingNodes, null) \
+            expected to throw NullPointerException\
+            """)
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("successorsFunction");
   }
@@ -142,8 +144,10 @@ class MoreGraphsTests {
     // then
     assertThatCode(codeUnderTest)
         .as(
-            "MoreGraphs.buildGraphWithBreadthFirstTraversal(null, anySuccessorsFunction) "
-                + "expected to throw NullPointerException")
+            """
+            MoreGraphs.buildGraphWithBreadthFirstTraversal(null, anySuccessorsFunction) \
+            expected to throw NullPointerException\
+            """)
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("startingNodes");
   }

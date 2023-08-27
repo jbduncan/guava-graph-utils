@@ -74,8 +74,10 @@ public class MoreGraphsPropertyBasedTests {
     // then
     assertThatCode(codeUnderTest)
         .as(
-            "MoreGraphs.topologicalOrdering(cyclicGraph) expected to throw "
-                + "IllegalArgumentException")
+            """
+            MoreGraphs.topologicalOrdering(cyclicGraph) expected to throw \
+            IllegalArgumentException\
+            """)
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("graph")
         .hasMessageContaining("cycle");
@@ -135,8 +137,10 @@ public class MoreGraphsPropertyBasedTests {
     // then
     assertThatCode(codeUnderTest)
         .as(
-            "MoreGraphs.topologicalOrdering(nodes, cyclicGraph) expected to throw "
-                + "IllegalArgumentException")
+            """
+            MoreGraphs.topologicalOrdering(nodes, cyclicGraph) expected to throw \
+            IllegalArgumentException\
+            """)
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("successors function")
         .hasMessageContaining("cycle");

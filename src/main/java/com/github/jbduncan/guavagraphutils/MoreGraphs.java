@@ -9,7 +9,6 @@ import static java.util.stream.Collectors.toCollection;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multiset;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
@@ -28,7 +27,6 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -97,7 +95,7 @@ public final class MoreGraphs {
 
     MutableGraph<N> result = GraphBuilder.directed().allowsSelfLoops(true).build();
     startingNodes.forEach(result::addNode);
-    Queue<N> nodesRemaining = Queues.newArrayDeque(startingNodes);
+    var nodesRemaining = Queues.newArrayDeque(startingNodes);
     while (!nodesRemaining.isEmpty()) {
       N next = nodesRemaining.remove();
       for (N successor : successorsFunction.successors(next)) {
@@ -410,11 +408,11 @@ public final class MoreGraphs {
        * [2] https://dl.acm.org/doi/pdf/10.1145/368996.369025
        */
 
-      Queue<N> roots =
+      var roots =
           graph.nodes().stream()
               .filter(node -> graph.inDegree(node) == 0)
               .collect(toCollection(ArrayDeque::new));
-      Multiset<N> nonRoots =
+      var nonRoots =
           graph.nodes().stream()
               .filter(node -> graph.inDegree(node) > 0)
               .collect(toMultiset(node -> node, graph::inDegree, HashMultiset::create));

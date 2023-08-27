@@ -68,8 +68,7 @@ final class MoreArbitraries {
 
   private static ImmutableGraph<Integer> populateGraph(
       MutableGraph<Integer> graph, List<Integer> nodes, Double edgeProbability, Random random) {
-    MutableGraphAdapter<Integer> graphAdapter =
-        new MutableGraphAdapter<>(graph, nodes.iterator()::next, null);
+    var graphAdapter = new MutableGraphAdapter<>(graph, nodes.iterator()::next, null);
     new GnpRandomGraphGenerator<Integer, EndpointPair<Integer>>(
             nodes.size(), edgeProbability, random, false)
         .generateGraph(graphAdapter);
@@ -87,7 +86,7 @@ final class MoreArbitraries {
 
   private static ImmutableGraph<Integer> dagWithRandomEdges(
       List<Integer> nodes, int edgeCount, Random random) {
-    List<Boolean> randomEdges = new ArrayList<>(maxEdgesForDag(nodes.size()));
+    var randomEdges = new ArrayList<Boolean>(maxEdgesForDag(nodes.size()));
     for (int i = 0; i < edgeCount; i++) {
       randomEdges.add(true);
     }

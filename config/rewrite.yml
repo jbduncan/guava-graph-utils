@@ -17,7 +17,6 @@ recipeList:
   - org.openrewrite.java.testing.mockito.Mockito1to3Migration
   - org.openrewrite.java.migrate.UpgradeToJava17
   - org.openrewrite.java.migrate.io.ReplaceFileInOrOutputStreamFinalizeWithClose
-  #  - org.openrewrite.java.migrate.lang.UseVar
   - org.openrewrite.recommendations.CodeHealth
   - org.openrewrite.staticanalysis.AddSerialVersionUidToSerializable
   - org.openrewrite.staticanalysis.AtomicPrimitiveEqualsUsesGet

@@ -91,5 +91,7 @@ tasks.named("check").configure {
 //   - Checkstyle (which can be automatically fixed with OpenRewrite:
 //     https://docs.openrewrite.org/running-recipes/popular-recipe-guides/automatically-fix-checkstyle-violations)
 //   - NullAway
+//   - https://github.com/PicnicSupermarket/error-prone-support
+//   - jspecify nullness annotations
 
 // TODO: Use CI

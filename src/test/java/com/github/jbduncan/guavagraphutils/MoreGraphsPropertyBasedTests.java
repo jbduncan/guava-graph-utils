@@ -1,5 +1,6 @@
 package com.github.jbduncan.guavagraphutils;
 
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
@@ -195,6 +196,25 @@ public class MoreGraphsPropertyBasedTests {
             """)
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("startingNodes");
+  }
+
+  @Property
+  void givenStartingNodesWithNullNode_whenCalculatingTopologicalOrdering_thenNpeIsThrown(
+      // given
+      @ForAll("graphs") ImmutableGraph<Integer> graph) {
+    // when
+    ThrowingCallable codeUnderTest =
+        () -> MoreGraphs.topologicalOrderingStartingFrom(singletonList(null), graph);
+
+    // then
+    assertThatCode(codeUnderTest)
+        .as(
+            """
+            MoreGraphs.topologicalOrderingStartingFrom(nodes, null) expected to throw \
+            NullPointerException\
+            """)
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("startingNodes has at least one null node");
   }
 
   @Example

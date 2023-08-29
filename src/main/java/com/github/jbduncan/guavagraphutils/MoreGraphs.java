@@ -555,7 +555,9 @@ public final class MoreGraphs {
   public static <N> ImmutableList<N> topologicalOrderingStartingFrom(
       Iterable<N> startingNodes, SuccessorsFunction<N> successorsFunction) {
     checkNotNull(startingNodes, "startingNodes");
-    // TODO: Check that all starting nodes are not null
+    for (N startingNode : startingNodes) {
+      checkNotNull(startingNode, "startingNodes has at least one null node");
+    }
     checkNotNull(successorsFunction, "successorsFunction");
 
     /*

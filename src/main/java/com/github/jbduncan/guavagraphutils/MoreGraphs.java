@@ -346,19 +346,18 @@ public final class MoreGraphs {
 
   /**
    * Returns an iterable representing the topological ordering of the given graph; that is, a
-   * traversal of the graph in which each node is visited only after all its predecessors and other
-   * ancestors have been visited.
+   * traversal of the graph in which each node is visited only after all its {@linkplain
+   * Graph#predecessors(Object) predecessors} and other ancestors have been visited.
    *
    * <p>The given graph must be non-null, otherwise a {@code NullPointerException} will be thrown.
    *
    * <p>The returned iterable is an <i>unmodifiable, lazy view</i> of the graph's nodes, and each
    * and every iteration recalculates the topological ordering. So if the iterable is used multiple
-   * times, turn it into a set immediately, such as with {@link
-   * com.google.common.collect.ImmutableSet#copyOf(Iterable) ImmutableSet.copyOf}, and use that set
-   * instead.
+   * times, use {@link MoreGraphs#topologicalOrdering(Graph) MoreGraphs.topologicalOrdering} and use
+   * that list instead.
    *
-   * <p>Furthermore, the given graph may have multiple valid topological orderings. This method does
-   * not guarantee which topological ordering is returned on any iteration, or even that the same
+   * <p>The given graph may have multiple valid topological orderings. This method does not
+   * guarantee which topological ordering is returned on any iteration, or even that the same
    * ordering is returned on subsequent iterations.
    *
    * <p>For example, given this graph...
@@ -370,7 +369,7 @@ public final class MoreGraphs {
    * e ---> c ---> f
    * }</pre>
    *
-   * <p>...the topological ordering returned from an iteration could be any of:
+   * <p>...the topological ordering returned from an iteration can be any of:
    *
    * <ul>
    *   <li>{@code [a, b, d, e, c, f]}
@@ -381,7 +380,7 @@ public final class MoreGraphs {
    * </ul>
    *
    * <p>This method only works on directed acyclic graphs. If a cycle is discovered when traversing
-   * the graph, an {@code IllegalArgumentException} is thrown.
+   * the graph, an {@code IllegalArgumentException} will be thrown.
    *
    * <p>Iterations over the returned iterable run in linear time, specifically {@code O(N + E)},
    * where {@code N} is the number of nodes in the graph and {@code E} is the number of edges.
@@ -438,9 +437,121 @@ public final class MoreGraphs {
     };
   }
 
-  // TODO: Make an eager version of lazyTopologicalOrdering
+  /**
+   * Returns an immutable list representing the topological ordering of the given graph; that is, a
+   * traversal of the graph in which each node is visited only after all its {@linkplain
+   * Graph#predecessors(Object) predecessors} and other ancestors have been visited.
+   *
+   * <p>This method is preferable to {@link MoreGraphs#lazyTopologicalOrdering(Graph)
+   * MoreGraphs.lazyTopologicalOrdering} if the topological ordering will be iterated on multiple
+   * times, as it will avoid recalculating the topological ordering each time. Conversely, if the
+   * ordering will be used only once, prefer {@code lazyTopologicalOrdering} instead.
+   *
+   * <p>The given graph must be non-null, otherwise a {@code NullPointerException} will be thrown.
+   *
+   * <p>The given graph may have multiple valid topological orderings. This method does not
+   * guarantee which topological ordering is returned, even on subsequent calls.
+   *
+   * <p>For example, given this graph...
+   *
+   * <pre>{@code
+   * b <--- a ---> d
+   * |      |
+   * v      v
+   * e ---> c ---> f
+   * }</pre>
+   *
+   * <p>...the topological ordering returned can be any of:
+   *
+   * <ul>
+   *   <li>{@code [a, b, d, e, c, f]}
+   *   <li>{@code [a, b, e, c, d, f]}
+   *   <li>{@code [a, b, e, d, c, f]}
+   *   <li>{@code [a, b, e, c, f, d]}
+   *   <li>{@code [a, d, b, e, c, f]}
+   * </ul>
+   *
+   * <p>This method only works on directed acyclic graphs. If a cycle is discovered when traversing
+   * the graph, an {@code IllegalArgumentException} will be thrown.
+   *
+   * <p>This method runs in linear time, specifically {@code O(N + E)}, where {@code N} is the
+   * number of nodes in the graph and {@code E} is the number of edges.
+   *
+   * @param graph the graph to return a topological ordering for; must not be null
+   * @param <N> the node type; must have {@link #equals(Object) equals()} and {@link #hashCode()
+   *     hashCode()} implementations as described in "<a
+   *     href='https://github.com/google/guava/wiki/GraphsExplained#graph-elements-nodes-and-edges'>
+   *     Graphs Explained</a>".
+   * @return an immutable list representing a topological ordering of the graph
+   * @throws IllegalArgumentException if the graph has a cycle
+   * @see <a href='https://en.wikipedia.org/wiki/Topological_sorting'>Wikipedia, "Topological
+   *     sorting"</a>
+   * @see <a href='https://github.com/google/guava/wiki/GraphsExplained'>Graphs Explained</a>
+   */
+  public static <N> ImmutableList<N> topologicalOrdering(Graph<N> graph) {
+    checkNotNull(graph, "graph");
+    return ImmutableList.copyOf(lazyTopologicalOrdering(graph));
+  }
 
-  // TODO: Javadoc
+  /**
+   * Returns an immutable list representing the topological ordering of the graph, specifically the
+   * subgraph that is {@linkplain com.google.common.graph.Graphs#reachableNodes(Graph, Object)
+   * reachable} from the given starting nodes. A topological ordering is a traversal of the subgraph
+   * in which each node is visited only after all its {@linkplain Graph#predecessors(Object)
+   * predecessors} and other ancestors have been visited.
+   *
+   * <p>This method is preferable to {@link MoreGraphs#lazyTopologicalOrdering(Graph)
+   * lazyTopologicalOrdering} and {@link MoreGraphs#topologicalOrdering(Graph) topologicalOrdering}
+   * when the graph can only be represented as a successors function or when only the subgraph
+   * reachable from the starting nodes is needed.
+   *
+   * <p>The given starting nodes iterable, its elements, and the graph must all be non-null,
+   * otherwise a {@code NullPointerException} will be thrown.
+   *
+   * <p>The given graph may have multiple valid topological orderings. This method does not
+   * guarantee which topological ordering is returned, even on subsequent calls.
+   *
+   * <p>For example, given this graph and starting node {@code a}...
+   *
+   * <pre>{@code
+   * b <--- a ---> d   g ---> h
+   * |      |                 |
+   * v      v                 v
+   * e ---> c ---> f          i
+   * }</pre>
+   *
+   * <p>...the topological ordering returned can be any of:
+   *
+   * <ul>
+   *   <li>{@code [a, b, d, e, c, f]}
+   *   <li>{@code [a, b, e, c, d, f]}
+   *   <li>{@code [a, b, e, d, c, f]}
+   *   <li>{@code [a, b, e, c, f, d]}
+   *   <li>{@code [a, d, b, e, c, f]}
+   * </ul>
+   *
+   * <p>Note that the subgraph {@code {g, h, i}} is not reachable from node {@code a}. Thus, its
+   * nodes are not included in the topological ordering.
+   *
+   * <p>This method only works on directed acyclic graphs. If a cycle is discovered when traversing
+   * the graph, an {@code IllegalArgumentException} will be thrown.
+   *
+   * <p>This method runs in linear time, specifically {@code O(N + E)}, where {@code N} is the
+   * number of nodes in the graph and {@code E} is the number of edges.
+   *
+   * @param startingNodes the nodes to start traversing the graph from; the iterable and the nodes
+   *     themselves must not be null
+   * @param successorsFunction the graph to return a topological ordering for; must not be null
+   * @param <N> the node type; must have {@link #equals(Object) equals()} and {@link #hashCode()
+   *     hashCode()} implementations as described in "<a
+   *     href='https://github.com/google/guava/wiki/GraphsExplained#graph-elements-nodes-and-edges'>
+   *     Graphs Explained</a>".
+   * @return an immutable list representing a topological ordering of the graph
+   * @throws IllegalArgumentException if the graph has a cycle
+   * @see <a href='https://en.wikipedia.org/wiki/Topological_sorting'>Wikipedia, "Topological
+   *     sorting"</a>
+   * @see <a href='https://github.com/google/guava/wiki/GraphsExplained'>Graphs Explained</a>
+   */
   public static <N> ImmutableList<N> topologicalOrderingStartingFrom(
       Iterable<N> startingNodes, SuccessorsFunction<N> successorsFunction) {
     checkNotNull(startingNodes, "startingNodes");

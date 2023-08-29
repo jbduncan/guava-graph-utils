@@ -28,7 +28,7 @@ public class MoreGraphsPropertyBasedTests {
   private static final int MIN_STARTING_NODES_COUNT_FOR_CYCLIC_GRAPH = 1;
 
   @Property
-  void givenADag_whenCalculatingTopologicalOrdering_thenOrderingIsValid(
+  void givenADag_whenCalculatingLazyTopologicalOrdering_thenOrderingIsValid(
       // given
       @ForAll("directedAcyclicGraphs") ImmutableGraph<Integer> graph) {
     // when
@@ -50,19 +50,19 @@ public class MoreGraphsPropertyBasedTests {
   }
 
   @Example
-  void givenNullGraph_whenCalculatingTopologicalOrdering_thenNpeIsThrown() {
+  void givenNullGraph_whenCalculatingLazyTopologicalOrdering_thenNpeIsThrown() {
     // when
     ThrowingCallable codeUnderTest = () -> MoreGraphs.lazyTopologicalOrdering(null);
 
     // then
     assertThatCode(codeUnderTest)
-        .as("MoreGraphs.topologicalOrdering(null) expected to throw NullPointerException")
+        .as("MoreGraphs.lazyTopologicalOrdering(null) expected to throw NullPointerException")
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("graph");
   }
 
   @Example
-  void givenSelfLoopingDag_whenCalculatingTopologicalOrdering_thenIaeIsThrown() {
+  void givenSelfLoopingDag_whenCalculatingLazyTopologicalOrdering_thenIaeIsThrown() {
     // given
     ImmutableGraph<Integer> graph =
         GraphBuilder.directed().allowsSelfLoops(true).<Integer>immutable().putEdge(0, 0).build();
@@ -78,16 +78,16 @@ public class MoreGraphsPropertyBasedTests {
     assertThatCode(codeUnderTest)
         .as(
             """
-                    MoreGraphs.topologicalOrdering(cyclicGraph) expected to throw \
-                    IllegalArgumentException\
-                    """)
+            MoreGraphs.lazyTopologicalOrdering(cyclicGraph) expected to throw \
+            IllegalArgumentException\
+            """)
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("graph")
         .hasMessageContaining("cycle");
   }
 
   @Property
-  void givenCyclicGraph_whenCalculatingTopologicalOrdering_thenIaeIsThrown(
+  void givenCyclicGraph_whenCalculatingLazyTopologicalOrdering_thenIaeIsThrown(
       // given
       @ForAll("cyclicGraphs") ImmutableGraph<Integer> graph) {
     // when
@@ -101,7 +101,7 @@ public class MoreGraphsPropertyBasedTests {
     assertThatCode(codeUnderTest)
         .as(
             """
-            MoreGraphs.topologicalOrdering(cyclicGraph) expected to throw \
+            MoreGraphs.lazyTopologicalOrdering(cyclicGraph) expected to throw \
             IllegalArgumentException\
             """)
         .isInstanceOf(IllegalArgumentException.class)
@@ -122,18 +122,6 @@ public class MoreGraphsPropertyBasedTests {
 
     // then
     assertThatTopologicalOrderingStartingWithIsValid(startingNodes, graph, topologicalOrdering);
-  }
-
-  @Provide
-  Arbitrary<ImmutableGraph<Integer>> directedAcyclicGraphs() {
-    return MoreArbitraries.directedAcyclicGraphs();
-  }
-
-  @Provide
-  Arbitrary<Tuple2<ImmutableGraph<Integer>, Set<Integer>>> directedAcyclicGraphsAndStartingNodes(
-      @ForAll("directedAcyclicGraphs") ImmutableGraph<Integer> graph) {
-    return Combinators.combine(Arbitraries.just(graph), Arbitraries.subsetOf(graph.nodes()))
-        .as(Tuple::of);
   }
 
   private static <N> void assertThatTopologicalOrderingStartingWithIsValid(
@@ -164,12 +152,124 @@ public class MoreGraphsPropertyBasedTests {
     assertThatCode(codeUnderTest)
         .as(
             """
-            MoreGraphs.topologicalOrdering(nodes, cyclicGraph) expected to throw \
+            MoreGraphs.topologicalOrderingStartingFrom(nodes, cyclicGraph) expected to throw \
             IllegalArgumentException\
             """)
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("successors function")
         .hasMessageContaining("cycle");
+  }
+
+  @Property
+  void givenNullSuccessorsFunction_whenCalculatingTopologicalOrdering_thenNpeIsThrown(
+      // given
+      @ForAll List<Integer> startingNodes) {
+    // when
+    ThrowingCallable codeUnderTest =
+        () -> MoreGraphs.topologicalOrderingStartingFrom(startingNodes, null);
+
+    // then
+    assertThatCode(codeUnderTest)
+        .as(
+            """
+            MoreGraphs.topologicalOrderingStartingFrom(nodes, null) expected to throw \
+            NullPointerException\
+            """)
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("successorsFunction");
+  }
+
+  @Property
+  void givenNullStartingNodes_whenCalculatingTopologicalOrdering_thenNpeIsThrown(
+      // given
+      @ForAll("graphs") ImmutableGraph<Integer> graph) {
+    // when
+    ThrowingCallable codeUnderTest = () -> MoreGraphs.topologicalOrderingStartingFrom(null, graph);
+
+    // then
+    assertThatCode(codeUnderTest)
+        .as(
+            """
+            MoreGraphs.topologicalOrderingStartingFrom(nodes, null) expected to throw \
+            NullPointerException\
+            """)
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("startingNodes");
+  }
+
+  @Example
+  void givenNullGraph_whenCalculatingTopologicalOrdering_thenNpeIsThrown() {
+    // when
+    ThrowingCallable codeUnderTest = () -> MoreGraphs.topologicalOrdering(null);
+
+    // then
+    assertThatCode(codeUnderTest)
+        .as("MoreGraphs.topologicalOrdering(null) expected to throw NullPointerException")
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("graph");
+  }
+
+  @Property
+  void givenADag_whenCalculatingTopologicalOrdering_thenOrderingIsValid(
+      // given
+      @ForAll("directedAcyclicGraphs") ImmutableGraph<Integer> graph) {
+    // when
+    var topologicalOrdering = MoreGraphs.topologicalOrdering(graph);
+
+    // then
+    assertThatTopologicalOrderingIsValid(graph, topologicalOrdering);
+  }
+
+  @Example
+  void givenSelfLoopingDag_whenCalculatingTopologicalOrdering_thenIaeIsThrown() {
+    // given
+    ImmutableGraph<Integer> graph =
+        GraphBuilder.directed().allowsSelfLoops(true).<Integer>immutable().putEdge(0, 0).build();
+
+    // when
+    ThrowingCallable codeUnderTest = () -> MoreGraphs.topologicalOrdering(graph);
+
+    // then
+    assertThatCode(codeUnderTest)
+        .as(
+            """
+            MoreGraphs.topologicalOrdering(cyclicGraph) expected to throw \
+            IllegalArgumentException\
+            """)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("graph")
+        .hasMessageContaining("cycle");
+  }
+
+  @Property
+  void givenCyclicGraph_whenCalculatingTopologicalOrdering_thenIaeIsThrown(
+      // given
+      @ForAll("cyclicGraphs") ImmutableGraph<Integer> graph) {
+    // when
+    ThrowingCallable codeUnderTest = () -> MoreGraphs.topologicalOrdering(graph);
+
+    // then
+    assertThatCode(codeUnderTest)
+        .as(
+            """
+            MoreGraphs.lazyTopologicalOrdering(cyclicGraph) expected to throw \
+            IllegalArgumentException\
+            """)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("graph")
+        .hasMessageContaining("cycle");
+  }
+
+  @Provide
+  Arbitrary<ImmutableGraph<Integer>> directedAcyclicGraphs() {
+    return MoreArbitraries.directedAcyclicGraphs();
+  }
+
+  @Provide
+  Arbitrary<Tuple2<ImmutableGraph<Integer>, Set<Integer>>> directedAcyclicGraphsAndStartingNodes(
+      @ForAll("directedAcyclicGraphs") ImmutableGraph<Integer> graph) {
+    return Combinators.combine(Arbitraries.just(graph), Arbitraries.subsetOf(graph.nodes()))
+        .as(Tuple::of);
   }
 
   @Provide
@@ -185,35 +285,6 @@ public class MoreGraphsPropertyBasedTests {
             Arbitraries.subsetOf(graph.nodes())
                 .ofMinSize(MIN_STARTING_NODES_COUNT_FOR_CYCLIC_GRAPH))
         .as(Tuple::of);
-  }
-
-  @Property
-  void givenNullSuccessorsFunction_whenCalculatingTopologicalOrdering_thenNpeIsThrown(
-      // given
-      @ForAll List<Integer> startingNodes) {
-    // when
-    ThrowingCallable codeUnderTest =
-        () -> MoreGraphs.topologicalOrderingStartingFrom(startingNodes, null);
-
-    // then
-    assertThatCode(codeUnderTest)
-        .as("MoreGraphs.topologicalOrdering(nodes, null) expected to throw NullPointerException")
-        .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("successorsFunction");
-  }
-
-  @Property
-  void givenNullStartingNodes_whenCalculatingTopologicalOrdering_thenNpeIsThrown(
-      // given
-      @ForAll("graphs") ImmutableGraph<Integer> graph) {
-    // when
-    ThrowingCallable codeUnderTest = () -> MoreGraphs.topologicalOrderingStartingFrom(null, graph);
-
-    // then
-    assertThatCode(codeUnderTest)
-        .as("MoreGraphs.topologicalOrdering(nodes, null) expected to throw NullPointerException")
-        .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("startingNodes");
   }
 
   @Provide

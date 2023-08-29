@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import com.google.common.graph.Graph;
+import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.Graphs;
 import com.google.common.graph.ImmutableGraph;
 import com.google.common.graph.Traverser;
@@ -58,6 +59,31 @@ public class MoreGraphsPropertyBasedTests {
         .as("MoreGraphs.topologicalOrdering(null) expected to throw NullPointerException")
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("graph");
+  }
+
+  @Example
+  void givenSelfLoopingDag_whenCalculatingTopologicalOrdering_thenIaeIsThrown() {
+    // given
+    ImmutableGraph<Integer> graph =
+        GraphBuilder.directed().allowsSelfLoops(true).<Integer>immutable().putEdge(0, 0).build();
+
+    // when
+    ThrowingCallable codeUnderTest =
+        () -> {
+          // Force the topological ordering to be evaluated.
+          MoreGraphs.lazyTopologicalOrdering(graph).forEach(__ -> {});
+        };
+
+    // then
+    assertThatCode(codeUnderTest)
+        .as(
+            """
+                    MoreGraphs.topologicalOrdering(cyclicGraph) expected to throw \
+                    IllegalArgumentException\
+                    """)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("graph")
+        .hasMessageContaining("cycle");
   }
 
   @Property

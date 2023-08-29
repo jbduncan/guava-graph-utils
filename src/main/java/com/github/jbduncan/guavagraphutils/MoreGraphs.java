@@ -444,6 +444,7 @@ public final class MoreGraphs {
   public static <N> ImmutableList<N> topologicalOrderingStartingFrom(
       Iterable<N> startingNodes, SuccessorsFunction<N> successorsFunction) {
     checkNotNull(startingNodes, "startingNodes");
+    // TODO: Check that all starting nodes are not null
     checkNotNull(successorsFunction, "successorsFunction");
 
     /*
@@ -456,31 +457,31 @@ public final class MoreGraphs {
      * [1] https://web.archive.org/web/20230225053309/https://en.wikipedia.org/wiki/Topological_sorting#Depth-first_search
      */
 
-    abstract class DeepRecursion {
+    abstract class DeepRecursion<T> {
       @FunctionalInterface
-      interface Continuation {
+      interface Closure {
         void run();
       }
 
       private final Deque<Object> intermediateStack = new ArrayDeque<>();
       private final Deque<Object> frameStack = new ArrayDeque<>();
 
-      void yieldContinuation(Continuation continuation) {
-        intermediateStack.push(continuation);
+      void yieldClosure(Closure closure) {
+        intermediateStack.push(closure);
       }
 
-      void yieldValue(N value) {
+      void yieldValue(T value) {
         intermediateStack.push(value);
       }
 
-      ImmutableList<N> recurse() {
+      ImmutableList<T> recurse() {
         return Stream.generate(this::next)
-            .takeWhile(Objects::nonNull)
+            .takeWhile(Objects::nonNull) // null signals end of data
             .collect(toImmutableList())
             .reverse();
       }
 
-      private N next() {
+      private @Nullable T next() {
         while (true) {
           while (!intermediateStack.isEmpty()) {
             frameStack.push(intermediateStack.pop());
@@ -488,25 +489,25 @@ public final class MoreGraphs {
 
           if (!frameStack.isEmpty()) {
             var next = frameStack.pop();
-            if (next instanceof Continuation continuation) {
-              continuation.run();
+            if (next instanceof Closure closure) {
+              closure.run();
             } else {
-              // frameStack only contains Ns and Continuations, so the type is
+              // frameStack only contains Ns and Closures, so the type is
               // guaranteed to be N here.
               @SuppressWarnings("unchecked")
-              N result = (N) next;
+              T result = (T) next;
               return result;
             }
           }
 
           if (intermediateStack.isEmpty() && frameStack.isEmpty()) {
-            return null;
+            return null; // end of data
           }
         }
       }
     }
 
-    class DeepRecursiveTopo extends DeepRecursion {
+    class DeepRecursiveTopo extends DeepRecursion<N> {
       private enum VisitState {
         PARTIALLY_VISITED,
         FULLY_VISITED
@@ -515,7 +516,7 @@ public final class MoreGraphs {
       DeepRecursiveTopo() {
         var nodeToVisitState = new HashMap<N, VisitState>();
         for (N startingNode : startingNodes) {
-          yieldContinuation(() -> visit(startingNode, successorsFunction, nodeToVisitState));
+          yieldClosure(() -> visit(startingNode, successorsFunction, nodeToVisitState));
         }
       }
 
@@ -532,10 +533,10 @@ public final class MoreGraphs {
         nodeToVisitState.put(node, VisitState.PARTIALLY_VISITED);
 
         for (N successor : successorsFunction.successors(node)) {
-          yieldContinuation(() -> visit(successor, successorsFunction, nodeToVisitState));
+          yieldClosure(() -> visit(successor, successorsFunction, nodeToVisitState));
         }
 
-        yieldContinuation(() -> nodeToVisitState.put(node, VisitState.FULLY_VISITED));
+        yieldClosure(() -> nodeToVisitState.put(node, VisitState.FULLY_VISITED));
         yieldValue(node);
       }
     }

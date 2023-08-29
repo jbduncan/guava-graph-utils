@@ -29,7 +29,7 @@ final class MoreArbitraries {
 
   static Arbitrary<ImmutableGraph<Integer>> directedAcyclicGraphs() {
     ListArbitrary<Integer> arbitraryNodes =
-        arbitraryNodes(MIN_NODES_COUNT_FOR_ANY_GRAPH, MIN_NODES_COUNT_FOR_ANY_GRAPH);
+        arbitraryNodes(MIN_NODES_COUNT_FOR_ANY_GRAPH, MAX_NODES_COUNT_FOR_ANY_GRAPH);
     Arbitrary<Integer> arbitraryEdgeCount =
         arbitraryNodes.flatMap(
             nodes -> Arbitraries.integers().between(0, maxEdgesForDag(nodes.size())));

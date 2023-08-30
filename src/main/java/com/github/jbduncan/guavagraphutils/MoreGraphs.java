@@ -626,15 +626,15 @@ public final class MoreGraphs {
         FULLY_VISITED
       }
 
+      private final Map<N, VisitState> nodeToVisitState = new HashMap<>();
+
       DeepRecursiveTopo() {
-        var nodeToVisitState = new HashMap<N, VisitState>();
         for (N startingNode : startingNodes) {
-          yieldClosure(() -> visit(startingNode, successorsFunction, nodeToVisitState));
+          yieldClosure(() -> visit(startingNode));
         }
       }
 
-      private void visit(
-          N node, SuccessorsFunction<N> successorsFunction, Map<N, VisitState> nodeToVisitState) {
+      private void visit(N node) {
         var visitState = nodeToVisitState.get(node);
         if (visitState == VisitState.FULLY_VISITED) {
           return;
@@ -646,7 +646,7 @@ public final class MoreGraphs {
         nodeToVisitState.put(node, VisitState.PARTIALLY_VISITED);
 
         for (N successor : successorsFunction.successors(node)) {
-          yieldClosure(() -> visit(successor, successorsFunction, nodeToVisitState));
+          yieldClosure(() -> visit(successor));
         }
 
         yieldClosure(() -> nodeToVisitState.put(node, VisitState.FULLY_VISITED));

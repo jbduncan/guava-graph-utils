@@ -1,4 +1,5 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
+import net.ltgt.gradle.errorprone.errorprone
 import org.gradle.api.tasks.compile.JavaCompile
 
 plugins {
@@ -6,10 +7,13 @@ plugins {
 
     id("com.diffplug.spotless") version "6.20.0"
     id("com.github.ben-manes.versions") version "0.47.0"
+    id("net.ltgt.errorprone") version "3.1.0"
     id("org.openrewrite.rewrite") version "6.2.3"
 }
 
-group = "com.github.jbduncan.guavagraphutils"
+val rootPackage = "com.github.jbduncan.guavagraphutils"
+
+group = rootPackage
 version = "0.1.0-SNAPSHOT"
 
 java {
@@ -32,6 +36,11 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.assertj:assertj-core:3.24.2")
 
+    compileOnly("org.jspecify:jspecify:0.3.0")
+
+    errorprone("com.google.errorprone:error_prone_core:2.21.1")
+    errorprone("com.uber.nullaway:nullaway:0.10.12")
+
     rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:2.2.1"))
     rewrite("org.openrewrite.recipe:rewrite-java-security")
     rewrite("org.openrewrite.recipe:rewrite-migrate-java")
@@ -45,8 +54,24 @@ tasks.test.configure {
     }
 }
 
-tasks.withType<JavaCompile>().named("compileTestJava").configure {
-    options.compilerArgs.add("-parameters")
+tasks.withType<JavaCompile>().configureEach {
+    options.compilerArgs = listOf("-Xlint:all", "-Werror")
+    options.encoding = "UTF-8"
+}
+
+tasks.compileJava.configure {
+    options.errorprone {
+        error("NullAway")
+        option("NullAway:AnnotatedPackages", rootPackage)
+        option("NullAway:CheckOptionalEmptiness", "true")
+        option("NullAway:HandleTestAssertionLibraries", "true")
+    }
+}
+
+tasks.compileTestJava.configure {
+    // Disable NullAway for tests because it gives too many false positives for
+    // tests that check nullness at runtime.
+    options.errorprone.disable("NullAway")
 }
 
 tasks.withType<AbstractArchiveTask>().configureEach {
@@ -87,11 +112,10 @@ tasks.named("check").configure {
 }
 
 // TODO: Use static analysis tools:
-//   - error-prone (errorprone.info)
 //   - Checkstyle (which can be automatically fixed with OpenRewrite:
 //     https://docs.openrewrite.org/running-recipes/popular-recipe-guides/automatically-fix-checkstyle-violations)
-//   - NullAway
 //   - https://github.com/PicnicSupermarket/error-prone-support
-//   - jspecify nullness annotations
 
 // TODO: Use CI
+
+// TODO: Use Gradle version catalogs

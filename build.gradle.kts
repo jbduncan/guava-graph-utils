@@ -112,8 +112,6 @@ tasks.named("check").configure {
 }
 
 // TODO: Use static analysis tools:
-//   - Checkstyle (which can be automatically fixed with OpenRewrite:
-//     https://docs.openrewrite.org/running-recipes/popular-recipe-guides/automatically-fix-checkstyle-violations)
 //   - https://github.com/PicnicSupermarket/error-prone-support
 
 // TODO: Use CI

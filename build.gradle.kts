@@ -118,4 +118,8 @@ tasks.named("check").configure {
 
 // TODO: Use CI
 
-// TODO: Use Gradle version catalogs
+// TODO: Use Gradle version catalogs (see other personal projects)
+
+// TODO: Use RenovateBot
+
+// TODO: Do GitHub releases and upload to Maven Central. See JUnit 5 and junit-pioneer for examples.

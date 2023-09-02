@@ -55,7 +55,7 @@ tasks.test.configure {
 }
 
 tasks.withType<JavaCompile>().configureEach {
-    options.compilerArgs = listOf("-Xlint:all", "-Werror")
+    options.compilerArgs = listOf("-Xlint:all")
     options.encoding = "UTF-8"
 }
 

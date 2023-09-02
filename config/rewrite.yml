@@ -119,7 +119,6 @@ recipeList:
   - org.openrewrite.staticanalysis.UnwrapRepeatableAnnotations
   - org.openrewrite.staticanalysis.UpperCaseLiteralSuffixes
   - org.openrewrite.staticanalysis.UseCollectionInterfaces
-  - org.openrewrite.staticanalysis.UseCollectionInterfaces
   - org.openrewrite.staticanalysis.UseDiamondOperator
   - org.openrewrite.staticanalysis.UseForEachRemoveInsteadOfSetRemoveAll
   - org.openrewrite.staticanalysis.UseLambdaForFunctionalInterface

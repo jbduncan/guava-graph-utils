@@ -444,8 +444,7 @@ public final class MoreGraphs {
    *
    * <p>This method is preferable to {@link MoreGraphs#lazyTopologicalOrdering(Graph)
    * MoreGraphs.lazyTopologicalOrdering} if the topological ordering will be iterated on multiple
-   * times, as it will avoid recalculating the topological ordering each time. Conversely, if the
-   * ordering will be used only once, prefer {@code lazyTopologicalOrdering} instead.
+   * times, as it will avoid recalculating the topological ordering each time.
    *
    * <p>The given graph must be non-null, otherwise a {@code NullPointerException} will be thrown.
    *

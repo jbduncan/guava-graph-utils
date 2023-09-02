@@ -2,6 +2,7 @@ package com.github.jbduncan.guavagraphutils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.github.jbduncan.guavagraphutils.MoreArbitraries.TwoGraphs;
 import com.google.common.graph.Graphs;
 import com.google.common.graph.ImmutableGraph;
 import java.util.Set;
@@ -15,10 +16,9 @@ import net.jqwik.api.statistics.Statistics;
 @SuppressWarnings("UnstableApiUsage")
 class MoreArbitrariesPropertyBasedTests {
   @Property
-  void givenArbitraryDag_whenFindingCycles_thenNoneAreFound(
-      @ForAll("dags") ImmutableGraph<Integer> dag) {
-    Statistics.label("nodes count").collect(countStats(dag.nodes()));
-    Statistics.label("edges count").collect(countStats(dag.edges()));
+  void arbitraryDagIsValid(@ForAll("dags") ImmutableGraph<Integer> dag) {
+    Statistics.label("nodes count").collect(sizeStats(dag.nodes()));
+    Statistics.label("edges count").collect(sizeStats(dag.edges()));
 
     assertThat(Graphs.hasCycle(dag)).isFalse();
     assertThat(dag.isDirected()).isTrue();
@@ -30,10 +30,9 @@ class MoreArbitrariesPropertyBasedTests {
   }
 
   @Property
-  void givenArbitraryCyclicGraph_whenFindingCycles_thenAtLeastOneIsFound(
-      @ForAll("cyclicGraphs") ImmutableGraph<Integer> cyclicGraph) {
-    Statistics.label("nodes count").collect(countStats(cyclicGraph.nodes()));
-    Statistics.label("edges count").collect(countStats(cyclicGraph.edges()));
+  void arbitraryCyclicGraphIsValid(@ForAll("cyclicGraphs") ImmutableGraph<Integer> cyclicGraph) {
+    Statistics.label("nodes count").collect(sizeStats(cyclicGraph.nodes()));
+    Statistics.label("edges count").collect(sizeStats(cyclicGraph.edges()));
     Statistics.label("directed graph").collect(cyclicGraph.isDirected());
 
     assertThat(Graphs.hasCycle(cyclicGraph)).isTrue();
@@ -44,7 +43,57 @@ class MoreArbitrariesPropertyBasedTests {
     return MoreArbitraries.cyclicGraphs();
   }
 
-  private static String countStats(Set<?> values) {
+  @Property
+  void arbitraryTwoGraphsWithSameFlagsAreValid(@ForAll("twoGraphsWithSameFlags") TwoGraphs graphs) {
+    Statistics.label("first graph: nodes count").collect(sizeStats(graphs.first().nodes()));
+    Statistics.label("first graph: edges count").collect(sizeStats(graphs.first().edges()));
+    Statistics.label("first graph: node order").collect(graphs.first().nodeOrder());
+    Statistics.label("first graph: incident edge order")
+        .collect(graphs.first().incidentEdgeOrder());
+    Statistics.label("second graph: nodes count").collect(sizeStats(graphs.second().nodes()));
+    Statistics.label("second graph: edges count").collect(sizeStats(graphs.second().edges()));
+    Statistics.label("second graph: node order").collect(graphs.second().nodeOrder());
+    Statistics.label("second graph: incident edge order")
+        .collect(graphs.second().incidentEdgeOrder());
+
+    assertThat(graphs.first().isDirected()).isEqualTo(graphs.second().isDirected());
+    assertThat(graphs.first().allowsSelfLoops()).isEqualTo(graphs.second().allowsSelfLoops());
+    assertThat(graphs.first().nodeOrder()).isEqualTo(graphs.second().nodeOrder());
+    assertThat(graphs.first().incidentEdgeOrder()).isEqualTo(graphs.second().incidentEdgeOrder());
+  }
+
+  @Provide
+  Arbitrary<TwoGraphs> twoGraphsWithSameFlags() {
+    return MoreArbitraries.twoGraphsWithSameFlags();
+  }
+
+  @Property
+  void arbitraryDirectedGraphIsValid(@ForAll("directedGraphs") ImmutableGraph<Integer> graph) {
+    Statistics.label("nodes count").collect(sizeStats(graph.nodes()));
+    Statistics.label("edges count").collect(sizeStats(graph.edges()));
+
+    assertThat(graph.isDirected()).isTrue();
+  }
+
+  @Provide
+  Arbitrary<ImmutableGraph<Integer>> directedGraphs() {
+    return MoreArbitraries.directedGraphs();
+  }
+
+  @Property
+  void arbitraryUndirectedGraphIsValid(@ForAll("undirectedGraphs") ImmutableGraph<Integer> graph) {
+    Statistics.label("nodes count").collect(sizeStats(graph.nodes()));
+    Statistics.label("edges count").collect(sizeStats(graph.edges()));
+
+    assertThat(graph.isDirected()).isFalse();
+  }
+
+  @Provide
+  Arbitrary<ImmutableGraph<Integer>> undirectedGraphs() {
+    return MoreArbitraries.undirectedGraphs();
+  }
+
+  private static String sizeStats(Set<?> values) {
     if (values.size() < 20) {
       return "0 <= x < 20";
     }

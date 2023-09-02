@@ -4,6 +4,7 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.graph.Graph;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.Graphs;
@@ -39,15 +40,22 @@ public class MoreGraphsPropertyBasedTests {
     assertThatTopologicalOrderingIsValid(graph, topologicalOrdering);
   }
 
-  private static <N> void assertThatTopologicalOrderingIsValid(
-      ImmutableGraph<N> graph, Iterable<N> topologicalOrdering) {
-    assertThat(topologicalOrdering).containsExactlyInAnyOrderElementsOf(graph.nodes());
-    assertThat(topologicalOrdering).doesNotHaveDuplicates();
+  @Property
+  void givenADag_whenCalculatingLazyTopologicalOrdering_thenSizeIsNumNodesOfDag(
+      // given
+      @ForAll("directedAcyclicGraphs") ImmutableGraph<Integer> graph) {
+    // when
+    var topologicalOrdering = MoreGraphs.lazyTopologicalOrdering(graph);
 
-    for (var edge : graph.edges()) {
-      assertThat(edge.isOrdered()).isTrue();
-      assertThat(topologicalOrdering).containsSubsequence(edge.source(), edge.target());
-    }
+    // then
+    assertThat(topologicalOrdering)
+        .as(
+            """
+            MoreGraphs.lazyTopologicalOrdering(graph) expected to have \
+            size equal to graph.nodes().size: %s\
+            """,
+            graph.nodes().size())
+        .hasSize(graph.nodes().size());
   }
 
   @Example
@@ -123,19 +131,6 @@ public class MoreGraphsPropertyBasedTests {
 
     // then
     assertThatTopologicalOrderingStartingWithIsValid(startingNodes, graph, topologicalOrdering);
-  }
-
-  private static <N> void assertThatTopologicalOrderingStartingWithIsValid(
-      Iterable<N> startingNodes, ImmutableGraph<N> graph, List<N> topologicalOrdering) {
-    Iterable<N> reachableNodes = Traverser.forGraph(graph).breadthFirst(startingNodes);
-    assertThat(topologicalOrdering).containsExactlyInAnyOrderElementsOf(reachableNodes);
-    assertThat(topologicalOrdering).doesNotHaveDuplicates();
-
-    Graph<N> reachableSubgraph = Graphs.inducedSubgraph(graph, reachableNodes);
-    for (var edge : reachableSubgraph.edges()) {
-      assertThat(edge.isOrdered()).isTrue();
-      assertThat(topologicalOrdering).containsSubsequence(edge.source(), edge.target());
-    }
   }
 
   @Property
@@ -278,6 +273,33 @@ public class MoreGraphsPropertyBasedTests {
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("graph")
         .hasMessageContaining("cycle");
+  }
+
+  private static <N> void assertThatTopologicalOrderingIsValid(
+      ImmutableGraph<N> graph, Iterable<N> topologicalOrdering) {
+    // copy into list for good performance
+    topologicalOrdering = ImmutableList.copyOf(topologicalOrdering);
+
+    assertThat(topologicalOrdering).containsExactlyInAnyOrderElementsOf(graph.nodes());
+    assertThat(topologicalOrdering).doesNotHaveDuplicates();
+
+    for (var edge : graph.edges()) {
+      assertThat(edge.isOrdered()).isTrue();
+      assertThat(topologicalOrdering).containsSubsequence(edge.source(), edge.target());
+    }
+  }
+
+  private static <N> void assertThatTopologicalOrderingStartingWithIsValid(
+      Iterable<N> startingNodes, ImmutableGraph<N> graph, List<N> topologicalOrdering) {
+    Iterable<N> reachableNodes = Traverser.forGraph(graph).breadthFirst(startingNodes);
+    assertThat(topologicalOrdering).containsExactlyInAnyOrderElementsOf(reachableNodes);
+    assertThat(topologicalOrdering).doesNotHaveDuplicates();
+
+    Graph<N> reachableSubgraph = Graphs.inducedSubgraph(graph, reachableNodes);
+    for (var edge : reachableSubgraph.edges()) {
+      assertThat(edge.isOrdered()).isTrue();
+      assertThat(topologicalOrdering).containsSubsequence(edge.source(), edge.target());
+    }
   }
 
   @Provide

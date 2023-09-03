@@ -5,10 +5,10 @@ import org.gradle.api.tasks.compile.JavaCompile
 plugins {
     java
 
-    id("com.diffplug.spotless") version "6.20.0"
+    id("com.diffplug.spotless") version "6.21.0"
     id("com.github.ben-manes.versions") version "0.47.0"
     id("net.ltgt.errorprone") version "3.1.0"
-    id("org.openrewrite.rewrite") version "6.2.3"
+    id("org.openrewrite.rewrite") version "6.3.2"
 }
 
 val rootPackage = "com.github.jbduncan.guavagraphutils"
@@ -29,22 +29,23 @@ repositories {
 dependencies {
     implementation("com.google.guava:guava:32.1.2-jre")
 
-    testImplementation("net.jqwik:jqwik:1.7.4")
+    testImplementation("net.jqwik:jqwik:1.8.0")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.jgrapht:jgrapht-guava:1.5.2")
     testImplementation("org.jgrapht:jgrapht-core:1.5.2")
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     compileOnly("org.jspecify:jspecify:0.3.0")
 
     errorprone("com.google.errorprone:error_prone_core:2.21.1")
-    errorprone("com.uber.nullaway:nullaway:0.10.12")
+    errorprone("com.uber.nullaway:nullaway:0.10.13")
 
     rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:2.2.1"))
     rewrite("org.openrewrite.recipe:rewrite-java-security")
     rewrite("org.openrewrite.recipe:rewrite-migrate-java")
-    rewrite("org.openrewrite.recipe:rewrite-recommendations:1.0.1")
+    rewrite("org.openrewrite.recipe:rewrite-recommendations:1.0.2")
     rewrite("org.openrewrite.recipe:rewrite-testing-frameworks")
 }
 
@@ -55,7 +56,7 @@ tasks.test.configure {
 }
 
 tasks.withType<JavaCompile>().configureEach {
-    options.compilerArgs = listOf("-Xlint:all")
+    options.compilerArgs = listOf("-Xlint:all,-processing")
     options.encoding = "UTF-8"
 }
 
@@ -107,8 +108,20 @@ rewrite {
     failOnDryRunResults = true
 }
 
+val rewriteDryRun: Task by tasks.getting {
+    notCompatibleWithConfigurationCache(
+            "Uses Task, Project and Task.project at configuration time, which are unsupported by " +
+                    "the configuration cache")
+}
+
+val rewriteResolveDependencies: Task by tasks.getting {
+    notCompatibleWithConfigurationCache(
+            "Uses Configuration, Project and Task.project at configuration time, which are " +
+                    "unsupported by the configuration cache")
+}
+
 tasks.named("check").configure {
-    dependsOn(tasks.named("rewriteDryRun"))
+    dependsOn(rewriteDryRun)
 }
 
 // TODO: Use static analysis tools:

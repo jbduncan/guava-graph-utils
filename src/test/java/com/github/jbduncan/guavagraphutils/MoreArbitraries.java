@@ -1,6 +1,7 @@
 package com.github.jbduncan.guavagraphutils;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static java.util.function.Predicate.not;
 
 import com.google.common.graph.ElementOrder;
 import com.google.common.graph.EndpointPair;
@@ -127,6 +128,26 @@ final class MoreArbitraries {
         .ofMaxSize(maxNodesCount);
   }
 
+  static Arbitrary<ElementOrder<Integer>> nodeOrders() {
+    return Arbitraries.of(
+        ElementOrder.natural(),
+        ElementOrder.unordered(),
+        ElementOrder.stable(),
+        ElementOrder.sorted(Comparator.<Integer>reverseOrder()));
+  }
+
+  record TwoNodeOrders(ElementOrder<Integer> first, ElementOrder<Integer> second) {}
+
+  static Arbitrary<TwoNodeOrders> twoDifferentNodeOrders() {
+    return MoreArbitraries.nodeOrders()
+        .flatMap(
+            nodeOrder ->
+                Combinators.combine(
+                        Arbitraries.just(nodeOrder),
+                        MoreArbitraries.nodeOrders().filter(not(nodeOrder::equals)))
+                    .as(TwoNodeOrders::new));
+  }
+
   private static ImmutableGraph<Integer> dagWithRandomEdges(
       List<Integer> nodes, ElementOrder<Integer> nodeOrder, Random random) {
     int edgeCount =
@@ -155,14 +176,6 @@ final class MoreArbitraries {
     }
 
     return graphBuilder.build();
-  }
-
-  static Arbitrary<ElementOrder<Integer>> nodeOrders() {
-    return Arbitraries.of(
-        ElementOrder.natural(),
-        ElementOrder.unordered(),
-        ElementOrder.stable(),
-        ElementOrder.sorted(Comparator.<Integer>reverseOrder()));
   }
 
   // For any directed acyclic graph, the maximum number of edges is equal to (n * (n - 1) / 2),

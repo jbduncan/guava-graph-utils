@@ -3,6 +3,7 @@ package com.github.jbduncan.guavagraphutils;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.jbduncan.guavagraphutils.MoreArbitraries.TwoGraphs;
+import com.github.jbduncan.guavagraphutils.MoreArbitraries.TwoNodeOrders;
 import com.google.common.graph.Graphs;
 import com.google.common.graph.ImmutableGraph;
 import java.util.Set;
@@ -91,6 +92,19 @@ class MoreArbitrariesPropertyBasedTests {
   @Provide
   Arbitrary<ImmutableGraph<Integer>> undirectedGraphs() {
     return MoreArbitraries.undirectedGraphs();
+  }
+
+  @Property
+  void arbitraryTwoDifferentNodeOrdersIsValid(
+      @ForAll("twoDifferentNodeOrders") TwoNodeOrders twoDifferentNodeOrders) {
+    Statistics.collect(twoDifferentNodeOrders);
+
+    assertThat(twoDifferentNodeOrders.first()).isNotEqualTo(twoDifferentNodeOrders.second());
+  }
+
+  @Provide
+  Arbitrary<TwoNodeOrders> twoDifferentNodeOrders() {
+    return MoreArbitraries.twoDifferentNodeOrders();
   }
 
   private static String sizeStats(Set<?> values) {

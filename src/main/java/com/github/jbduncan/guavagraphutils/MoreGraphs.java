@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
+import com.google.common.graph.AbstractGraph;
 import com.google.common.graph.AbstractValueGraph;
 import com.google.common.graph.ElementOrder;
 import com.google.common.graph.EndpointPair;
@@ -656,24 +657,93 @@ public final class MoreGraphs {
     return new DeepRecursiveTopo().recurse();
   }
 
-  // TODO: Make a method to merge multiple graphs into one view.
-  //   - What about graphs with the same node(s) and/or edge(s)?
-  //   - We can use a property-based test: assert that merging a graph
-  //     with its complement makes a complete graph (will only work with
-  //     graphs with a node count of >=5 according to
-  //     https://math.stackexchange.com/a/2961132/1067289).
-  //   - Assert that merging a graph with an empty graph returns the
-  //     first graph.
-  //   - Assert that merging a graph with a singleton graph returns the
-  //     first graph plus the node from the second graph, if said node
-  //     is not in the first graph already.
-  //   - Read https://johanneslink.net/how-to-specify-it. The lessons at
-  //     the very end recommended the following strategies first:
+  // TODO: Finish this method to merge multiple graphs into one view.
+  // TODO: Read https://johanneslink.net/how-to-specify-it. The lessons at the very end recommended
+  //  the following strategies first:
   //       1. Use model-based properties combined with validity properties.
   //          Perhaps a set of nodes and a multimap of source nodes to
   //          sink nodes will suffice as the model?
   //       2. If model is hard to define, then use many metamorphic
   //          properties instead.
+  // TODO: See if the following property-based tests are needed:
+  //      - Assert that merging a graph with its complement makes a complete graph (will only work
+  //        with graphs with a node count of >=5 according to
+  //        https://math.stackexchange.com/a/2961132/1067289).
+  //      - Assert that merging a graph with an empty graph returns the first graph.
+  //      - Assert that merging a graph with a singleton graph returns the first graph plus the
+  //        node from the second graph, if said node is not in the first graph already.
+  // TODO: Have you considered graphs with the same edge(s)?
+
+  // TODO: Javadoc
+  public static <N> Graph<N> union(Graph<N> first, Graph<N> second) {
+    checkNotNull(first, "first");
+    checkNotNull(second, "second");
+    checkArgument(
+        first.isDirected() == second.isDirected(),
+        "Graph.isDirected() is not consistent for both graphs");
+    checkArgument(
+        first.allowsSelfLoops() == second.allowsSelfLoops(),
+        "Graph.allowsSelfLoops() is not consistent for both graphs");
+    checkArgument(
+        first.nodeOrder().equals(second.nodeOrder()),
+        "Graph.nodeOrder() is not consistent for both graphs");
+
+    return new AbstractGraph<>() {
+      final String NOT_YET_IMPLEMENTED = "not yet implemented";
+
+      @Override
+      public Set<N> nodes() {
+        return Sets.union(first.nodes(), second.nodes());
+      }
+
+      @Override
+      public boolean isDirected() {
+        return first.isDirected();
+      }
+
+      @Override
+      public boolean allowsSelfLoops() {
+        return first.allowsSelfLoops();
+      }
+
+      @Override
+      public ElementOrder<N> nodeOrder() {
+        return first.nodeOrder();
+      }
+
+      @Override
+      public Set<N> adjacentNodes(N node) {
+        checkArgument(
+            first.nodes().contains(node) || second.nodes().contains(node),
+            "Node %s is not an element of this graph.",
+            node);
+        if (!second.nodes().contains(node)) {
+          return first.adjacentNodes(node);
+        }
+        if (!first.nodes().contains(node)) {
+          return second.adjacentNodes(node);
+        }
+        // TODO: If we can replace `first.adjNodes` and `second.adjNodes` with wrappers that
+        //  return zero elements when `node` isn't in `first` or `second`, then the two ifs above
+        //  are no longer needed and it avoids the potential problem of `first` and `second` being
+        //  mutated before the result of this method is used.
+        return Sets.union(first.adjacentNodes(node), second.adjacentNodes(node));
+      }
+
+      @Override
+      public Set<N> predecessors(N node) {
+        throw new UnsupportedOperationException(NOT_YET_IMPLEMENTED);
+      }
+
+      @Override
+      public Set<N> successors(N node) {
+        throw new UnsupportedOperationException(NOT_YET_IMPLEMENTED);
+      }
+
+      // TODO: Override edgeCount
+      // TODO: Override incidentEdgeOrder
+    };
+  }
 
   private MoreGraphs() {}
 }

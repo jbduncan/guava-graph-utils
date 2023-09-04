@@ -134,3 +134,9 @@ tasks.named("check").configure {
 // TODO: Use RenovateBot
 
 // TODO: Do GitHub releases and upload to Maven Central. See JUnit 5 and junit-pioneer for examples.
+
+// TODO: Enable Gradle Build Cache (local):
+//   - https://docs.gradle.org/current/userguide/build_cache.html
+//   - https://docs.gradle.org/current/userguide/caching_java_projects.html
+//   - https://docs.gradle.org/current/userguide/build_cache_debugging.html
+//   - https://docs.gradle.org/current/userguide/common_caching_problems.html

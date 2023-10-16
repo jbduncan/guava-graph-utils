@@ -32,9 +32,7 @@ final class MoreArbitraries {
   private static final int LARGEST_NODE = Integer.MAX_VALUE;
 
   static Arbitrary<ImmutableGraph<Integer>> directedAcyclicGraphs() {
-    ListArbitrary<Integer> arbitraryNodes =
-        nodes(MIN_NODES_COUNT_FOR_ANY_GRAPH, MAX_NODES_COUNT_FOR_ANY_GRAPH);
-    return Combinators.combine(arbitraryNodes, nodeOrders(), Arbitraries.randoms())
+    return Combinators.combine(nodes(), nodeOrders(), Arbitraries.randoms())
         .as(MoreArbitraries::dagWithRandomEdges);
   }
 
@@ -103,10 +101,7 @@ final class MoreArbitraries {
     Arbitrary<Double> arbitraryEdgeProbabilities =
         Arbitraries.doubles().between(0d, 1d).withSpecialValue(0d).withSpecialValue(1d);
     return Combinators.combine(
-            arbitraryEmptyGraphs,
-            nodes(MIN_NODES_COUNT_FOR_ANY_GRAPH, MAX_NODES_COUNT_FOR_ANY_GRAPH),
-            arbitraryEdgeProbabilities,
-            Arbitraries.randoms())
+            arbitraryEmptyGraphs, nodes(), arbitraryEdgeProbabilities, Arbitraries.randoms())
         .as(MoreArbitraries::populateGraph);
   }
 
@@ -117,6 +112,10 @@ final class MoreArbitraries {
             nodes.size(), edgeProbability, random, false)
         .generateGraph(graphAdapter);
     return ImmutableGraph.copyOf(graph);
+  }
+
+  static ListArbitrary<Integer> nodes() {
+    return nodes(MIN_NODES_COUNT_FOR_ANY_GRAPH, MAX_NODES_COUNT_FOR_ANY_GRAPH);
   }
 
   static ListArbitrary<Integer> nodes(int minNodesCount, int maxNodesCount) {

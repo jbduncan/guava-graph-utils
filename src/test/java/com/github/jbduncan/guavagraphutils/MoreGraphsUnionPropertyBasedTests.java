@@ -1,5 +1,6 @@
 package com.github.jbduncan.guavagraphutils;
 
+import static java.util.function.Predicate.not;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
@@ -7,11 +8,11 @@ import com.github.jbduncan.guavagraphutils.MoreArbitraries.TwoGraphs;
 import com.google.common.collect.Sets;
 import com.google.common.graph.ElementOrder;
 import com.google.common.graph.ImmutableGraph;
+import java.util.Collections;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.Assume;
 import net.jqwik.api.Combinators;
-import net.jqwik.api.Disabled;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
@@ -192,15 +193,17 @@ class MoreGraphsUnionPropertyBasedTests {
         .hasMessage("Node %s is not an element of this graph.", node);
   }
 
+  // TODO: Make this test faster by making the two graphs have disjointed nodes at the source.
   @Property
-  @Disabled // TODO: Fix exhausted generation problem and re-enable
-  void givenTwoGraphsAndNodePresentInFirst_whenCalculatingUnionAdjNodes_thenReturnAdjNodesOfFirst(
+  void givenTwoGraphsAndNodeFromFirst_whenCalculatingUnionAdjNodes_thenReturnAdjNodesOfFirst(
       // given
-      @ForAll("twoGraphsWithSameFlags") TwoGraphs graphs, @ForAll Integer node) {
-    Assume.that(graphs.first().nodes().contains(node) && !graphs.second().nodes().contains(node));
+      @ForAll("twoGraphsWithSameFlagsAndNodeFromFirst") TwoGraphsAndNode twoGraphsAndNode) {
+    var firstGraph = twoGraphsAndNode.firstGraph();
+    var secondGraph = twoGraphsAndNode.secondGraph();
+    var node = twoGraphsAndNode.node();
 
     // when
-    var union = MoreGraphs.union(graphs.first(), graphs.second());
+    var union = MoreGraphs.union(firstGraph, secondGraph);
 
     // then
     assertThat(union.adjacentNodes(node))
@@ -209,18 +212,20 @@ class MoreGraphsUnionPropertyBasedTests {
             MoreGraphs.union(first, second).adjacentNodes(node) expected to \
             be equal to first.adjacentNodes(node)\
             """)
-        .isEqualTo(graphs.first().adjacentNodes(node));
+        .isEqualTo(firstGraph.adjacentNodes(node));
   }
 
+  // TODO: Make this test faster by making the two graphs have disjointed nodes at the source.
   @Property
-  @Disabled // TODO: Fix exhausted generation problem and re-enable
-  void givenTwoGraphsAndNodePresentInSecond_whenCalculatingUnionAdjNodes_thenReturnAdjNodesOfSecond(
+  void givenTwoGraphsAndNodeFromSecond_whenCalculatingUnionAdjNodes_thenReturnAdjNodesOfSecond(
       // given
-      @ForAll("twoGraphsWithSameFlags") TwoGraphs graphs, @ForAll Integer node) {
-    Assume.that(!graphs.first().nodes().contains(node) && graphs.second().nodes().contains(node));
+      @ForAll("twoGraphsWithSameFlagsAndNodeFromSecond") TwoGraphsAndNode twoGraphsAndNode) {
+    var firstGraph = twoGraphsAndNode.firstGraph();
+    var secondGraph = twoGraphsAndNode.secondGraph();
+    var node = twoGraphsAndNode.node();
 
     // when
-    var union = MoreGraphs.union(graphs.first(), graphs.second());
+    var union = MoreGraphs.union(firstGraph, secondGraph);
 
     // then
     assertThat(union.adjacentNodes(node))
@@ -229,21 +234,25 @@ class MoreGraphsUnionPropertyBasedTests {
             MoreGraphs.union(first, second).adjacentNodes(node) expected to \
             be equal to second.adjacentNodes(node)\
             """)
-        .isEqualTo(graphs.second().adjacentNodes(node));
+        .isEqualTo(secondGraph.adjacentNodes(node));
   }
 
   @Property
-  @Disabled // TODO: Fix exhausted generation problem and re-enable
   void givenTwoGraphsAndNode_whenCalculatingUnionAdjNodes_thenReturnUnionOfAdjNodesOfBoth(
       // given
-      @ForAll("twoGraphsWithSameFlags") TwoGraphs graphs, @ForAll Integer node) {
-    Assume.that(graphs.first().nodes().contains(node) && graphs.second().nodes().contains(node));
+      @ForAll("twoGraphsWithSameFlags") TwoGraphs twoGraphs) {
+    var firstGraph = twoGraphs.first();
+    var secondGraph = twoGraphs.second();
+
+    var commonNode =
+        Sets.intersection(firstGraph.nodes(), secondGraph.nodes()).stream().findFirst();
+    Assume.that(commonNode.isPresent());
 
     // when
-    var union = MoreGraphs.union(graphs.first(), graphs.second());
+    var union = MoreGraphs.union(firstGraph, secondGraph);
 
     // then
-    assertThat(union.adjacentNodes(node))
+    assertThat(union.adjacentNodes(commonNode.get()))
         .as(
             """
             MoreGraphs.union(first, second).adjacentNodes(node) expected to \
@@ -251,7 +260,9 @@ class MoreGraphsUnionPropertyBasedTests {
             second.adjacentNodes(node)\
             """)
         .isEqualTo(
-            Sets.union(graphs.first().adjacentNodes(node), graphs.second().adjacentNodes(node)));
+            Sets.union(
+                firstGraph.adjacentNodes(commonNode.get()),
+                secondGraph.adjacentNodes(commonNode.get())));
   }
 
   @Provide
@@ -316,6 +327,37 @@ class MoreGraphsUnionPropertyBasedTests {
                     allowsSelfLoops,
                     twoDifferentNodeOrders.first(),
                     twoDifferentNodeOrders.second()));
+  }
+
+  record TwoGraphsAndNode(
+      ImmutableGraph<Integer> firstGraph, ImmutableGraph<Integer> secondGraph, Integer node) {}
+
+  @Provide
+  Arbitrary<TwoGraphsAndNode> twoGraphsWithSameFlagsAndNodeFromFirst() {
+    return MoreArbitraries.twoGraphsWithSameFlags()
+        .filter(not(twoGraphs -> twoGraphs.first().nodes().isEmpty()))
+        .filter(
+            twoGraphs ->
+                Collections.disjoint(twoGraphs.first().nodes(), twoGraphs.second().nodes()))
+        .flatMap(
+            twoGraphs ->
+                Arbitraries.of(twoGraphs.first().nodes())
+                    .map(
+                        node -> new TwoGraphsAndNode(twoGraphs.first(), twoGraphs.second(), node)));
+  }
+
+  @Provide
+  Arbitrary<TwoGraphsAndNode> twoGraphsWithSameFlagsAndNodeFromSecond() {
+    return MoreArbitraries.twoGraphsWithSameFlags()
+        .filter(not(twoGraphs -> twoGraphs.second().nodes().isEmpty()))
+        .filter(
+            twoGraphs ->
+                Collections.disjoint(twoGraphs.first().nodes(), twoGraphs.second().nodes()))
+        .flatMap(
+            twoGraphs ->
+                Arbitraries.of(twoGraphs.second().nodes())
+                    .map(
+                        node -> new TwoGraphsAndNode(twoGraphs.first(), twoGraphs.second(), node)));
   }
 
   private static Arbitrary<TwoGraphs> twoGraphs(

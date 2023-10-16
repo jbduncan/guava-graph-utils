@@ -11,14 +11,24 @@ recipeList:
   - org.openrewrite.java.format.NoWhitespaceAfter
   - org.openrewrite.java.format.NoWhitespaceBefore
   - org.openrewrite.java.format.PadEmptyForLoopComponents
-  - org.openrewrite.java.testing.assertj.JUnitToAssertj
+  - org.openrewrite.java.testing.assertj.Assertj
+  - org.openrewrite.java.testing.assertj.AdoptAssertJDurationAssertions
   - org.openrewrite.java.testing.cleanup.BestPractices
   - org.openrewrite.java.testing.junit5.JUnit5BestPractices
   - org.openrewrite.java.testing.mockito.Mockito1to3Migration
+  # TODO: Migrate to org.openrewrite.java.migrate.UpgradeToJava21 when
+  #       Gradle's Java toolchains supports Java 21.
   - org.openrewrite.java.migrate.UpgradeToJava17
   - org.openrewrite.java.migrate.io.ReplaceFileInOrOutputStreamFinalizeWithClose
+  - org.openrewrite.java.migrate.guava.NoGuavaJava11
   - org.openrewrite.java.migrate.lang.JavaLangAPIs
   - org.openrewrite.java.migrate.lang.StringFormatted
+  - org.openrewrite.java.migrate.lang.StringRulesRecipes
+  - org.openrewrite.java.migrate.util.MigrateCollectionsUnmodifiableList
+  - org.openrewrite.java.migrate.util.MigrateCollectionsUnmodifiableSet
+  - org.openrewrite.java.migrate.util.ReplaceStreamCollectWithToList
+  # TODO: Introduce org.openrewrite.java.migrate.util.SequencedCollection when
+  #       Gradle's Java toolchains supports Java 21.
   - org.openrewrite.java.migrate.lang.UseStringIsEmptyRecipe
   - org.openrewrite.recommendations.CodeHealth
   - org.openrewrite.staticanalysis.AddSerialVersionUidToSerializable
@@ -134,4 +144,5 @@ name: com.github.jbduncan.rewrite.SecurityBestPractices
 recipeList:
   - org.openrewrite.java.search.FindSecrets
   - org.openrewrite.java.security.JavaSecurityBestPractices
+  - org.openrewrite.java.security.OwaspTopTen
   - org.openrewrite.gradle.security.UseHttpsForRepositories

@@ -5,10 +5,10 @@ import org.gradle.api.tasks.compile.JavaCompile
 plugins {
     java
 
-    id("com.diffplug.spotless") version "6.21.0"
-    id("com.github.ben-manes.versions") version "0.47.0"
+    id("com.diffplug.spotless") version "6.22.0"
+    id("com.github.ben-manes.versions") version "0.49.0"
     id("net.ltgt.errorprone") version "3.1.0"
-    id("org.openrewrite.rewrite") version "6.3.2"
+    id("org.openrewrite.rewrite") version "6.3.18"
 }
 
 val rootPackage = "com.github.jbduncan.guavagraphutils"
@@ -27,7 +27,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.google.guava:guava:32.1.2-jre")
+    implementation("com.google.guava:guava:32.1.3-jre")
 
     testImplementation("net.jqwik:jqwik:1.8.0")
     testImplementation("org.assertj:assertj-core:3.24.2")
@@ -39,13 +39,13 @@ dependencies {
 
     compileOnly("org.jspecify:jspecify:0.3.0")
 
-    errorprone("com.google.errorprone:error_prone_core:2.21.1")
-    errorprone("com.uber.nullaway:nullaway:0.10.13")
+    errorprone("com.google.errorprone:error_prone_core:2.22.0")
+    errorprone("com.uber.nullaway:nullaway:0.10.14")
 
-    rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:2.2.1"))
+    rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:2.3.1"))
     rewrite("org.openrewrite.recipe:rewrite-java-security")
     rewrite("org.openrewrite.recipe:rewrite-migrate-java")
-    rewrite("org.openrewrite.recipe:rewrite-recommendations:1.0.2")
+    rewrite("org.openrewrite.recipe:rewrite-recommendations:1.0.4")
     rewrite("org.openrewrite.recipe:rewrite-testing-frameworks")
 }
 
@@ -82,7 +82,10 @@ tasks.withType<AbstractArchiveTask>().configureEach {
 
 spotless {
     java {
-        googleJavaFormat("1.17.0").reflowLongStrings()
+        googleJavaFormat("1.18.1")
+            .reflowLongStrings()
+            .reorderImports(true)
+            .formatJavadoc(true)
         formatAnnotations()
     }
 }

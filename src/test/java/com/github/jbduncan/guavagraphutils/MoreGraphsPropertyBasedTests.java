@@ -1,6 +1,6 @@
 package com.github.jbduncan.guavagraphutils;
 
-import static java.util.Collections.singletonList;
+import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
@@ -199,7 +199,7 @@ public class MoreGraphsPropertyBasedTests {
       @ForAll("graphs") ImmutableGraph<Integer> graph) {
     // when
     ThrowingCallable codeUnderTest =
-        () -> MoreGraphs.topologicalOrderingStartingFrom(singletonList(null), graph);
+        () -> MoreGraphs.topologicalOrderingStartingFrom(singleton(null), graph);
 
     // then
     assertThatCode(codeUnderTest)

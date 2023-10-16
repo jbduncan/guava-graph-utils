@@ -1,9 +1,9 @@
 package com.github.jbduncan.guavagraphutils;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.Multisets.toMultiset;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toCollection;
 
 import com.google.common.collect.AbstractIterator;
@@ -91,8 +91,8 @@ public final class MoreGraphs {
   //   that replaces this static method?
   public static <N> ImmutableGraph<N> buildGraphWithBreadthFirstTraversal(
       Iterable<N> startingNodes, SuccessorsFunction<N> successorsFunction) {
-    checkNotNull(startingNodes, "startingNodes");
-    checkNotNull(successorsFunction, "successorsFunction");
+    requireNonNull(startingNodes, "startingNodes");
+    requireNonNull(successorsFunction, "successorsFunction");
 
     MutableGraph<N> result = GraphBuilder.directed().allowsSelfLoops(true).build();
     startingNodes.forEach(result::addNode);
@@ -261,7 +261,7 @@ public final class MoreGraphs {
    * @see <a href='https://github.com/google/guava/wiki/GraphsExplained'>Graphs Explained</a>
    */
   public static <N, E> ValueGraph<N, E> asValueGraph(Table<N, N, E> table) {
-    checkNotNull(table, "table");
+    requireNonNull(table, "table");
 
     return new AbstractValueGraph<>() {
       @Override
@@ -276,21 +276,21 @@ public final class MoreGraphs {
 
       @Override
       public Set<N> successors(N node) {
-        checkNotNull(node, "node");
+        requireNonNull(node, "node");
         checkArgument(nodes().contains(node), NODE_IS_NOT_IN_THIS_GRAPH, node);
         return Collections.unmodifiableSet(table.row(node).keySet());
       }
 
       @Override
       public Set<N> predecessors(N node) {
-        checkNotNull(node, "node");
+        requireNonNull(node, "node");
         checkArgument(nodes().contains(node), NODE_IS_NOT_IN_THIS_GRAPH, node);
         return Collections.unmodifiableSet(table.column(node).keySet());
       }
 
       @Override
       public Set<N> adjacentNodes(N node) {
-        checkNotNull(node, "node");
+        requireNonNull(node, "node");
         checkArgument(nodes().contains(node), NODE_IS_NOT_IN_THIS_GRAPH, node);
         return Collections.unmodifiableSet(
             table.rowKeySet().contains(node)
@@ -315,8 +315,8 @@ public final class MoreGraphs {
 
       @Override
       public @Nullable E edgeValueOrDefault(N nodeU, N nodeV, @Nullable E defaultValue) {
-        checkNotNull(nodeU, "nodeU");
-        checkNotNull(nodeV, "nodeV");
+        requireNonNull(nodeU, "nodeU");
+        requireNonNull(nodeV, "nodeV");
         checkArgument(nodes().contains(nodeU), "First node '%s' is not in this graph", nodeU);
         checkArgument(nodes().contains(nodeV), "Second node '%s' is not in this graph", nodeV);
         if (table.contains(nodeU, nodeV)) {
@@ -327,7 +327,7 @@ public final class MoreGraphs {
 
       @Override
       public @Nullable E edgeValueOrDefault(EndpointPair<N> endpoints, @Nullable E defaultValue) {
-        checkNotNull(endpoints, "endpoints");
+        requireNonNull(endpoints, "endpoints");
         checkArgument(endpoints.isOrdered(), "Endpoints are not ordered");
         checkArgument(
             nodes().contains(endpoints.source()),
@@ -398,7 +398,7 @@ public final class MoreGraphs {
    * @see <a href='https://github.com/google/guava/wiki/GraphsExplained'>Graphs Explained</a>
    */
   public static <N> Iterable<N> lazyTopologicalOrdering(Graph<N> graph) {
-    checkNotNull(graph, "graph");
+    requireNonNull(graph, "graph");
 
     return () -> {
       /*
@@ -489,7 +489,7 @@ public final class MoreGraphs {
    * @see <a href='https://github.com/google/guava/wiki/GraphsExplained'>Graphs Explained</a>
    */
   public static <N> ImmutableList<N> topologicalOrdering(Graph<N> graph) {
-    checkNotNull(graph, "graph");
+    requireNonNull(graph, "graph");
     return ImmutableList.copyOf(lazyTopologicalOrdering(graph));
   }
 
@@ -554,11 +554,11 @@ public final class MoreGraphs {
    */
   public static <N> ImmutableList<N> topologicalOrderingStartingFrom(
       Iterable<N> startingNodes, SuccessorsFunction<N> successorsFunction) {
-    checkNotNull(startingNodes, "startingNodes");
+    requireNonNull(startingNodes, "startingNodes");
     for (N startingNode : startingNodes) {
-      checkNotNull(startingNode, "startingNodes has at least one null node");
+      requireNonNull(startingNode, "startingNodes has at least one null node");
     }
-    checkNotNull(successorsFunction, "successorsFunction");
+    requireNonNull(successorsFunction, "successorsFunction");
 
     /*
      * Depth-first-search-based algorithm. Derived from [1], in turn derived from Introduction to Algorithms (2nd ed.)
@@ -676,8 +676,8 @@ public final class MoreGraphs {
 
   // TODO: Javadoc
   public static <N> Graph<N> union(Graph<N> first, Graph<N> second) {
-    checkNotNull(first, "first");
-    checkNotNull(second, "second");
+    requireNonNull(first, "first");
+    requireNonNull(second, "second");
     checkArgument(
         first.isDirected() == second.isDirected(),
         "Graph.isDirected() is not consistent for both graphs");

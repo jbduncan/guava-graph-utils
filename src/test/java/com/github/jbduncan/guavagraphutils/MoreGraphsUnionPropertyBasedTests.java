@@ -13,13 +13,10 @@ import com.google.common.graph.Graphs;
 import com.google.common.graph.ImmutableGraph;
 import com.google.common.graph.MutableGraph;
 import java.util.Collections;
-import java.util.Set;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.Assume;
 import net.jqwik.api.Combinators;
-import net.jqwik.api.Disabled;
-import net.jqwik.api.Example;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
@@ -273,53 +270,6 @@ class MoreGraphsUnionPropertyBasedTests {
   }
 
   @Property
-  @Disabled
-  void
-      orig_givenTwoGraphsAndNodeFromFirst_whenGettingUnionAdjNodes_andFirstGraphMutated_thenReturnAdjNodesOfFirst(
-          // given
-          @ForAll("twoGraphsWithSameFlagsAndNodeFromFirst") TwoGraphsAndNode twoGraphsAndNode,
-          @ForAll Integer newNode) {
-    var firstGraph = twoGraphsAndNode.firstGraph();
-    var secondGraph = twoGraphsAndNode.secondGraph();
-    var node = twoGraphsAndNode.node();
-
-    // when
-    var union = MoreGraphs.union(firstGraph, secondGraph);
-    Set<Integer> adjacentNodes = union.adjacentNodes(node);
-    secondGraph.putEdge(node, newNode);
-
-    // then
-    assertThat(adjacentNodes)
-        .as(
-            """
-            MoreGraphs.union(first, second).adjacentNodes(node) expected to \
-            be equal to first.adjacentNodes(node)\
-            """)
-        .isEqualTo(firstGraph.adjacentNodes(node));
-  }
-
-  @Example
-  void
-      example_givenTwoGraphsAndNodeFromFirst_whenGettingUnionAdjNodes_andSecondGraphMutated_thenReturnAdjNodesOfBoth() {
-    var firstGraph = GraphBuilder.directed().<Integer>build();
-    firstGraph.putEdge(1, 2);
-    var secondGraph = GraphBuilder.directed().<Integer>build();
-
-    var union = MoreGraphs.union(firstGraph, secondGraph);
-    Set<Integer> adjacentNodes = union.adjacentNodes(1);
-    secondGraph.putEdge(1, 3);
-
-    assertThat(adjacentNodes)
-        .as(
-            """
-            MoreGraphs.union(first, second).adjacentNodes(node) expected to \
-            be equal to union of first.adjacentNodes(node) and \
-            second.adjacentNodes(node)\
-            """)
-        .isEqualTo(Set.of(2, 3));
-  }
-
-  @Property
   void
       givenTwoGraphsAndNodeFromFirst_whenGettingUnionAdjNodes_andSecondGraphMutated_thenReturnAdjNodesOfBoth(
           // given
@@ -375,6 +325,159 @@ class MoreGraphsUnionPropertyBasedTests {
             MoreGraphs.union(first, second).adjacentNodes(node) expected to \
             be equal to union of first.adjacentNodes(node) and \
             second.adjacentNodes(node)\
+            """)
+        .isEqualTo(expected);
+  }
+
+  @Property
+  void givenTwoGraphsAndNodeAbsentFromBoth_whenCalculatingUnionPredNodes_thenThrowIae(
+      // given
+      @ForAll("twoGraphsWithSameFlags") TwoGraphs graphs, @ForAll Integer node) {
+    Assume.that(!graphs.first().nodes().contains(node) && !graphs.second().nodes().contains(node));
+
+    // when
+    var union = MoreGraphs.union(graphs.first(), graphs.second());
+    ThrowingCallable codeUnderTest = () -> union.predecessors(node);
+
+    // then
+    assertThatCode(codeUnderTest)
+        .as(
+            """
+                    MoreGraphs.union(first, second).predecessors(absentNode) \
+                    expected to throw IllegalArgumentException\
+                    """)
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Node %s is not an element of this graph.", node);
+  }
+
+  // TODO: Make this test faster by making the two graphs have disjointed nodes at the source.
+  @Property
+  void givenTwoGraphsAndNodeFromFirst_whenCalculatingUnionPredNodes_thenReturnPredNodesOfFirst(
+      // given
+      @ForAll("twoGraphsWithSameFlagsAndNodeFromFirst") TwoGraphsAndNode twoGraphsAndNode) {
+    var firstGraph = twoGraphsAndNode.firstGraph();
+    var secondGraph = twoGraphsAndNode.secondGraph();
+    var node = twoGraphsAndNode.node();
+
+    // when
+    var union = MoreGraphs.union(firstGraph, secondGraph);
+
+    // then
+    assertThat(union.predecessors(node))
+        .as(
+            """
+                    MoreGraphs.union(first, second).predecessors(node) expected to \
+                    be equal to first.predecessors(node)\
+                    """)
+        .isEqualTo(firstGraph.predecessors(node));
+  }
+
+  // TODO: Make this test faster by making the two graphs have disjointed nodes at the source.
+  @Property
+  void givenTwoGraphsAndNodeFromSecond_whenCalculatingUnionPredNodes_thenReturnPredNodesOfSecond(
+      // given
+      @ForAll("twoGraphsWithSameFlagsAndNodeFromSecond") TwoGraphsAndNode twoGraphsAndNode) {
+    var firstGraph = twoGraphsAndNode.firstGraph();
+    var secondGraph = twoGraphsAndNode.secondGraph();
+    var node = twoGraphsAndNode.node();
+
+    // when
+    var union = MoreGraphs.union(firstGraph, secondGraph);
+
+    // then
+    assertThat(union.predecessors(node))
+        .as(
+            """
+                    MoreGraphs.union(first, second).predecessors(node) expected to \
+                    be equal to second.predecessors(node)\
+                    """)
+        .isEqualTo(secondGraph.predecessors(node));
+  }
+
+  @Property
+  void givenTwoGraphsAndNode_whenCalculatingUnionPredNodes_thenReturnUnionOfPredNodesOfBoth(
+      // given
+      @ForAll("twoGraphsWithSameFlags") TwoGraphs twoGraphs) {
+    var firstGraph = twoGraphs.first();
+    var secondGraph = twoGraphs.second();
+
+    var commonNode =
+        Sets.intersection(firstGraph.nodes(), secondGraph.nodes()).stream().findFirst();
+    Assume.that(commonNode.isPresent());
+
+    // when
+    var union = MoreGraphs.union(firstGraph, secondGraph);
+
+    // then
+    assertThat(union.predecessors(commonNode.get()))
+        .as(
+            """
+            MoreGraphs.union(first, second).predecessors(node) expected to \
+            be equal to union of first.predecessors(node) and \
+            second.predecessors(node)\
+            """)
+        .isEqualTo(
+            Sets.union(
+                firstGraph.predecessors(commonNode.get()),
+                secondGraph.predecessors(commonNode.get())));
+  }
+
+  @Property
+  void
+      givenTwoGraphsAndNodeFromFirst_whenGettingUnionPredNodes_andSecondGraphMutated_thenReturnPredNodesOfBoth(
+          // given
+          @ForAll("graphAndNodePairs") GraphAndNode firstGraphAndNodeV, @ForAll Integer nodeU) {
+    var firstGraph = firstGraphAndNodeV.graph();
+    Assume.that(!firstGraph.edges().isEmpty());
+    Assume.that(!firstGraph.nodes().contains(nodeU));
+    var secondGraph = GraphBuilder.from(firstGraph).build();
+    var nodeV = firstGraphAndNodeV.node();
+    var union = MoreGraphs.union(firstGraph, secondGraph);
+
+    // when
+    var predecessors = union.predecessors(nodeV);
+    var expected = ImmutableSet.builder().addAll(predecessors).add(nodeU).build();
+
+    // and
+    secondGraph.putEdge(nodeU, nodeV);
+
+    // then
+    assertThat(predecessors)
+        .as(
+            """
+            MoreGraphs.union(first, second).predecessors(node) expected to \
+            be equal to union of first.predecessors(node) and \
+            second.predecessors(node)\
+            """)
+        .isEqualTo(expected);
+  }
+
+  @Property
+  void
+      givenTwoGraphsAndNodeFromSecond_whenGettingUnionPredNodes_andFirstGraphMutated_thenReturnPredNodesOfBoth(
+          // given
+          @ForAll("graphAndNodePairs") GraphAndNode secondGraphAndNodeV, @ForAll Integer nodeU) {
+    var secondGraph = secondGraphAndNodeV.graph();
+    Assume.that(!secondGraph.edges().isEmpty());
+    Assume.that(!secondGraph.nodes().contains(nodeU));
+    var firstGraph = GraphBuilder.from(secondGraph).build();
+    var nodeV = secondGraphAndNodeV.node();
+    var union = MoreGraphs.union(firstGraph, secondGraph);
+
+    // when
+    var predecessors = union.predecessors(nodeV);
+    var expected = ImmutableSet.builder().addAll(predecessors).add(nodeU).build();
+
+    // and
+    firstGraph.putEdge(nodeU, nodeV);
+
+    // then
+    assertThat(predecessors)
+        .as(
+            """
+            MoreGraphs.union(first, second).predecessors(node) expected to \
+            be equal to union of first.predecessors(node) and \
+            second.predecessors(node)\
             """)
         .isEqualTo(expected);
   }

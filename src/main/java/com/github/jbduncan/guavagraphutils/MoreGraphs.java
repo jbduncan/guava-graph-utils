@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 
@@ -716,38 +717,43 @@ public final class MoreGraphs {
 
       @Override
       public Set<N> adjacentNodes(N node) {
+        return neighbours(node, Graph::adjacentNodes);
+      }
+
+      @Override
+      public Set<N> predecessors(N node) {
+        return neighbours(node, Graph::predecessors);
+      }
+
+      @Override
+      public Set<N> successors(N node) {
+        // TODO
+        throw new UnsupportedOperationException(NOT_YET_IMPLEMENTED);
+      }
+
+      private Set<N> neighbours(N node, BiFunction<Graph<N>, N, Set<N>> neighbours) {
         checkArgument(
             first.nodes().contains(node) || second.nodes().contains(node),
             "Node %s is not an element of this graph.",
             node);
 
-        // If the first graph has adjacent nodes for `node` and the second graph does not, this
-        // method will return just the first graph's adjacent nodes. However, if an edge is ever put
+        // If the first graph has neighbours for `node` and the second graph does not, this
+        // method will return just the first graph's neighbours. However, if an edge is ever put
         // between `node` and another node in the second graph subsequently, then returning just the
-        // first graph's adjacent nodes is no longer accurate. To fix this, a set view is returned
-        // that re-evaluates which graph's adjacent nodes to forward to every time it is used.
+        // first graph's neighbours is no longer accurate. To fix this, a set view is returned
+        // that re-evaluates which graph's neighbours to forward to every time it is used.
         return new ForwardingSet<>() {
           @Override
           protected Set<N> delegate() {
             if (!second.nodes().contains(node)) {
-              return first.adjacentNodes(node);
+              return neighbours.apply(first, node);
             }
             if (!first.nodes().contains(node)) {
-              return second.adjacentNodes(node);
+              return neighbours.apply(second, node);
             }
-            return Sets.union(first.adjacentNodes(node), second.adjacentNodes(node));
+            return Sets.union(neighbours.apply(first, node), neighbours.apply(second, node));
           }
         };
-      }
-
-      @Override
-      public Set<N> predecessors(N node) {
-        throw new UnsupportedOperationException(NOT_YET_IMPLEMENTED);
-      }
-
-      @Override
-      public Set<N> successors(N node) {
-        throw new UnsupportedOperationException(NOT_YET_IMPLEMENTED);
       }
 
       // TODO: Override edgeCount

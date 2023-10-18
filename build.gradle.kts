@@ -70,6 +70,7 @@ tasks.compileJava.configure {
 }
 
 tasks.compileTestJava.configure {
+    options.compilerArgs = listOf("-parameters")
     // Disable NullAway for tests because it gives too many false positives for
     // tests that check nullness at runtime.
     options.errorprone.disable("NullAway")
@@ -109,6 +110,12 @@ rewrite {
 
     configFile = file("$rootDir/config/rewrite.yml")
     failOnDryRunResults = true
+}
+
+val rewriteRun: Task by tasks.getting {
+    notCompatibleWithConfigurationCache(
+            "Uses Task, Project and Task.project at configuration time, which are unsupported by " +
+                    "the configuration cache")
 }
 
 val rewriteDryRun: Task by tasks.getting {

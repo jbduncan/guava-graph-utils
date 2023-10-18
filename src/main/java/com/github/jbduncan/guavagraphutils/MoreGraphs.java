@@ -570,91 +570,93 @@ public final class MoreGraphs {
      * [1] https://web.archive.org/web/20230225053309/https://en.wikipedia.org/wiki/Topological_sorting#Depth-first_search
      */
 
-    abstract class DeepRecursion<T> {
-      @FunctionalInterface
-      interface Closure {
-        void run();
-      }
+    return new DeepRecursiveTopo<>(startingNodes, successorsFunction).recurse();
+  }
 
-      private final Deque<Object> intermediateStack = new ArrayDeque<>();
-      private final Deque<Object> frameStack = new ArrayDeque<>();
+  abstract static class DeepRecursion<T> {
+    @FunctionalInterface
+    interface Closure {
+      void run();
+    }
 
-      void yieldClosure(Closure closure) {
-        intermediateStack.push(closure);
-      }
+    private final Deque<Object> intermediateStack = new ArrayDeque<>();
+    private final Deque<Object> frameStack = new ArrayDeque<>();
 
-      void yieldValue(T value) {
-        intermediateStack.push(value);
-      }
+    void yieldClosure(Closure closure) {
+      intermediateStack.push(closure);
+    }
 
-      ImmutableList<T> recurse() {
-        return Stream.generate(this::next)
-            .takeWhile(Objects::nonNull) // null signals end of data
-            .collect(toImmutableList())
-            .reverse();
-      }
+    void yieldValue(T value) {
+      intermediateStack.push(value);
+    }
 
-      private @Nullable T next() {
-        while (true) {
-          while (!intermediateStack.isEmpty()) {
-            frameStack.push(intermediateStack.pop());
+    ImmutableList<T> recurse() {
+      return Stream.generate(this::next)
+          .takeWhile(Objects::nonNull) // null signals end of data
+          .collect(toImmutableList())
+          .reverse();
+    }
+
+    private @Nullable T next() {
+      while (true) {
+        while (!intermediateStack.isEmpty()) {
+          frameStack.push(intermediateStack.pop());
+        }
+
+        if (!frameStack.isEmpty()) {
+          var next = frameStack.pop();
+          if (next instanceof Closure closure) {
+            closure.run();
+          } else {
+            // frameStack only contains Ns and Closures, so the type is
+            // guaranteed to be N here.
+            @SuppressWarnings("unchecked")
+            T result = (T) next;
+            return result;
           }
+        }
 
-          if (!frameStack.isEmpty()) {
-            var next = frameStack.pop();
-            if (next instanceof Closure closure) {
-              closure.run();
-            } else {
-              // frameStack only contains Ns and Closures, so the type is
-              // guaranteed to be N here.
-              @SuppressWarnings("unchecked")
-              T result = (T) next;
-              return result;
-            }
-          }
-
-          if (intermediateStack.isEmpty() && frameStack.isEmpty()) {
-            return null; // end of data
-          }
+        if (intermediateStack.isEmpty() && frameStack.isEmpty()) {
+          return null; // end of data
         }
       }
     }
+  }
 
-    class DeepRecursiveTopo extends DeepRecursion<N> {
-      private enum VisitState {
-        PARTIALLY_VISITED,
-        FULLY_VISITED
-      }
+  static final class DeepRecursiveTopo<N> extends DeepRecursion<N> {
+    private enum VisitState {
+      PARTIALLY_VISITED,
+      FULLY_VISITED
+    }
 
-      private final Map<N, VisitState> nodeToVisitState = new HashMap<>();
+    private final SuccessorsFunction<N> successorsFunction;
+    private final Map<N, VisitState> nodeToVisitState = new HashMap<>();
 
-      DeepRecursiveTopo() {
-        for (N startingNode : startingNodes) {
-          yieldClosure(() -> visit(startingNode));
-        }
-      }
-
-      private void visit(N node) {
-        var visitState = nodeToVisitState.get(node);
-        if (visitState == VisitState.FULLY_VISITED) {
-          return;
-        }
-        if (visitState == VisitState.PARTIALLY_VISITED) {
-          throw new IllegalArgumentException(SUCCESSORS_FUNCTION_HAS_AT_LEAST_ONE_CYCLE);
-        }
-
-        nodeToVisitState.put(node, VisitState.PARTIALLY_VISITED);
-
-        for (N successor : successorsFunction.successors(node)) {
-          yieldClosure(() -> visit(successor));
-        }
-
-        yieldClosure(() -> nodeToVisitState.put(node, VisitState.FULLY_VISITED));
-        yieldValue(node);
+    DeepRecursiveTopo(Iterable<N> startingNodes, SuccessorsFunction<N> successorsFunction) {
+      this.successorsFunction = successorsFunction;
+      for (N startingNode : startingNodes) {
+        yieldClosure(() -> visit(startingNode));
       }
     }
 
-    return new DeepRecursiveTopo().recurse();
+    private void visit(N node) {
+      var visitState = nodeToVisitState.get(node);
+      if (visitState == VisitState.FULLY_VISITED) {
+        return;
+      }
+      if (visitState == VisitState.PARTIALLY_VISITED) {
+        throw new IllegalArgumentException(SUCCESSORS_FUNCTION_HAS_AT_LEAST_ONE_CYCLE);
+      }
+
+      nodeToVisitState.put(node, VisitState.PARTIALLY_VISITED);
+
+      for (N successor : successorsFunction.successors(node)) {
+        yieldClosure(() -> visit(successor));
+      }
+
+      yieldClosure(() -> nodeToVisitState.put(node, VisitState.FULLY_VISITED));
+      yieldValue(node);
+    }
   }
 
   // TODO: Finish this method to merge multiple graphs into one view.

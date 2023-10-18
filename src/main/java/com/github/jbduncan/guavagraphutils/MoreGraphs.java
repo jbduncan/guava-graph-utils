@@ -7,6 +7,7 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toCollection;
 
 import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.ForwardingSet;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Queues;
@@ -691,7 +692,7 @@ public final class MoreGraphs {
         "Graph.nodeOrder() is not consistent for both graphs");
 
     return new AbstractGraph<>() {
-      final String NOT_YET_IMPLEMENTED = "not yet implemented";
+      static final String NOT_YET_IMPLEMENTED = "not yet implemented";
 
       @Override
       public Set<N> nodes() {
@@ -719,17 +720,24 @@ public final class MoreGraphs {
             first.nodes().contains(node) || second.nodes().contains(node),
             "Node %s is not an element of this graph.",
             node);
-        if (!second.nodes().contains(node)) {
-          return first.adjacentNodes(node);
-        }
-        if (!first.nodes().contains(node)) {
-          return second.adjacentNodes(node);
-        }
-        // TODO: If we can replace `first.adjNodes` and `second.adjNodes` with wrappers that
-        //  return zero elements when `node` isn't in `first` or `second`, then the two ifs above
-        //  are no longer needed and it avoids the potential problem of `first` and `second` being
-        //  mutated before the result of this method is used.
-        return Sets.union(first.adjacentNodes(node), second.adjacentNodes(node));
+
+        // If the first graph has adjacent nodes for `node` and the second graph does not, this
+        // method will return just the first graph's adjacent nodes. However, if an edge is ever put
+        // between `node` and another node in the second graph subsequently, then returning just the
+        // first graph's adjacent nodes is no longer accurate. To fix this, a set view is returned
+        // that re-evaluates which graph's adjacent nodes to forward to every time it is used.
+        return new ForwardingSet<>() {
+          @Override
+          protected Set<N> delegate() {
+            if (!second.nodes().contains(node)) {
+              return first.adjacentNodes(node);
+            }
+            if (!first.nodes().contains(node)) {
+              return second.adjacentNodes(node);
+            }
+            return Sets.union(first.adjacentNodes(node), second.adjacentNodes(node));
+          }
+        };
       }
 
       @Override

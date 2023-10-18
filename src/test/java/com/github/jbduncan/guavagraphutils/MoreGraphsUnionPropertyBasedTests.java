@@ -5,14 +5,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import com.github.jbduncan.guavagraphutils.MoreArbitraries.TwoGraphs;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.common.graph.ElementOrder;
+import com.google.common.graph.GraphBuilder;
+import com.google.common.graph.Graphs;
 import com.google.common.graph.ImmutableGraph;
+import com.google.common.graph.MutableGraph;
 import java.util.Collections;
+import java.util.Set;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.Assume;
 import net.jqwik.api.Combinators;
+import net.jqwik.api.Disabled;
+import net.jqwik.api.Example;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
@@ -265,9 +272,128 @@ class MoreGraphsUnionPropertyBasedTests {
                 secondGraph.adjacentNodes(commonNode.get())));
   }
 
+  @Property
+  @Disabled
+  void
+      orig_givenTwoGraphsAndNodeFromFirst_whenGettingUnionAdjNodes_andFirstGraphMutated_thenReturnAdjNodesOfFirst(
+          // given
+          @ForAll("twoGraphsWithSameFlagsAndNodeFromFirst") TwoGraphsAndNode twoGraphsAndNode,
+          @ForAll Integer newNode) {
+    var firstGraph = twoGraphsAndNode.firstGraph();
+    var secondGraph = twoGraphsAndNode.secondGraph();
+    var node = twoGraphsAndNode.node();
+
+    // when
+    var union = MoreGraphs.union(firstGraph, secondGraph);
+    Set<Integer> adjacentNodes = union.adjacentNodes(node);
+    secondGraph.putEdge(node, newNode);
+
+    // then
+    assertThat(adjacentNodes)
+        .as(
+            """
+            MoreGraphs.union(first, second).adjacentNodes(node) expected to \
+            be equal to first.adjacentNodes(node)\
+            """)
+        .isEqualTo(firstGraph.adjacentNodes(node));
+  }
+
+  @Example
+  void
+      example_givenTwoGraphsAndNodeFromFirst_whenGettingUnionAdjNodes_andSecondGraphMutated_thenReturnAdjNodesOfBoth() {
+    var firstGraph = GraphBuilder.directed().<Integer>build();
+    firstGraph.putEdge(1, 2);
+    var secondGraph = GraphBuilder.directed().<Integer>build();
+
+    var union = MoreGraphs.union(firstGraph, secondGraph);
+    Set<Integer> adjacentNodes = union.adjacentNodes(1);
+    secondGraph.putEdge(1, 3);
+
+    assertThat(adjacentNodes)
+        .as(
+            """
+            MoreGraphs.union(first, second).adjacentNodes(node) expected to \
+            be equal to union of first.adjacentNodes(node) and \
+            second.adjacentNodes(node)\
+            """)
+        .isEqualTo(Set.of(2, 3));
+  }
+
+  @Property
+  void
+      givenTwoGraphsAndNodeFromFirst_whenGettingUnionAdjNodes_andSecondGraphMutated_thenReturnAdjNodesOfBoth(
+          // given
+          @ForAll("graphAndNodePairs") GraphAndNode firstGraphAndNodeU, @ForAll Integer nodeV) {
+    var firstGraph = firstGraphAndNodeU.graph();
+    Assume.that(!firstGraph.edges().isEmpty());
+    Assume.that(!firstGraph.nodes().contains(nodeV));
+    var secondGraph = GraphBuilder.from(firstGraph).build();
+    var nodeU = firstGraphAndNodeU.node();
+    var union = MoreGraphs.union(firstGraph, secondGraph);
+
+    // when
+    var adjacentNodes = union.adjacentNodes(nodeU);
+    var expected = ImmutableSet.builder().addAll(adjacentNodes).add(nodeV).build();
+
+    // and
+    secondGraph.putEdge(nodeU, nodeV);
+
+    // then
+    assertThat(adjacentNodes)
+        .as(
+            """
+            MoreGraphs.union(first, second).adjacentNodes(node) expected to \
+            be equal to union of first.adjacentNodes(node) and \
+            second.adjacentNodes(node)\
+            """)
+        .isEqualTo(expected);
+  }
+
+  @Property
+  void
+      givenTwoGraphsAndNodeFromSecond_whenGettingUnionAdjNodes_andFirstGraphMutated_thenReturnAdjNodesOfBoth(
+          // given
+          @ForAll("graphAndNodePairs") GraphAndNode secondGraphAndNodeU, @ForAll Integer nodeV) {
+    var secondGraph = secondGraphAndNodeU.graph();
+    Assume.that(!secondGraph.edges().isEmpty());
+    Assume.that(!secondGraph.nodes().contains(nodeV));
+    var firstGraph = GraphBuilder.from(secondGraph).build();
+    var nodeU = secondGraphAndNodeU.node();
+    var union = MoreGraphs.union(firstGraph, secondGraph);
+
+    // when
+    var adjacentNodes = union.adjacentNodes(nodeU);
+    var expected = ImmutableSet.builder().addAll(adjacentNodes).add(nodeV).build();
+
+    // and
+    firstGraph.putEdge(nodeU, nodeV);
+
+    // then
+    assertThat(adjacentNodes)
+        .as(
+            """
+            MoreGraphs.union(first, second).adjacentNodes(node) expected to \
+            be equal to union of first.adjacentNodes(node) and \
+            second.adjacentNodes(node)\
+            """)
+        .isEqualTo(expected);
+  }
+
   @Provide
   Arbitrary<ImmutableGraph<Integer>> graphs() {
     return MoreArbitraries.graphs();
+  }
+
+  record GraphAndNode(ImmutableGraph<Integer> graph, Integer node) {}
+
+  @Provide
+  Arbitrary<GraphAndNode> graphAndNodePairs() {
+    return MoreArbitraries.graphs()
+        .filter(not(graph -> graph.nodes().isEmpty()))
+        .flatMap(
+            graph ->
+                Combinators.combine(Arbitraries.just(graph), Arbitraries.of(graph.nodes()))
+                    .as(GraphAndNode::new));
   }
 
   @Provide
@@ -330,7 +456,7 @@ class MoreGraphsUnionPropertyBasedTests {
   }
 
   record TwoGraphsAndNode(
-      ImmutableGraph<Integer> firstGraph, ImmutableGraph<Integer> secondGraph, Integer node) {}
+      MutableGraph<Integer> firstGraph, MutableGraph<Integer> secondGraph, Integer node) {}
 
   @Provide
   Arbitrary<TwoGraphsAndNode> twoGraphsWithSameFlagsAndNodeFromFirst() {
@@ -343,7 +469,11 @@ class MoreGraphsUnionPropertyBasedTests {
             twoGraphs ->
                 Arbitraries.of(twoGraphs.first().nodes())
                     .map(
-                        node -> new TwoGraphsAndNode(twoGraphs.first(), twoGraphs.second(), node)));
+                        node -> {
+                          MutableGraph<Integer> first = Graphs.copyOf(twoGraphs.first());
+                          MutableGraph<Integer> second = Graphs.copyOf(twoGraphs.second());
+                          return new TwoGraphsAndNode(first, second, node);
+                        }));
   }
 
   @Provide
@@ -357,7 +487,11 @@ class MoreGraphsUnionPropertyBasedTests {
             twoGraphs ->
                 Arbitraries.of(twoGraphs.second().nodes())
                     .map(
-                        node -> new TwoGraphsAndNode(twoGraphs.first(), twoGraphs.second(), node)));
+                        node -> {
+                          MutableGraph<Integer> first = Graphs.copyOf(twoGraphs.first());
+                          MutableGraph<Integer> second = Graphs.copyOf(twoGraphs.second());
+                          return new TwoGraphsAndNode(first, second, node);
+                        }));
   }
 
   private static Arbitrary<TwoGraphs> twoGraphs(

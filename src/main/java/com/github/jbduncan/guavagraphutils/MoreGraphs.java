@@ -727,8 +727,7 @@ public final class MoreGraphs {
 
       @Override
       public Set<N> successors(N node) {
-        // TODO
-        throw new UnsupportedOperationException(NOT_YET_IMPLEMENTED);
+        return neighbours(node, Graph::successors);
       }
 
       private Set<N> neighbours(N node, BiFunction<Graph<N>, N, Set<N>> neighbours) {
@@ -737,11 +736,8 @@ public final class MoreGraphs {
             "Node %s is not an element of this graph.",
             node);
 
-        // If the first graph has neighbours for `node` and the second graph does not, this
-        // method will return just the first graph's neighbours. However, if an edge is ever put
-        // between `node` and another node in the second graph subsequently, then returning just the
-        // first graph's neighbours is no longer accurate. To fix this, a set view is returned
-        // that re-evaluates which graph's neighbours to forward to every time it is used.
+        // Re-evaluate which graph's neighbours to return each and every time this set is used, to
+        // account for the fact that `first` and `second` may be mutated in the future.
         return new ForwardingSet<>() {
           @Override
           protected Set<N> delegate() {

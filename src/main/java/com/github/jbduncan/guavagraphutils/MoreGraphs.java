@@ -661,23 +661,6 @@ public final class MoreGraphs {
     }
   }
 
-  // TODO: Finish this method to merge multiple graphs into one view.
-  // TODO: Read https://johanneslink.net/how-to-specify-it. The lessons at the very end recommended
-  //  the following strategies first:
-  //       1. Use model-based properties combined with validity properties.
-  //          Perhaps a set of nodes and a multimap of source nodes to
-  //          sink nodes will suffice as the model?
-  //       2. If model is hard to define, then use many metamorphic
-  //          properties instead.
-  // TODO: See if the following property-based tests are needed:
-  //      - Assert that merging a graph with its complement makes a complete graph (will only work
-  //        with graphs with a node count of >=5 according to
-  //        https://math.stackexchange.com/a/2961132/1067289).
-  //      - Assert that merging a graph with an empty graph returns the first graph.
-  //      - Assert that merging a graph with a singleton graph returns the first graph plus the
-  //        node from the second graph, if said node is not in the first graph already.
-  // TODO: Have you considered graphs with the same edge(s)?
-
   // TODO: Javadoc
   public static <N> Graph<N> union(Graph<N> first, Graph<N> second) {
     requireNonNull(first, "first");
@@ -693,8 +676,6 @@ public final class MoreGraphs {
         "Graph.nodeOrder() is not consistent for both graphs");
 
     return new AbstractGraph<>() {
-      static final String NOT_YET_IMPLEMENTED = "not yet implemented";
-
       @Override
       public Set<N> nodes() {
         return Sets.union(first.nodes(), second.nodes());
@@ -702,16 +683,19 @@ public final class MoreGraphs {
 
       @Override
       public boolean isDirected() {
+        // TODO: throw IllegalStateException if (first|second).isDirected() ever changes
         return first.isDirected();
       }
 
       @Override
       public boolean allowsSelfLoops() {
+        // TODO: throw IllegalStateException if (first|second).allowsSelfLoops() ever changes
         return first.allowsSelfLoops();
       }
 
       @Override
       public ElementOrder<N> nodeOrder() {
+        // TODO: throw IllegalStateException if (first|second).nodeOrder() ever changes
         return first.nodeOrder();
       }
 
@@ -752,8 +736,12 @@ public final class MoreGraphs {
         };
       }
 
-      // TODO: Override edgeCount
-      // TODO: Override incidentEdgeOrder
+      @Override
+      public ElementOrder<N> incidentEdgeOrder() {
+        // TODO: throw IllegalStateException if first.incidentEdgeOrder() ever changes
+        // TODO
+        return super.incidentEdgeOrder();
+      }
     };
   }
 

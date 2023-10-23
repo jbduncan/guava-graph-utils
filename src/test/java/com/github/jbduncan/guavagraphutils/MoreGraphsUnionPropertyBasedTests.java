@@ -12,7 +12,6 @@ import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.Graphs;
 import com.google.common.graph.ImmutableGraph;
 import com.google.common.graph.MutableGraph;
-import java.util.Collections;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.Assume;
@@ -715,11 +714,8 @@ class MoreGraphsUnionPropertyBasedTests {
 
   @Provide
   Arbitrary<TwoGraphsAndNode> twoGraphsWithSameFlagsAndNodeFromFirst() {
-    return MoreArbitraries.twoGraphsWithSameFlags()
+    return MoreArbitraries.twoGraphsWithSameFlagsAndDisjointedNodes()
         .filter(not(twoGraphs -> twoGraphs.first().nodes().isEmpty()))
-        .filter(
-            twoGraphs ->
-                Collections.disjoint(twoGraphs.first().nodes(), twoGraphs.second().nodes()))
         .flatMap(
             twoGraphs ->
                 Arbitraries.of(twoGraphs.first().nodes())
@@ -733,11 +729,8 @@ class MoreGraphsUnionPropertyBasedTests {
 
   @Provide
   Arbitrary<TwoGraphsAndNode> twoGraphsWithSameFlagsAndNodeFromSecond() {
-    return MoreArbitraries.twoGraphsWithSameFlags()
+    return MoreArbitraries.twoGraphsWithSameFlagsAndDisjointedNodes()
         .filter(not(twoGraphs -> twoGraphs.second().nodes().isEmpty()))
-        .filter(
-            twoGraphs ->
-                Collections.disjoint(twoGraphs.first().nodes(), twoGraphs.second().nodes()))
         .flatMap(
             twoGraphs ->
                 Arbitraries.of(twoGraphs.second().nodes())
@@ -749,6 +742,7 @@ class MoreGraphsUnionPropertyBasedTests {
                         }));
   }
 
+  // TODO: Move to MoreArbitraries and refactor
   private static Arbitrary<TwoGraphs> twoGraphs(
       boolean isDirectedA,
       boolean isDirectedB,
@@ -760,11 +754,13 @@ class MoreGraphsUnionPropertyBasedTests {
         MoreArbitraries.graphs(
             Arbitraries.just(isDirectedA),
             Arbitraries.just(allowsSelfLoopsA),
+            MoreArbitraries.nodes(),
             Arbitraries.just(nodeOrderA));
     var secondGraph =
         MoreArbitraries.graphs(
             Arbitraries.just(isDirectedB),
             Arbitraries.just(allowsSelfLoopsB),
+            MoreArbitraries.nodes(),
             Arbitraries.just(nodeOrderB));
     return Combinators.combine(firstGraph, secondGraph).as(TwoGraphs::new);
   }

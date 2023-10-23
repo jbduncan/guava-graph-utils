@@ -3,20 +3,24 @@ package com.github.jbduncan.guavagraphutils;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.function.Predicate.not;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.ElementOrder;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.ImmutableGraph;
 import com.google.common.graph.MutableGraph;
 import com.google.common.primitives.Booleans;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.Combinators;
-import net.jqwik.api.arbitraries.ListArbitrary;
+import net.jqwik.api.Tuple;
+import net.jqwik.api.arbitraries.SetArbitrary;
 import org.jgrapht.generate.GnpRandomGraphGenerator;
 import org.jgrapht.generate.RingGraphGenerator;
 import org.jgrapht.graph.guava.MutableGraphAdapter;
@@ -43,7 +47,7 @@ final class MoreArbitraries {
   }
 
   private static ImmutableGraph<Integer> ringGraph(
-      List<Integer> nodes, ElementOrder<Integer> nodeOrder) {
+      Collection<Integer> nodes, ElementOrder<Integer> nodeOrder) {
     MutableGraph<Integer> graph =
         GraphBuilder.directed().allowsSelfLoops(true).nodeOrder(nodeOrder).build();
     var graphAdapter = new MutableGraphAdapter<>(graph, nodes.iterator()::next, null);
@@ -65,6 +69,7 @@ final class MoreArbitraries {
                   graphs(
                       Arbitraries.just(isDirected),
                       Arbitraries.just(allowsSelfLoops),
+                      MoreArbitraries.nodes(),
                       Arbitraries.just(nodeOrder));
               return arbitraryGraphsWithFixedFlags
                   .tuple2()
@@ -72,21 +77,62 @@ final class MoreArbitraries {
             });
   }
 
+  static Arbitrary<TwoGraphs> twoGraphsWithSameFlagsAndDisjointedNodes() {
+    Arbitrary<Boolean> arbitraryIsDirected = Arbitraries.of(true, false);
+    Arbitrary<Boolean> arbitraryAllowsSelfLoops = Arbitraries.of(true, false);
+
+    return Combinators.combine(
+            arbitraryIsDirected, arbitraryAllowsSelfLoops, MoreArbitraries.nodes(), nodeOrders())
+        .flatAs(
+            (isDirected, allowsSelfLoops, nodes, nodeOrder) -> {
+              var nodesASize = Arbitraries.integers().between(0, nodes.size());
+              var splitNodes = nodesASize.map(n -> splitAtIndex(nodes, n));
+              return splitNodes.flatMap(
+                  sets ->
+                      Combinators.combine(
+                              graphs(
+                                  Arbitraries.just(isDirected),
+                                  Arbitraries.just(allowsSelfLoops),
+                                  Arbitraries.just(sets.get1()),
+                                  Arbitraries.just(nodeOrder)),
+                              graphs(
+                                  Arbitraries.just(isDirected),
+                                  Arbitraries.just(allowsSelfLoops),
+                                  Arbitraries.just(sets.get2()),
+                                  Arbitraries.just(nodeOrder)))
+                          .as(TwoGraphs::new));
+            });
+  }
+
+  private static <T> Tuple.Tuple2<Set<T>, Set<T>> splitAtIndex(Set<T> set, int index) {
+    var list = new ArrayList<>(set);
+    var nodesA = new ArrayList<T>(index);
+    for (int i = 0; i < index; i++) {
+      nodesA.add(list.get(i));
+    }
+    var nodesB = new ArrayList<T>();
+    for (int i = index; i < list.size(); i++) {
+      nodesB.add(list.get(i));
+    }
+    return Tuple.of(ImmutableSet.copyOf(nodesA), ImmutableSet.copyOf(nodesB));
+  }
+
   static Arbitrary<ImmutableGraph<Integer>> graphs() {
     return Arbitraries.oneOf(directedGraphs(), undirectedGraphs());
   }
 
   static Arbitrary<ImmutableGraph<Integer>> directedGraphs() {
-    return graphs(Arbitraries.just(true), Arbitraries.of(true, false), nodeOrders());
+    return graphs(Arbitraries.just(true), Arbitraries.of(true, false), nodes(), nodeOrders());
   }
 
   static Arbitrary<ImmutableGraph<Integer>> undirectedGraphs() {
-    return graphs(Arbitraries.just(false), Arbitraries.of(true, false), nodeOrders());
+    return graphs(Arbitraries.just(false), Arbitraries.of(true, false), nodes(), nodeOrders());
   }
 
   static Arbitrary<ImmutableGraph<Integer>> graphs(
       Arbitrary<Boolean> arbitraryIsDirected,
       Arbitrary<Boolean> arbitraryAllowsSelfLoops,
+      Arbitrary<Set<Integer>> arbitraryNodes,
       Arbitrary<ElementOrder<Integer>> arbitraryNodeOrder) {
 
     Arbitrary<MutableGraph<Integer>> arbitraryEmptyGraphs =
@@ -101,12 +147,15 @@ final class MoreArbitraries {
     Arbitrary<Double> arbitraryEdgeProbabilities =
         Arbitraries.doubles().between(0d, 1d).withSpecialValue(0d).withSpecialValue(1d);
     return Combinators.combine(
-            arbitraryEmptyGraphs, nodes(), arbitraryEdgeProbabilities, Arbitraries.randoms())
+            arbitraryEmptyGraphs, arbitraryNodes, arbitraryEdgeProbabilities, Arbitraries.randoms())
         .as(MoreArbitraries::populateGraph);
   }
 
   private static ImmutableGraph<Integer> populateGraph(
-      MutableGraph<Integer> graph, List<Integer> nodes, double edgeProbability, Random random) {
+      MutableGraph<Integer> graph,
+      Collection<Integer> nodes,
+      double edgeProbability,
+      Random random) {
     var graphAdapter = new MutableGraphAdapter<>(graph, nodes.iterator()::next, null);
     new GnpRandomGraphGenerator<Integer, EndpointPair<Integer>>(
             nodes.size(), edgeProbability, random, false)
@@ -114,15 +163,14 @@ final class MoreArbitraries {
     return ImmutableGraph.copyOf(graph);
   }
 
-  static ListArbitrary<Integer> nodes() {
+  static SetArbitrary<Integer> nodes() {
     return nodes(MIN_NODES_COUNT_FOR_ANY_GRAPH, MAX_NODES_COUNT_FOR_ANY_GRAPH);
   }
 
-  static ListArbitrary<Integer> nodes(int minNodesCount, int maxNodesCount) {
+  static SetArbitrary<Integer> nodes(int minNodesCount, int maxNodesCount) {
     return Arbitraries.integers()
         .between(SMALLEST_NODE, LARGEST_NODE)
-        .list()
-        .uniqueElements()
+        .set()
         .ofMinSize(minNodesCount)
         .ofMaxSize(maxNodesCount);
   }
@@ -148,7 +196,8 @@ final class MoreArbitraries {
   }
 
   private static ImmutableGraph<Integer> dagWithRandomEdges(
-      List<Integer> nodes, ElementOrder<Integer> nodeOrder, Random random) {
+      Collection<Integer> nodes, ElementOrder<Integer> nodeOrder, Random random) {
+    Integer[] nodesArray = nodes.toArray(Integer[]::new);
     int edgeCount =
         maxEdgesForDag(nodes.size()) == 0 //
             ? 0
@@ -168,7 +217,7 @@ final class MoreArbitraries {
     for (int i = 0; i < nodes.size() - 1; i++) {
       for (int j = i + 1; j < nodes.size(); j++) {
         if (randomEdges[index]) {
-          graphBuilder.putEdge(nodes.get(i), nodes.get(j));
+          graphBuilder.putEdge(nodesArray[i], nodesArray[j]);
         }
         index++;
       }

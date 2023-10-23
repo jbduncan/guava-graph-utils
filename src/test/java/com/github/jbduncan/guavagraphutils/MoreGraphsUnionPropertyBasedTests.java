@@ -196,7 +196,6 @@ class MoreGraphsUnionPropertyBasedTests {
         .hasMessage("Node %s is not an element of this graph.", node);
   }
 
-  // TODO: Make this test faster by making the two graphs have disjointed nodes at the source.
   @Property
   void givenTwoGraphsAndNodeFromFirst_whenCalculatingUnionAdjNodes_thenReturnAdjNodesOfFirst(
       // given
@@ -218,7 +217,6 @@ class MoreGraphsUnionPropertyBasedTests {
         .isEqualTo(firstGraph.adjacentNodes(node));
   }
 
-  // TODO: Make this test faster by making the two graphs have disjointed nodes at the source.
   @Property
   void givenTwoGraphsAndNodeFromSecond_whenCalculatingUnionAdjNodes_thenReturnAdjNodesOfSecond(
       // given
@@ -349,7 +347,6 @@ class MoreGraphsUnionPropertyBasedTests {
         .hasMessage("Node %s is not an element of this graph.", node);
   }
 
-  // TODO: Make this test faster by making the two graphs have disjointed nodes at the source.
   @Property
   void givenTwoGraphsAndNodeFromFirst_whenCalculatingUnionPredNodes_thenReturnPredNodesOfFirst(
       // given
@@ -371,7 +368,6 @@ class MoreGraphsUnionPropertyBasedTests {
         .isEqualTo(firstGraph.predecessors(node));
   }
 
-  // TODO: Make this test faster by making the two graphs have disjointed nodes at the source.
   @Property
   void givenTwoGraphsAndNodeFromSecond_whenCalculatingUnionPredNodes_thenReturnPredNodesOfSecond(
       // given
@@ -502,7 +498,6 @@ class MoreGraphsUnionPropertyBasedTests {
         .hasMessage("Node %s is not an element of this graph.", node);
   }
 
-  // TODO: Make this test faster by making the two graphs have disjointed nodes at the source.
   @Property
   void givenTwoGraphsAndNodeFromFirst_whenCalculatingUnionSuccNodes_thenReturnSuccNodesOfFirst(
       // given
@@ -524,7 +519,6 @@ class MoreGraphsUnionPropertyBasedTests {
         .isEqualTo(firstGraph.successors(node));
   }
 
-  // TODO: Make this test faster by making the two graphs have disjointed nodes at the source.
   @Property
   void givenTwoGraphsAndNodeFromSecond_whenCalculatingUnionSuccNodes_thenReturnSuccNodesOfSecond(
       // given

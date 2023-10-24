@@ -29,7 +29,7 @@ repositories {
 dependencies {
     implementation("com.google.guava:guava:32.1.3-jre")
 
-    testImplementation("net.jqwik:jqwik:1.8.0")
+    testImplementation("net.jqwik:jqwik:1.8.1")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.jgrapht:jgrapht-guava:1.5.2")
     testImplementation("org.jgrapht:jgrapht-core:1.5.2")

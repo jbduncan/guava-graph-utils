@@ -674,6 +674,9 @@ public final class MoreGraphs {
     checkArgument(
         first.nodeOrder().equals(second.nodeOrder()),
         "Graph.nodeOrder() is not consistent for both graphs");
+    checkArgument(
+        first.incidentEdgeOrder().equals(second.incidentEdgeOrder()),
+        "Graph.incidentEdgeOrder() is not consistent for both graphs");
 
     return new AbstractGraph<>() {
       @Override
@@ -683,19 +686,19 @@ public final class MoreGraphs {
 
       @Override
       public boolean isDirected() {
-        // TODO: throw IllegalStateException if (first|second).isDirected() ever changes
+        // TODO: throw IllegalStateException if (first|second).isDirected() ever differs
         return first.isDirected();
       }
 
       @Override
       public boolean allowsSelfLoops() {
-        // TODO: throw IllegalStateException if (first|second).allowsSelfLoops() ever changes
+        // TODO: throw IllegalStateException if (first|second).allowsSelfLoops() ever differs
         return first.allowsSelfLoops();
       }
 
       @Override
       public ElementOrder<N> nodeOrder() {
-        // TODO: throw IllegalStateException if (first|second).nodeOrder() ever changes
+        // TODO: throw IllegalStateException if (first|second).nodeOrder() ever differs
         return first.nodeOrder();
       }
 
@@ -725,6 +728,7 @@ public final class MoreGraphs {
         return new ForwardingSet<>() {
           @Override
           protected Set<N> delegate() {
+            // TODO: Throw IllegalStateException if first and second end up with no adjacent nodes.
             if (!second.nodes().contains(node)) {
               return neighbours.apply(first, node);
             }
@@ -738,9 +742,8 @@ public final class MoreGraphs {
 
       @Override
       public ElementOrder<N> incidentEdgeOrder() {
-        // TODO: throw IllegalStateException if first.incidentEdgeOrder() ever changes
-        // TODO
-        return super.incidentEdgeOrder();
+        // TODO: throw IllegalStateException if (first|second).incidentEdgeOrder() ever differs
+        return first.incidentEdgeOrder();
       }
     };
   }

@@ -178,7 +178,7 @@ public class MoreGraphsPropertyBasedTests {
   @Property
   void givenNullStartingNodes_whenCalculatingTopologicalOrdering_thenNpeIsThrown(
       // given
-      @ForAll("graphs") ImmutableGraph<Integer> graph) {
+      @ForAll("graphs") Graph<Integer> graph) {
     // when
     ThrowingCallable codeUnderTest = () -> MoreGraphs.topologicalOrderingStartingFrom(null, graph);
 
@@ -196,7 +196,7 @@ public class MoreGraphsPropertyBasedTests {
   @Property
   void givenStartingNodesWithNullNode_whenCalculatingTopologicalOrdering_thenNpeIsThrown(
       // given
-      @ForAll("graphs") ImmutableGraph<Integer> graph) {
+      @ForAll("graphs") Graph<Integer> graph) {
     // when
     ThrowingCallable codeUnderTest =
         () -> MoreGraphs.topologicalOrderingStartingFrom(singleton(null), graph);
@@ -330,7 +330,7 @@ public class MoreGraphsPropertyBasedTests {
   }
 
   @Provide
-  Arbitrary<ImmutableGraph<Integer>> graphs() {
+  Arbitrary<Graph<Integer>> graphs() {
     return MoreArbitraries.graphs();
   }
 }

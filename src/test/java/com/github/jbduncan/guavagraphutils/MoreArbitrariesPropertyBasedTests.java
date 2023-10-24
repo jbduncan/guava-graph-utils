@@ -2,8 +2,9 @@ package com.github.jbduncan.guavagraphutils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.github.jbduncan.guavagraphutils.MoreArbitraries.TwoElementOrders;
 import com.github.jbduncan.guavagraphutils.MoreArbitraries.TwoGraphs;
-import com.github.jbduncan.guavagraphutils.MoreArbitraries.TwoNodeOrders;
+import com.google.common.graph.Graph;
 import com.google.common.graph.Graphs;
 import com.google.common.graph.ImmutableGraph;
 import java.util.Set;
@@ -69,7 +70,7 @@ class MoreArbitrariesPropertyBasedTests {
   }
 
   @Property
-  void arbitraryDirectedGraphIsValid(@ForAll("directedGraphs") ImmutableGraph<Integer> graph) {
+  void arbitraryDirectedGraphIsValid(@ForAll("directedGraphs") Graph<Integer> graph) {
     Statistics.label("nodes count").collect(sizeStats(graph.nodes()));
     Statistics.label("edges count").collect(sizeStats(graph.edges()));
 
@@ -77,12 +78,12 @@ class MoreArbitrariesPropertyBasedTests {
   }
 
   @Provide
-  Arbitrary<ImmutableGraph<Integer>> directedGraphs() {
+  Arbitrary<Graph<Integer>> directedGraphs() {
     return MoreArbitraries.directedGraphs();
   }
 
   @Property
-  void arbitraryUndirectedGraphIsValid(@ForAll("undirectedGraphs") ImmutableGraph<Integer> graph) {
+  void arbitraryUndirectedGraphIsValid(@ForAll("undirectedGraphs") Graph<Integer> graph) {
     Statistics.label("nodes count").collect(sizeStats(graph.nodes()));
     Statistics.label("edges count").collect(sizeStats(graph.edges()));
 
@@ -90,20 +91,20 @@ class MoreArbitrariesPropertyBasedTests {
   }
 
   @Provide
-  Arbitrary<ImmutableGraph<Integer>> undirectedGraphs() {
+  Arbitrary<Graph<Integer>> undirectedGraphs() {
     return MoreArbitraries.undirectedGraphs();
   }
 
   @Property
   void arbitraryTwoDifferentNodeOrdersIsValid(
-      @ForAll("twoDifferentNodeOrders") TwoNodeOrders twoDifferentNodeOrders) {
+      @ForAll("twoDifferentNodeOrders") TwoElementOrders twoDifferentNodeOrders) {
     Statistics.collect(twoDifferentNodeOrders);
 
     assertThat(twoDifferentNodeOrders.first()).isNotEqualTo(twoDifferentNodeOrders.second());
   }
 
   @Provide
-  Arbitrary<TwoNodeOrders> twoDifferentNodeOrders() {
+  Arbitrary<TwoElementOrders> twoDifferentNodeOrders() {
     return MoreArbitraries.twoDifferentNodeOrders();
   }
 

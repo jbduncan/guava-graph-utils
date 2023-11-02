@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.jbduncan.guavagraphutils.MoreArbitraries.TwoElementOrders;
 import com.github.jbduncan.guavagraphutils.MoreArbitraries.TwoGraphs;
-import com.google.common.graph.Graph;
 import com.google.common.graph.Graphs;
 import com.google.common.graph.ImmutableGraph;
 import java.util.Set;
@@ -18,7 +17,8 @@ import net.jqwik.api.statistics.Statistics;
 @SuppressWarnings("UnstableApiUsage")
 class MoreArbitrariesPropertyBasedTests {
   @Property
-  void arbitraryDagIsValid(@ForAll("dags") ImmutableGraph<Integer> dag) {
+  void arbitraryDagIsValid(
+      @ForAll(supplier = MoreArbitraries.DirectedAcyclicGraphs.class) ImmutableGraph<Integer> dag) {
     Statistics.label("nodes count").collect(sizeStats(dag.nodes()));
     Statistics.label("edges count").collect(sizeStats(dag.edges()));
 
@@ -26,13 +26,9 @@ class MoreArbitrariesPropertyBasedTests {
     assertThat(dag.isDirected()).isTrue();
   }
 
-  @Provide
-  Arbitrary<ImmutableGraph<Integer>> dags() {
-    return MoreArbitraries.directedAcyclicGraphs();
-  }
-
   @Property
-  void arbitraryCyclicGraphIsValid(@ForAll("cyclicGraphs") ImmutableGraph<Integer> cyclicGraph) {
+  void arbitraryCyclicGraphIsValid(
+      @ForAll(supplier = MoreArbitraries.CyclicGraphs.class) ImmutableGraph<Integer> cyclicGraph) {
     Statistics.label("nodes count").collect(sizeStats(cyclicGraph.nodes()));
     Statistics.label("edges count").collect(sizeStats(cyclicGraph.edges()));
     Statistics.label("directed graph").collect(cyclicGraph.isDirected());
@@ -40,13 +36,9 @@ class MoreArbitrariesPropertyBasedTests {
     assertThat(Graphs.hasCycle(cyclicGraph)).isTrue();
   }
 
-  @Provide
-  Arbitrary<ImmutableGraph<Integer>> cyclicGraphs() {
-    return MoreArbitraries.cyclicGraphs();
-  }
-
   @Property
-  void arbitraryTwoGraphsWithSameFlagsAreValid(@ForAll("twoGraphsWithSameFlags") TwoGraphs graphs) {
+  void arbitraryTwoGraphsWithSameFlagsAreValid(
+      @ForAll(supplier = MoreArbitraries.TwoGraphsWithSameFlags.class) TwoGraphs graphs) {
     Statistics.label("first graph: nodes count").collect(sizeStats(graphs.first().nodes()));
     Statistics.label("first graph: edges count").collect(sizeStats(graphs.first().edges()));
     Statistics.label("first graph: node order").collect(graphs.first().nodeOrder());
@@ -62,37 +54,6 @@ class MoreArbitrariesPropertyBasedTests {
     assertThat(graphs.first().allowsSelfLoops()).isEqualTo(graphs.second().allowsSelfLoops());
     assertThat(graphs.first().nodeOrder()).isEqualTo(graphs.second().nodeOrder());
     assertThat(graphs.first().incidentEdgeOrder()).isEqualTo(graphs.second().incidentEdgeOrder());
-  }
-
-  @Provide
-  Arbitrary<TwoGraphs> twoGraphsWithSameFlags() {
-    return MoreArbitraries.twoGraphsWithSameFlags();
-  }
-
-  @Property
-  void arbitraryDirectedGraphIsValid(@ForAll("directedGraphs") Graph<Integer> graph) {
-    Statistics.label("nodes count").collect(sizeStats(graph.nodes()));
-    Statistics.label("edges count").collect(sizeStats(graph.edges()));
-
-    assertThat(graph.isDirected()).isTrue();
-  }
-
-  @Provide
-  Arbitrary<Graph<Integer>> directedGraphs() {
-    return MoreArbitraries.directedGraphs();
-  }
-
-  @Property
-  void arbitraryUndirectedGraphIsValid(@ForAll("undirectedGraphs") Graph<Integer> graph) {
-    Statistics.label("nodes count").collect(sizeStats(graph.nodes()));
-    Statistics.label("edges count").collect(sizeStats(graph.edges()));
-
-    assertThat(graph.isDirected()).isFalse();
-  }
-
-  @Provide
-  Arbitrary<Graph<Integer>> undirectedGraphs() {
-    return MoreArbitraries.undirectedGraphs();
   }
 
   @Property

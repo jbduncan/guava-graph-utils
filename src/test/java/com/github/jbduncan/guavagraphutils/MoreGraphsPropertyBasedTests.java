@@ -32,7 +32,8 @@ public class MoreGraphsPropertyBasedTests {
   @Property
   void givenADag_whenCalculatingLazyTopologicalOrdering_thenOrderingIsValid(
       // given
-      @ForAll("directedAcyclicGraphs") ImmutableGraph<Integer> graph) {
+      @ForAll(supplier = MoreArbitraries.DirectedAcyclicGraphs.class)
+          ImmutableGraph<Integer> graph) {
     // when
     var topologicalOrdering = MoreGraphs.lazyTopologicalOrdering(graph);
 
@@ -43,7 +44,8 @@ public class MoreGraphsPropertyBasedTests {
   @Property
   void givenADag_whenCalculatingLazyTopologicalOrdering_thenSizeIsNumNodesOfDag(
       // given
-      @ForAll("directedAcyclicGraphs") ImmutableGraph<Integer> graph) {
+      @ForAll(supplier = MoreArbitraries.DirectedAcyclicGraphs.class)
+          ImmutableGraph<Integer> graph) {
     // when
     var topologicalOrdering = MoreGraphs.lazyTopologicalOrdering(graph);
 
@@ -98,7 +100,7 @@ public class MoreGraphsPropertyBasedTests {
   @Property
   void givenCyclicGraph_whenCalculatingLazyTopologicalOrdering_thenIaeIsThrown(
       // given
-      @ForAll("cyclicGraphs") ImmutableGraph<Integer> graph) {
+      @ForAll(supplier = MoreArbitraries.CyclicGraphs.class) ImmutableGraph<Integer> graph) {
     // when
     ThrowingCallable codeUnderTest =
         () -> {
@@ -178,7 +180,7 @@ public class MoreGraphsPropertyBasedTests {
   @Property
   void givenNullStartingNodes_whenCalculatingTopologicalOrdering_thenNpeIsThrown(
       // given
-      @ForAll("graphs") Graph<Integer> graph) {
+      @ForAll(supplier = MoreArbitraries.Graphs.class) Graph<Integer> graph) {
     // when
     ThrowingCallable codeUnderTest = () -> MoreGraphs.topologicalOrderingStartingFrom(null, graph);
 
@@ -196,7 +198,7 @@ public class MoreGraphsPropertyBasedTests {
   @Property
   void givenStartingNodesWithNullNode_whenCalculatingTopologicalOrdering_thenNpeIsThrown(
       // given
-      @ForAll("graphs") Graph<Integer> graph) {
+      @ForAll(supplier = MoreArbitraries.Graphs.class) Graph<Integer> graph) {
     // when
     ThrowingCallable codeUnderTest =
         () -> MoreGraphs.topologicalOrderingStartingFrom(singleton(null), graph);
@@ -227,7 +229,8 @@ public class MoreGraphsPropertyBasedTests {
   @Property
   void givenADag_whenCalculatingTopologicalOrdering_thenOrderingIsValid(
       // given
-      @ForAll("directedAcyclicGraphs") ImmutableGraph<Integer> graph) {
+      @ForAll(supplier = MoreArbitraries.DirectedAcyclicGraphs.class)
+          ImmutableGraph<Integer> graph) {
     // when
     var topologicalOrdering = MoreGraphs.topologicalOrdering(graph);
 
@@ -259,7 +262,7 @@ public class MoreGraphsPropertyBasedTests {
   @Property
   void givenCyclicGraph_whenCalculatingTopologicalOrdering_thenIaeIsThrown(
       // given
-      @ForAll("cyclicGraphs") ImmutableGraph<Integer> graph) {
+      @ForAll(supplier = MoreArbitraries.CyclicGraphs.class) ImmutableGraph<Integer> graph) {
     // when
     ThrowingCallable codeUnderTest = () -> MoreGraphs.topologicalOrdering(graph);
 
@@ -303,34 +306,20 @@ public class MoreGraphsPropertyBasedTests {
   }
 
   @Provide
-  Arbitrary<ImmutableGraph<Integer>> directedAcyclicGraphs() {
-    return MoreArbitraries.directedAcyclicGraphs();
-  }
-
-  @Provide
   Arbitrary<Tuple2<ImmutableGraph<Integer>, Set<Integer>>> directedAcyclicGraphsAndStartingNodes(
-      @ForAll("directedAcyclicGraphs") ImmutableGraph<Integer> graph) {
+      @ForAll(supplier = MoreArbitraries.DirectedAcyclicGraphs.class)
+          ImmutableGraph<Integer> graph) {
     return Combinators.combine(Arbitraries.just(graph), Arbitraries.subsetOf(graph.nodes()))
         .as(Tuple::of);
   }
 
   @Provide
-  Arbitrary<ImmutableGraph<Integer>> cyclicGraphs() {
-    return MoreArbitraries.cyclicGraphs();
-  }
-
-  @Provide
   Arbitrary<Tuple2<ImmutableGraph<Integer>, Set<Integer>>> cyclicGraphsAndStartingNodes(
-      @ForAll("cyclicGraphs") ImmutableGraph<Integer> graph) {
+      @ForAll(supplier = MoreArbitraries.CyclicGraphs.class) ImmutableGraph<Integer> graph) {
     return Combinators.combine(
             Arbitraries.just(graph),
             Arbitraries.subsetOf(graph.nodes())
                 .ofMinSize(MIN_STARTING_NODES_COUNT_FOR_CYCLIC_GRAPH))
         .as(Tuple::of);
-  }
-
-  @Provide
-  Arbitrary<Graph<Integer>> graphs() {
-    return MoreArbitraries.graphs();
   }
 }

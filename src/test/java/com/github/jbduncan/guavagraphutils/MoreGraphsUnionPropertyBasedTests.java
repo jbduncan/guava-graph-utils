@@ -1,17 +1,15 @@
 package com.github.jbduncan.guavagraphutils;
 
 import static com.github.jbduncan.guavagraphutils.MoreArbitraries.nodes;
-import static java.util.function.Predicate.not;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
+import com.github.jbduncan.guavagraphutils.MoreArbitraries.GraphAndNode;
 import com.github.jbduncan.guavagraphutils.MoreArbitraries.TwoGraphs;
+import com.github.jbduncan.guavagraphutils.MoreArbitraries.TwoMutableGraphsAndNode;
 import com.google.common.collect.Sets;
-import com.google.common.graph.ElementOrder;
 import com.google.common.graph.Graph;
 import com.google.common.graph.GraphBuilder;
-import com.google.common.graph.Graphs;
-import com.google.common.graph.MutableGraph;
 import java.util.Set;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
@@ -35,7 +33,7 @@ class MoreGraphsUnionPropertyBasedTests {
     @Property
     void givenNullFirstGraph_whenCalculatingUnion_thenItThrowsNpe(
         // given
-        @ForAll("graphs") Graph<Integer> second) {
+        @ForAll(supplier = MoreArbitraries.Graphs.class) Graph<Integer> second) {
       // when
       ThrowingCallable codeUnderTest = () -> MoreGraphs.union(null, second);
 
@@ -49,7 +47,7 @@ class MoreGraphsUnionPropertyBasedTests {
     @Property
     void givenNullSecondGraph_whenCalculatingUnion_thenItThrowsNpe(
         // given
-        @ForAll("graphs") Graph<Integer> first) {
+        @ForAll(supplier = MoreArbitraries.Graphs.class) Graph<Integer> first) {
       // when
       ThrowingCallable codeUnderTest = () -> MoreGraphs.union(first, null);
 
@@ -139,7 +137,7 @@ class MoreGraphsUnionPropertyBasedTests {
     @Property
     void givenTwoGraphs_whenCalculatingUnionNodes_thenReturnUnionOfBothGraphsNodes(
         // given
-        @ForAll("twoGraphsWithSameFlags") TwoGraphs graphs) {
+        @ForAll(supplier = MoreArbitraries.TwoGraphsWithSameFlags.class) TwoGraphs graphs) {
 
       // when
       var union = MoreGraphs.union(graphs.first(), graphs.second());
@@ -160,7 +158,7 @@ class MoreGraphsUnionPropertyBasedTests {
     @Property
     void givenTwoGraphsWithSameIsDirected_whenCalculatingUnion_thenReturnCommonIsDirected(
         // given
-        @ForAll("twoGraphsWithSameFlags") TwoGraphs graphs) {
+        @ForAll(supplier = MoreArbitraries.TwoGraphsWithSameFlags.class) TwoGraphs graphs) {
       // when
       var union = MoreGraphs.union(graphs.first(), graphs.second());
 
@@ -180,7 +178,7 @@ class MoreGraphsUnionPropertyBasedTests {
     @Property
     void givenTwoGraphsWithSameAllowsSelfLoops_whenCalculatingUnion_thenReturnCommonAllowsSelfLoops(
         // given
-        @ForAll("twoGraphsWithSameFlags") TwoGraphs graphs) {
+        @ForAll(supplier = MoreArbitraries.TwoGraphsWithSameFlags.class) TwoGraphs graphs) {
       // when
       var union = MoreGraphs.union(graphs.first(), graphs.second());
 
@@ -200,7 +198,7 @@ class MoreGraphsUnionPropertyBasedTests {
     @Property
     void givenTwoGraphsWithSameNodeOrder_whenCalculatingUnion_thenReturnCommonNodeOrder(
         // given
-        @ForAll("twoGraphsWithSameFlags") TwoGraphs graphs) {
+        @ForAll(supplier = MoreArbitraries.TwoGraphsWithSameFlags.class) TwoGraphs graphs) {
       // when
       var union = MoreGraphs.union(graphs.first(), graphs.second());
 
@@ -220,7 +218,8 @@ class MoreGraphsUnionPropertyBasedTests {
     @Property
     void givenTwoGraphsAndNodeAbsentFromBoth_whenCalculatingUnionAdjNodes_thenThrowIae(
         // given
-        @ForAll("twoGraphsWithSameFlags") TwoGraphs graphs, @ForAll Integer node) {
+        @ForAll(supplier = MoreArbitraries.TwoGraphsWithSameFlags.class) TwoGraphs graphs,
+        @ForAll Integer node) {
       Assume.that(
           !graphs.first().nodes().contains(node) && !graphs.second().nodes().contains(node));
 
@@ -242,11 +241,11 @@ class MoreGraphsUnionPropertyBasedTests {
     @Property
     void givenTwoGraphsAndNodeFromFirst_whenCalculatingUnionAdjNodes_thenReturnAdjNodesOfFirst(
         // given
-        @ForAll("twoGraphsWithSameFlagsAndNodeFromFirst")
-            TwoMutableGraphsAndNode twoGraphsAndNode) {
-      var firstGraph = twoGraphsAndNode.firstGraph();
-      var secondGraph = twoGraphsAndNode.secondGraph();
-      var node = twoGraphsAndNode.node();
+        @ForAll(supplier = MoreArbitraries.TwoMutableGraphsWithSameFlagsAndNodeFromFirst.class)
+            TwoMutableGraphsAndNode twoMutableGraphsAndNode) {
+      var firstGraph = twoMutableGraphsAndNode.firstGraph();
+      var secondGraph = twoMutableGraphsAndNode.secondGraph();
+      var node = twoMutableGraphsAndNode.node();
 
       // when
       var union = MoreGraphs.union(firstGraph, secondGraph);
@@ -264,11 +263,11 @@ class MoreGraphsUnionPropertyBasedTests {
     @Property
     void givenTwoGraphsAndNodeFromSecond_whenCalculatingUnionAdjNodes_thenReturnAdjNodesOfSecond(
         // given
-        @ForAll("twoGraphsWithSameFlagsAndNodeFromSecond")
-            TwoMutableGraphsAndNode twoGraphsAndNode) {
-      var firstGraph = twoGraphsAndNode.firstGraph();
-      var secondGraph = twoGraphsAndNode.secondGraph();
-      var node = twoGraphsAndNode.node();
+        @ForAll(supplier = MoreArbitraries.TwoMutableGraphsWithSameFlagsAndNodeFromSecond.class)
+            TwoMutableGraphsAndNode twoMutableGraphsAndNode) {
+      var firstGraph = twoMutableGraphsAndNode.firstGraph();
+      var secondGraph = twoMutableGraphsAndNode.secondGraph();
+      var node = twoMutableGraphsAndNode.node();
 
       // when
       var union = MoreGraphs.union(firstGraph, secondGraph);
@@ -286,10 +285,11 @@ class MoreGraphsUnionPropertyBasedTests {
     @Property
     void givenTwoGraphsAndNode_whenCalculatingUnionAdjNodes_thenReturnUnionOfAdjNodesOfBoth(
         // given
-        @ForAll("twoGraphsWithSameFlagsAndCommonNode") TwoGraphsAndNode twoGraphsAndCommonNode) {
-      var firstGraph = twoGraphsAndCommonNode.firstGraph();
-      var secondGraph = twoGraphsAndCommonNode.secondGraph();
-      var commonNode = twoGraphsAndCommonNode.node();
+        @ForAll(supplier = MoreArbitraries.TwoMutableGraphsWithSameFlagsAndCommonNode.class)
+            TwoMutableGraphsAndNode twoMutableGraphsAndCommonNode) {
+      var firstGraph = twoMutableGraphsAndCommonNode.firstGraph();
+      var secondGraph = twoMutableGraphsAndCommonNode.secondGraph();
+      var commonNode = twoMutableGraphsAndCommonNode.node();
 
       // when
       var union = MoreGraphs.union(firstGraph, secondGraph);
@@ -311,7 +311,9 @@ class MoreGraphsUnionPropertyBasedTests {
     void
         givenTwoGraphsAndNodeFromFirst_whenGettingUnionAdjNodes_andSecondGraphMutated_thenReturnAdjNodesOfBoth(
             // given
-            @ForAll("graphAndNodePairs") GraphAndNode firstGraphAndNodeU, @ForAll Integer nodeV) {
+            @ForAll(supplier = MoreArbitraries.GraphsAndGraphNodes.class)
+                GraphAndNode firstGraphAndNodeU,
+            @ForAll Integer nodeV) {
       var firstGraph = firstGraphAndNodeU.graph();
       Assume.that(!firstGraph.edges().isEmpty());
       Assume.that(!firstGraph.nodes().contains(nodeV));
@@ -341,7 +343,9 @@ class MoreGraphsUnionPropertyBasedTests {
     void
         givenTwoGraphsAndNodeFromSecond_whenGettingUnionAdjNodes_andFirstGraphMutated_thenReturnAdjNodesOfBoth(
             // given
-            @ForAll("graphAndNodePairs") GraphAndNode secondGraphAndNodeU, @ForAll Integer nodeV) {
+            @ForAll(supplier = MoreArbitraries.GraphsAndGraphNodes.class)
+                GraphAndNode secondGraphAndNodeU,
+            @ForAll Integer nodeV) {
       var secondGraph = secondGraphAndNodeU.graph();
       Assume.that(!secondGraph.edges().isEmpty());
       Assume.that(!secondGraph.nodes().contains(nodeV));
@@ -373,7 +377,8 @@ class MoreGraphsUnionPropertyBasedTests {
     @Property
     void givenTwoGraphsAndNodeAbsentFromBoth_whenCalculatingUnionPredNodes_thenThrowIae(
         // given
-        @ForAll("twoGraphsWithSameFlags") TwoGraphs graphs, @ForAll Integer node) {
+        @ForAll(supplier = MoreArbitraries.TwoGraphsWithSameFlags.class) TwoGraphs graphs,
+        @ForAll Integer node) {
       Assume.that(
           !graphs.first().nodes().contains(node) && !graphs.second().nodes().contains(node));
 
@@ -395,11 +400,11 @@ class MoreGraphsUnionPropertyBasedTests {
     @Property
     void givenTwoGraphsAndNodeFromFirst_whenCalculatingUnionPredNodes_thenReturnPredNodesOfFirst(
         // given
-        @ForAll("twoGraphsWithSameFlagsAndNodeFromFirst")
-            TwoMutableGraphsAndNode twoGraphsAndNode) {
-      var firstGraph = twoGraphsAndNode.firstGraph();
-      var secondGraph = twoGraphsAndNode.secondGraph();
-      var node = twoGraphsAndNode.node();
+        @ForAll(supplier = MoreArbitraries.TwoMutableGraphsWithSameFlagsAndNodeFromFirst.class)
+            TwoMutableGraphsAndNode twoMutableGraphsAndNode) {
+      var firstGraph = twoMutableGraphsAndNode.firstGraph();
+      var secondGraph = twoMutableGraphsAndNode.secondGraph();
+      var node = twoMutableGraphsAndNode.node();
 
       // when
       var union = MoreGraphs.union(firstGraph, secondGraph);
@@ -417,11 +422,11 @@ class MoreGraphsUnionPropertyBasedTests {
     @Property
     void givenTwoGraphsAndNodeFromSecond_whenCalculatingUnionPredNodes_thenReturnPredNodesOfSecond(
         // given
-        @ForAll("twoGraphsWithSameFlagsAndNodeFromSecond")
-            TwoMutableGraphsAndNode twoGraphsAndNode) {
-      var firstGraph = twoGraphsAndNode.firstGraph();
-      var secondGraph = twoGraphsAndNode.secondGraph();
-      var node = twoGraphsAndNode.node();
+        @ForAll(supplier = MoreArbitraries.TwoMutableGraphsWithSameFlagsAndNodeFromSecond.class)
+            TwoMutableGraphsAndNode twoMutableGraphsAndNode) {
+      var firstGraph = twoMutableGraphsAndNode.firstGraph();
+      var secondGraph = twoMutableGraphsAndNode.secondGraph();
+      var node = twoMutableGraphsAndNode.node();
 
       // when
       var union = MoreGraphs.union(firstGraph, secondGraph);
@@ -439,10 +444,11 @@ class MoreGraphsUnionPropertyBasedTests {
     @Property
     void givenTwoGraphsAndNode_whenCalculatingUnionPredNodes_thenReturnUnionOfPredNodesOfBoth(
         // given
-        @ForAll("twoGraphsWithSameFlagsAndCommonNode") TwoGraphsAndNode twoGraphsAndCommonNode) {
-      var firstGraph = twoGraphsAndCommonNode.firstGraph();
-      var secondGraph = twoGraphsAndCommonNode.secondGraph();
-      var commonNode = twoGraphsAndCommonNode.node();
+        @ForAll(supplier = MoreArbitraries.TwoMutableGraphsWithSameFlagsAndCommonNode.class)
+            TwoMutableGraphsAndNode twoMutableGraphsAndCommonNode) {
+      var firstGraph = twoMutableGraphsAndCommonNode.firstGraph();
+      var secondGraph = twoMutableGraphsAndCommonNode.secondGraph();
+      var commonNode = twoMutableGraphsAndCommonNode.node();
 
       // when
       var union = MoreGraphs.union(firstGraph, secondGraph);
@@ -464,7 +470,9 @@ class MoreGraphsUnionPropertyBasedTests {
     void
         givenTwoGraphsAndNodeFromFirst_whenGettingUnionPredNodes_andSecondGraphMutated_thenReturnPredNodesOfBoth(
             // given
-            @ForAll("graphAndNodePairs") GraphAndNode firstGraphAndNodeV, @ForAll Integer nodeU) {
+            @ForAll(supplier = MoreArbitraries.GraphsAndGraphNodes.class)
+                GraphAndNode firstGraphAndNodeV,
+            @ForAll Integer nodeU) {
       var firstGraph = firstGraphAndNodeV.graph();
       Assume.that(!firstGraph.edges().isEmpty());
       Assume.that(!firstGraph.nodes().contains(nodeU));
@@ -494,7 +502,9 @@ class MoreGraphsUnionPropertyBasedTests {
     void
         givenTwoGraphsAndNodeFromSecond_whenGettingUnionPredNodes_andFirstGraphMutated_thenReturnPredNodesOfBoth(
             // given
-            @ForAll("graphAndNodePairs") GraphAndNode secondGraphAndNodeV, @ForAll Integer nodeU) {
+            @ForAll(supplier = MoreArbitraries.GraphsAndGraphNodes.class)
+                GraphAndNode secondGraphAndNodeV,
+            @ForAll Integer nodeU) {
       var secondGraph = secondGraphAndNodeV.graph();
       Assume.that(!secondGraph.edges().isEmpty());
       Assume.that(!secondGraph.nodes().contains(nodeU));
@@ -526,7 +536,8 @@ class MoreGraphsUnionPropertyBasedTests {
     @Property
     void givenTwoGraphsAndNodeAbsentFromBoth_whenCalculatingUnionSuccNodes_thenThrowIae(
         // given
-        @ForAll("twoGraphsWithSameFlags") TwoGraphs graphs, @ForAll Integer node) {
+        @ForAll(supplier = MoreArbitraries.TwoGraphsWithSameFlags.class) TwoGraphs graphs,
+        @ForAll Integer node) {
       Assume.that(
           !graphs.first().nodes().contains(node) && !graphs.second().nodes().contains(node));
 
@@ -548,11 +559,11 @@ class MoreGraphsUnionPropertyBasedTests {
     @Property
     void givenTwoGraphsAndNodeFromFirst_whenCalculatingUnionSuccNodes_thenReturnSuccNodesOfFirst(
         // given
-        @ForAll("twoGraphsWithSameFlagsAndNodeFromFirst")
-            TwoMutableGraphsAndNode twoGraphsAndNode) {
-      var firstGraph = twoGraphsAndNode.firstGraph();
-      var secondGraph = twoGraphsAndNode.secondGraph();
-      var node = twoGraphsAndNode.node();
+        @ForAll(supplier = MoreArbitraries.TwoMutableGraphsWithSameFlagsAndNodeFromFirst.class)
+            TwoMutableGraphsAndNode twoMutableGraphsAndNode) {
+      var firstGraph = twoMutableGraphsAndNode.firstGraph();
+      var secondGraph = twoMutableGraphsAndNode.secondGraph();
+      var node = twoMutableGraphsAndNode.node();
 
       // when
       var union = MoreGraphs.union(firstGraph, secondGraph);
@@ -570,11 +581,11 @@ class MoreGraphsUnionPropertyBasedTests {
     @Property
     void givenTwoGraphsAndNodeFromSecond_whenCalculatingUnionSuccNodes_thenReturnSuccNodesOfSecond(
         // given
-        @ForAll("twoGraphsWithSameFlagsAndNodeFromSecond")
-            TwoMutableGraphsAndNode twoGraphsAndNode) {
-      var firstGraph = twoGraphsAndNode.firstGraph();
-      var secondGraph = twoGraphsAndNode.secondGraph();
-      var node = twoGraphsAndNode.node();
+        @ForAll(supplier = MoreArbitraries.TwoMutableGraphsWithSameFlagsAndNodeFromSecond.class)
+            TwoMutableGraphsAndNode twoMutableGraphsAndNode) {
+      var firstGraph = twoMutableGraphsAndNode.firstGraph();
+      var secondGraph = twoMutableGraphsAndNode.secondGraph();
+      var node = twoMutableGraphsAndNode.node();
 
       // when
       var union = MoreGraphs.union(firstGraph, secondGraph);
@@ -592,10 +603,11 @@ class MoreGraphsUnionPropertyBasedTests {
     @Property
     void givenTwoGraphsAndNode_whenCalculatingUnionSuccNodes_thenReturnUnionOfSuccNodesOfBoth(
         // given
-        @ForAll("twoGraphsWithSameFlagsAndCommonNode") TwoGraphsAndNode twoGraphsAndCommonNode) {
-      var firstGraph = twoGraphsAndCommonNode.firstGraph();
-      var secondGraph = twoGraphsAndCommonNode.secondGraph();
-      var commonNode = twoGraphsAndCommonNode.node();
+        @ForAll(supplier = MoreArbitraries.TwoMutableGraphsWithSameFlagsAndCommonNode.class)
+            TwoMutableGraphsAndNode twoMutableGraphsAndCommonNode) {
+      var firstGraph = twoMutableGraphsAndCommonNode.firstGraph();
+      var secondGraph = twoMutableGraphsAndCommonNode.secondGraph();
+      var commonNode = twoMutableGraphsAndCommonNode.node();
 
       // when
       var union = MoreGraphs.union(firstGraph, secondGraph);
@@ -616,7 +628,9 @@ class MoreGraphsUnionPropertyBasedTests {
     void
         givenTwoGraphsAndNodeFromFirst_whenGettingUnionSuccNodes_andSecondGraphMutated_thenReturnSuccNodesOfBoth(
             // given
-            @ForAll("graphAndNodePairs") GraphAndNode firstGraphAndNodeU, @ForAll Integer nodeV) {
+            @ForAll(supplier = MoreArbitraries.GraphsAndGraphNodes.class)
+                GraphAndNode firstGraphAndNodeU,
+            @ForAll Integer nodeV) {
       var firstGraph = firstGraphAndNodeU.graph();
       Assume.that(!firstGraph.edges().isEmpty());
       Assume.that(!firstGraph.nodes().contains(nodeV));
@@ -646,7 +660,9 @@ class MoreGraphsUnionPropertyBasedTests {
     void
         givenTwoGraphsAndNodeFromSecond_whenGettingUnionSuccNodes_andFirstGraphMutated_thenReturnSuccNodesOfBoth(
             // given
-            @ForAll("graphAndNodePairs") GraphAndNode secondGraphAndNodeU, @ForAll Integer nodeV) {
+            @ForAll(supplier = MoreArbitraries.GraphsAndGraphNodes.class)
+                GraphAndNode secondGraphAndNodeU,
+            @ForAll Integer nodeV) {
       var secondGraph = secondGraphAndNodeU.graph();
       Assume.that(!secondGraph.edges().isEmpty());
       Assume.that(!secondGraph.nodes().contains(nodeV));
@@ -678,7 +694,7 @@ class MoreGraphsUnionPropertyBasedTests {
     @Property
     void givenTwoGraphsWithSameIncidentEdgeOrder_whenCalculatingUnion_thenReturnCommonNodeOrder(
         // given
-        @ForAll("twoGraphsWithSameFlags") TwoGraphs graphs) {
+        @ForAll(supplier = MoreArbitraries.TwoGraphsWithSameFlags.class) TwoGraphs graphs) {
       // when
       var union = MoreGraphs.union(graphs.first(), graphs.second());
 
@@ -694,28 +710,6 @@ class MoreGraphsUnionPropertyBasedTests {
   }
 
   @Provide
-  Arbitrary<Graph<Integer>> graphs() {
-    return MoreArbitraries.graphs();
-  }
-
-  record GraphAndNode(Graph<Integer> graph, Integer node) {}
-
-  @Provide
-  Arbitrary<GraphAndNode> graphAndNodePairs() {
-    return MoreArbitraries.graphs()
-        .filter(not(graph -> graph.nodes().isEmpty()))
-        .flatMap(
-            graph ->
-                Combinators.combine(Arbitraries.just(graph), Arbitraries.of(graph.nodes()))
-                    .as(GraphAndNode::new));
-  }
-
-  @Provide
-  Arbitrary<TwoGraphs> twoGraphsWithSameFlags() {
-    return MoreArbitraries.twoGraphsWithSameFlags();
-  }
-
-  @Provide
   Arbitrary<TwoGraphs> twoGraphsWithDifferentIsDirected() {
     var arbitraryIsDirected = Arbitraries.of(true, false);
     var arbitraryAllowsSelfLoops = Arbitraries.of(true, false);
@@ -723,15 +717,18 @@ class MoreGraphsUnionPropertyBasedTests {
     return Combinators.combine(
             arbitraryIsDirected,
             arbitraryAllowsSelfLoops,
+            MoreArbitraries.nodes(),
             MoreArbitraries.nodeOrders(),
             MoreArbitraries.incidentEdgeOrders())
         .flatAs(
-            (isDirected, allowsSelfLoops, nodeOrder, incidentEdgeOrder) ->
-                twoGraphs(
+            (isDirected, allowsSelfLoops, nodes, nodeOrder, incidentEdgeOrder) ->
+                MoreArbitraries.twoGraphs(
                     isDirected,
                     !isDirected,
                     allowsSelfLoops,
                     allowsSelfLoops,
+                    nodes,
+                    nodes,
                     nodeOrder,
                     nodeOrder,
                     incidentEdgeOrder,
@@ -746,15 +743,18 @@ class MoreGraphsUnionPropertyBasedTests {
     return Combinators.combine(
             arbitraryIsDirected,
             arbitraryAllowsSelfLoops,
+            MoreArbitraries.nodes(),
             MoreArbitraries.nodeOrders(),
             MoreArbitraries.incidentEdgeOrders())
         .flatAs(
-            (isDirected, allowsSelfLoops, nodeOrder, incidentEdgeOrder) ->
-                twoGraphs(
+            (isDirected, allowsSelfLoops, nodes, nodeOrder, incidentEdgeOrder) ->
+                MoreArbitraries.twoGraphs(
                     isDirected,
                     isDirected,
                     allowsSelfLoops,
                     !allowsSelfLoops,
+                    nodes,
+                    nodes,
                     nodeOrder,
                     nodeOrder,
                     incidentEdgeOrder,
@@ -769,15 +769,18 @@ class MoreGraphsUnionPropertyBasedTests {
     return Combinators.combine(
             arbitraryIsDirected,
             arbitraryAllowsSelfLoops,
+            MoreArbitraries.nodes(),
             MoreArbitraries.twoDifferentNodeOrders(),
             MoreArbitraries.incidentEdgeOrders())
         .flatAs(
-            (isDirected, allowsSelfLoops, twoDifferentNodeOrders, incidentEdgeOrder) ->
-                twoGraphs(
+            (isDirected, allowsSelfLoops, nodes, twoDifferentNodeOrders, incidentEdgeOrder) ->
+                MoreArbitraries.twoGraphs(
                     isDirected,
                     isDirected,
                     allowsSelfLoops,
                     allowsSelfLoops,
+                    nodes,
+                    nodes,
                     twoDifferentNodeOrders.first(),
                     twoDifferentNodeOrders.second(),
                     incidentEdgeOrder,
@@ -792,118 +795,21 @@ class MoreGraphsUnionPropertyBasedTests {
     return Combinators.combine(
             arbitraryIsDirected,
             arbitraryAllowsSelfLoops,
+            MoreArbitraries.nodes(),
             MoreArbitraries.nodeOrders(),
             MoreArbitraries.twoDifferentIncidentEdgeOrders())
         .flatAs(
-            (isDirected, allowsSelfLoops, nodeOrder, twoDifferentIncidentEdgeOrders) ->
-                twoGraphs(
+            (isDirected, allowsSelfLoops, nodes, nodeOrder, twoDifferentIncidentEdgeOrders) ->
+                MoreArbitraries.twoGraphs(
                     isDirected,
                     isDirected,
                     allowsSelfLoops,
                     allowsSelfLoops,
+                    nodes,
+                    nodes,
                     nodeOrder,
                     nodeOrder,
                     twoDifferentIncidentEdgeOrders.first(),
                     twoDifferentIncidentEdgeOrders.second()));
-  }
-
-  record TwoMutableGraphsAndNode(
-      MutableGraph<Integer> firstGraph, MutableGraph<Integer> secondGraph, Integer node) {}
-
-  record TwoGraphsAndNode(Graph<Integer> firstGraph, Graph<Integer> secondGraph, Integer node) {}
-
-  @Provide
-  Arbitrary<TwoMutableGraphsAndNode> twoGraphsWithSameFlagsAndNodeFromFirst() {
-    return MoreArbitraries.twoGraphsWithSameFlagsAndDisjointedNodes()
-        .filter(not(twoGraphs -> twoGraphs.first().nodes().isEmpty()))
-        .flatMap(
-            twoGraphs ->
-                Arbitraries.of(twoGraphs.first().nodes())
-                    .map(
-                        node -> {
-                          MutableGraph<Integer> first = Graphs.copyOf(twoGraphs.first());
-                          MutableGraph<Integer> second = Graphs.copyOf(twoGraphs.second());
-                          return new TwoMutableGraphsAndNode(first, second, node);
-                        }));
-  }
-
-  @Provide
-  Arbitrary<TwoMutableGraphsAndNode> twoGraphsWithSameFlagsAndNodeFromSecond() {
-    return MoreArbitraries.twoGraphsWithSameFlagsAndDisjointedNodes()
-        .filter(not(twoGraphs -> twoGraphs.second().nodes().isEmpty()))
-        .flatMap(
-            twoGraphs ->
-                Arbitraries.of(twoGraphs.second().nodes())
-                    .map(
-                        node -> {
-                          MutableGraph<Integer> first = Graphs.copyOf(twoGraphs.first());
-                          MutableGraph<Integer> second = Graphs.copyOf(twoGraphs.second());
-                          return new TwoMutableGraphsAndNode(first, second, node);
-                        }));
-  }
-
-  @Provide
-  Arbitrary<TwoGraphsAndNode> twoGraphsWithSameFlagsAndCommonNode() {
-    Arbitrary<Boolean> arbitraryIsDirected = Arbitraries.of(true, false);
-    Arbitrary<Boolean> arbitraryAllowsSelfLoops = Arbitraries.of(true, false);
-
-    return Combinators.combine(
-            arbitraryIsDirected,
-            arbitraryAllowsSelfLoops,
-            MoreArbitraries.nodes(),
-            MoreArbitraries.nodes(),
-            Arbitraries.integers(),
-            MoreArbitraries.nodeOrders(),
-            MoreArbitraries.incidentEdgeOrders())
-        .flatAs(
-            (isDirected,
-                allowsSelfLoops,
-                nodesA,
-                nodesB,
-                commonNode,
-                nodeOrder,
-                incidentEdgeOrder) ->
-                Combinators.combine(
-                        MoreArbitraries.graphs(
-                            Arbitraries.just(isDirected),
-                            Arbitraries.just(allowsSelfLoops),
-                            Arbitraries.just(Sets.union(nodesA, Set.of(commonNode))),
-                            Arbitraries.just(nodeOrder),
-                            Arbitraries.just(incidentEdgeOrder)),
-                        MoreArbitraries.graphs(
-                            Arbitraries.just(isDirected),
-                            Arbitraries.just(allowsSelfLoops),
-                            Arbitraries.just(Sets.union(nodesB, Set.of(commonNode))),
-                            Arbitraries.just(nodeOrder),
-                            Arbitraries.just(incidentEdgeOrder)),
-                        Arbitraries.just(commonNode))
-                    .as(TwoGraphsAndNode::new));
-  }
-
-  // TODO: Move to MoreArbitraries and refactor
-  private static Arbitrary<TwoGraphs> twoGraphs(
-      boolean isDirectedA,
-      boolean isDirectedB,
-      boolean allowsSelfLoopsA,
-      boolean allowsSelfLoopsB,
-      ElementOrder<Integer> nodeOrderA,
-      ElementOrder<Integer> nodeOrderB,
-      ElementOrder<Integer> incidentEdgeOrderA,
-      ElementOrder<Integer> incidentEdgeOrderB) {
-    var firstGraph =
-        MoreArbitraries.graphs(
-            Arbitraries.just(isDirectedA),
-            Arbitraries.just(allowsSelfLoopsA),
-            nodes(),
-            Arbitraries.just(nodeOrderA),
-            Arbitraries.just(incidentEdgeOrderA));
-    var secondGraph =
-        MoreArbitraries.graphs(
-            Arbitraries.just(isDirectedB),
-            Arbitraries.just(allowsSelfLoopsB),
-            nodes(),
-            Arbitraries.just(nodeOrderB),
-            Arbitraries.just(incidentEdgeOrderB));
-    return Combinators.combine(firstGraph, secondGraph).as(TwoGraphs::new);
   }
 }

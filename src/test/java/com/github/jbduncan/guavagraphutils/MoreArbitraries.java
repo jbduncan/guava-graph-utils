@@ -41,13 +41,7 @@ final class MoreArbitraries {
   static class Graphs implements ArbitrarySupplier<Graph<Integer>> {
     @Override
     public Arbitrary<Graph<Integer>> get() {
-      return graphs(
-          // TODO: Move into field ARBITRARY_BOOLEANS behind MoreArbitraries.booleans()
-          Arbitraries.of(true, false),
-          Arbitraries.of(true, false),
-          nodes(),
-          nodeOrders(),
-          incidentEdgeOrders());
+      return graphs(booleans(), booleans(), nodes(), nodeOrders(), incidentEdgeOrders());
     }
   }
 
@@ -164,12 +158,7 @@ final class MoreArbitraries {
   static class GraphsAndGraphNodes implements ArbitrarySupplier<GraphAndNode> {
     @Override
     public Arbitrary<GraphAndNode> get() {
-      return graphs(
-              Arbitraries.of(true, false),
-              Arbitraries.of(true, false),
-              nodes(),
-              nodeOrders(),
-              incidentEdgeOrders())
+      return graphs(booleans(), booleans(), nodes(), nodeOrders(), incidentEdgeOrders())
           .filter(not(graph -> graph.nodes().isEmpty()))
           .flatMap(
               graph ->
@@ -211,8 +200,8 @@ final class MoreArbitraries {
   static class TwoGraphsWithSameFlags implements ArbitrarySupplier<TwoGraphs> {
     @Override
     public Arbitrary<TwoGraphs> get() {
-      Arbitrary<Boolean> arbitraryIsDirected = Arbitraries.of(true, false);
-      Arbitrary<Boolean> arbitraryAllowsSelfLoops = Arbitraries.of(true, false);
+      Arbitrary<Boolean> arbitraryIsDirected = booleans();
+      Arbitrary<Boolean> arbitraryAllowsSelfLoops = booleans();
 
       return Combinators.combine(
               arbitraryIsDirected, arbitraryAllowsSelfLoops, nodeOrders(), incidentEdgeOrders())
@@ -276,8 +265,8 @@ final class MoreArbitraries {
   }
 
   private static Arbitrary<TwoGraphs> twoGraphsWithSameFlagsAndDisjointedNodes() {
-    Arbitrary<Boolean> arbitraryIsDirected = Arbitraries.of(true, false);
-    Arbitrary<Boolean> arbitraryAllowsSelfLoops = Arbitraries.of(true, false);
+    Arbitrary<Boolean> arbitraryIsDirected = booleans();
+    Arbitrary<Boolean> arbitraryAllowsSelfLoops = booleans();
 
     return Combinators.combine(
             arbitraryIsDirected,
@@ -322,8 +311,8 @@ final class MoreArbitraries {
       implements ArbitrarySupplier<TwoMutableGraphsAndNode> {
     @Override
     public Arbitrary<TwoMutableGraphsAndNode> get() {
-      Arbitrary<Boolean> arbitraryIsDirected = Arbitraries.of(true, false);
-      Arbitrary<Boolean> arbitraryAllowsSelfLoops = Arbitraries.of(true, false);
+      Arbitrary<Boolean> arbitraryIsDirected = booleans();
+      Arbitrary<Boolean> arbitraryAllowsSelfLoops = booleans();
 
       return Combinators.combine(
               arbitraryIsDirected,
@@ -385,8 +374,11 @@ final class MoreArbitraries {
           ElementOrder.stable(),
           ElementOrder.sorted(Comparator.<Integer>reverseOrder()));
 
+  private static final Arbitrary<ElementOrder<Integer>> ARBITRARY_NODE_ORDERS =
+      Arbitraries.of(NODE_ORDERS);
+
   static Arbitrary<ElementOrder<Integer>> nodeOrders() {
-    return Arbitraries.of(NODE_ORDERS);
+    return ARBITRARY_NODE_ORDERS;
   }
 
   static Arbitrary<TwoElementOrders> twoDifferentNodeOrders() {
@@ -404,7 +396,7 @@ final class MoreArbitraries {
   }
 
   static Arbitrary<TwoElementOrders> twoDifferentIncidentEdgeOrders() {
-    return Arbitraries.of(true, false)
+    return booleans()
         .map(
             unorderedFirst -> {
               if (!unorderedFirst) {
@@ -413,6 +405,13 @@ final class MoreArbitraries {
                 return new TwoElementOrders(ElementOrder.unordered(), ElementOrder.stable());
               }
             });
+  }
+
+  private static final Arbitrary<Boolean> ARBITRARY_BOOLEANS =
+      Arbitraries.of(Boolean.TRUE, Boolean.FALSE);
+
+  static Arbitrary<Boolean> booleans() {
+    return ARBITRARY_BOOLEANS;
   }
 
   private MoreArbitraries() {}

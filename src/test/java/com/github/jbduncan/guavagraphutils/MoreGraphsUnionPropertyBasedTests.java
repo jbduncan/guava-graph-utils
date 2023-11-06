@@ -1,6 +1,5 @@
 package com.github.jbduncan.guavagraphutils;
 
-import static com.github.jbduncan.guavagraphutils.MoreArbitraries.nodes;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
@@ -11,7 +10,6 @@ import com.google.common.collect.Sets;
 import com.google.common.graph.Graph;
 import com.google.common.graph.GraphBuilder;
 import java.util.Set;
-import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.Assume;
 import net.jqwik.api.Combinators;
@@ -711,8 +709,8 @@ class MoreGraphsUnionPropertyBasedTests {
 
   @Provide
   Arbitrary<TwoGraphs> twoGraphsWithDifferentIsDirected() {
-    var arbitraryIsDirected = Arbitraries.of(true, false);
-    var arbitraryAllowsSelfLoops = Arbitraries.of(true, false);
+    var arbitraryIsDirected = MoreArbitraries.booleans();
+    var arbitraryAllowsSelfLoops = MoreArbitraries.booleans();
 
     return Combinators.combine(
             arbitraryIsDirected,
@@ -737,8 +735,8 @@ class MoreGraphsUnionPropertyBasedTests {
 
   @Provide
   Arbitrary<TwoGraphs> twoGraphsWithDifferentAllowsSelfLoops() {
-    var arbitraryIsDirected = Arbitraries.of(true, false);
-    var arbitraryAllowsSelfLoops = Arbitraries.of(true, false);
+    var arbitraryIsDirected = MoreArbitraries.booleans();
+    var arbitraryAllowsSelfLoops = MoreArbitraries.booleans();
 
     return Combinators.combine(
             arbitraryIsDirected,
@@ -763,8 +761,8 @@ class MoreGraphsUnionPropertyBasedTests {
 
   @Provide
   Arbitrary<TwoGraphs> twoGraphsWithDifferentNodeOrder() {
-    var arbitraryIsDirected = Arbitraries.of(true, false);
-    var arbitraryAllowsSelfLoops = Arbitraries.of(true, false);
+    var arbitraryIsDirected = MoreArbitraries.booleans();
+    var arbitraryAllowsSelfLoops = MoreArbitraries.booleans();
 
     return Combinators.combine(
             arbitraryIsDirected,
@@ -789,8 +787,8 @@ class MoreGraphsUnionPropertyBasedTests {
 
   @Provide
   Arbitrary<TwoGraphs> twoGraphsWithDifferentIncidentEdgeOrder() {
-    var arbitraryIsDirected = Arbitraries.of(true, false);
-    var arbitraryAllowsSelfLoops = Arbitraries.of(true, false);
+    var arbitraryIsDirected = MoreArbitraries.booleans();
+    var arbitraryAllowsSelfLoops = MoreArbitraries.booleans();
 
     return Combinators.combine(
             arbitraryIsDirected,

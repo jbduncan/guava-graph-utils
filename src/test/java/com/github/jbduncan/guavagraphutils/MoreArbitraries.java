@@ -384,10 +384,10 @@ final class MoreArbitraries {
   static Arbitrary<TwoElementOrders> twoDifferentNodeOrders() {
     return MoreArbitraries.nodeOrders()
         .flatMap(
-            elementOrder ->
+            nodeOrder ->
                 Combinators.combine(
-                        Arbitraries.just(elementOrder),
-                        Arbitraries.of(Sets.difference(NODE_ORDERS, Set.of(elementOrder))))
+                        Arbitraries.just(nodeOrder),
+                        Arbitraries.of(Sets.difference(NODE_ORDERS, Set.of(nodeOrder))))
                     .as(TwoElementOrders::new));
   }
 
@@ -396,15 +396,9 @@ final class MoreArbitraries {
   }
 
   static Arbitrary<TwoElementOrders> twoDifferentIncidentEdgeOrders() {
-    return booleans()
-        .map(
-            unorderedFirst -> {
-              if (!unorderedFirst) {
-                return new TwoElementOrders(ElementOrder.stable(), ElementOrder.unordered());
-              } else {
-                return new TwoElementOrders(ElementOrder.unordered(), ElementOrder.stable());
-              }
-            });
+    return Arbitraries.of(
+        new TwoElementOrders(ElementOrder.stable(), ElementOrder.unordered()),
+        new TwoElementOrders(ElementOrder.unordered(), ElementOrder.stable()));
   }
 
   private static final Arbitrary<Boolean> ARBITRARY_BOOLEANS =

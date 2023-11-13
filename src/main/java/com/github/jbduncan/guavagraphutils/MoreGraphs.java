@@ -88,10 +88,7 @@ public final class MoreGraphs {
    * @see <a href='https://stackoverflow.com/a/58457785/2252930'>this StackOverflow answer for the
    *     origin of this method</a>
    */
-  // TODO: Can we make a version of common.graph.Traverser with an API like
-  //   "Traverser.forGraph(successorsFunction).toGraphBreadthFirst(startingNodes)"
-  //   that replaces this static method?
-  public static <N> ImmutableGraph<N> buildGraphWithBreadthFirstTraversal(
+  public static <N> ImmutableGraph<N> buildGraph(
       Iterable<N> startingNodes, SuccessorsFunction<N> successorsFunction) {
     requireNonNull(startingNodes, "startingNodes");
     requireNonNull(successorsFunction, "successorsFunction");

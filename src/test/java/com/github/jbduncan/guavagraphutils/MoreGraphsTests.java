@@ -16,8 +16,7 @@ class MoreGraphsTests {
   @Test
   void whenBuildingGraphWithBftAndEmptyStartingNodes_thenResultIsEmptyGraph() {
     // when
-    var result =
-        MoreGraphs.buildGraphWithBreadthFirstTraversal(Set.of(), node -> Set.of("any old node"));
+    var result = MoreGraphs.buildGraph(Set.of(), node -> Set.of("any old node"));
 
     // then
     assertThat(result).isEqualTo(GraphBuilder.directed().allowsSelfLoops(true).immutable().build());
@@ -26,8 +25,7 @@ class MoreGraphsTests {
   @Test
   void whenBuildingGraphWithBftAndEmptySuccessorsFunction_thenResultIsEqualToStartingNodes() {
     // when
-    var result =
-        MoreGraphs.buildGraphWithBreadthFirstTraversal(Set.of("any old node"), node -> Set.of());
+    var result = MoreGraphs.buildGraph(Set.of("any old node"), node -> Set.of());
 
     // then
     assertThat(result)
@@ -43,8 +41,7 @@ class MoreGraphsTests {
   void whenBuildingGraphWithBftAndCyclicSuccessorsFunction_thenResultTerminatesAndContainsCycle() {
     // when
     var result =
-        MoreGraphs.buildGraphWithBreadthFirstTraversal(
-            Set.of(1), node -> (node * 2) <= 4 ? Set.of(node * 2) : Set.of(1));
+        MoreGraphs.buildGraph(Set.of(1), node -> (node * 2) <= 4 ? Set.of(node * 2) : Set.of(1));
 
     // then
     assertThat(result)
@@ -62,7 +59,7 @@ class MoreGraphsTests {
   void whenBuildingGraphWithBftAndTreeShapedSuccessorsFunction_thenResultContainsTree() {
     // when
     var result =
-        MoreGraphs.buildGraphWithBreadthFirstTraversal(
+        MoreGraphs.buildGraph(
             Set.of(1),
             node -> {
               if (node == 1) {
@@ -89,7 +86,7 @@ class MoreGraphsTests {
         GraphBuilder.directed().allowsSelfLoops(true).<Integer>immutable().putEdge(1, 1).build();
 
     // when
-    var result = MoreGraphs.buildGraphWithBreadthFirstTraversal(Set.of(1), expectedGraph);
+    var result = MoreGraphs.buildGraph(Set.of(1), expectedGraph);
 
     // then
     assertThat(result).isEqualTo(expectedGraph);
@@ -104,8 +101,7 @@ class MoreGraphsTests {
         GraphBuilder.undirected().allowsSelfLoops(false).<Integer>immutable().putEdge(1, 2).build();
 
     // when
-    ImmutableGraph<Integer> result =
-        MoreGraphs.buildGraphWithBreadthFirstTraversal(Set.of(1), successorsFunction);
+    ImmutableGraph<Integer> result = MoreGraphs.buildGraph(Set.of(1), successorsFunction);
 
     // then
     assertThat(result)
@@ -121,8 +117,7 @@ class MoreGraphsTests {
   @Test
   void whenBuildingGraphWithBftAndNullSuccessorsFunction_thenNpeIsThrown() {
     // when
-    ThrowingCallable codeUnderTest =
-        () -> MoreGraphs.buildGraphWithBreadthFirstTraversal(Set.of(), null);
+    ThrowingCallable codeUnderTest = () -> MoreGraphs.buildGraph(Set.of(), null);
 
     // then
     assertThatCode(codeUnderTest)
@@ -138,8 +133,7 @@ class MoreGraphsTests {
   @Test
   void whenBuildingGraphWithBftAndNullStartingNodes_thenNpeIsThrown() {
     // when
-    ThrowingCallable codeUnderTest =
-        () -> MoreGraphs.buildGraphWithBreadthFirstTraversal(null, __ -> Set.of());
+    ThrowingCallable codeUnderTest = () -> MoreGraphs.buildGraph(null, __ -> Set.of());
 
     // then
     assertThatCode(codeUnderTest)

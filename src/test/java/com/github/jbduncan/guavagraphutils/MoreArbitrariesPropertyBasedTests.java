@@ -7,10 +7,8 @@ import com.github.jbduncan.guavagraphutils.MoreArbitraries.TwoGraphs;
 import com.google.common.graph.Graphs;
 import com.google.common.graph.ImmutableGraph;
 import java.util.Set;
-import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
-import net.jqwik.api.Provide;
 import net.jqwik.api.statistics.Statistics;
 
 // We purposefully use an unstable Guava API
@@ -58,15 +56,11 @@ class MoreArbitrariesPropertyBasedTests {
 
   @Property
   void arbitraryTwoDifferentNodeOrdersIsValid(
-      @ForAll("twoDifferentNodeOrders") TwoElementOrders twoDifferentNodeOrders) {
+      @ForAll(supplier = MoreArbitraries.TwoDifferentNodeOrders.class)
+          TwoElementOrders twoDifferentNodeOrders) {
     Statistics.collect(twoDifferentNodeOrders);
 
     assertThat(twoDifferentNodeOrders.first()).isNotEqualTo(twoDifferentNodeOrders.second());
-  }
-
-  @Provide
-  Arbitrary<TwoElementOrders> twoDifferentNodeOrders() {
-    return MoreArbitraries.twoDifferentNodeOrders();
   }
 
   private static String sizeStats(Set<?> values) {

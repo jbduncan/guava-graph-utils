@@ -11,12 +11,12 @@ import com.google.common.graph.Graph;
 import com.google.common.graph.GraphBuilder;
 import java.util.Set;
 import net.jqwik.api.Arbitrary;
+import net.jqwik.api.ArbitrarySupplier;
 import net.jqwik.api.Assume;
 import net.jqwik.api.Combinators;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Group;
 import net.jqwik.api.Property;
-import net.jqwik.api.Provide;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 
 @SuppressWarnings({
@@ -59,7 +59,7 @@ class MoreGraphsUnionPropertyBasedTests {
     @Property
     void givenTwoGraphsWithDifferentIsDirected_whenCalculatingUnion_thenIaeIsThrown(
         // given
-        @ForAll("twoGraphsWithDifferentIsDirected") TwoGraphs graphs) {
+        @ForAll(supplier = TwoGraphsWithDifferentIsDirected.class) TwoGraphs graphs) {
       // when
       ThrowingCallable codeUnderTest = () -> MoreGraphs.union(graphs.first(), graphs.second());
 
@@ -77,7 +77,7 @@ class MoreGraphsUnionPropertyBasedTests {
     @Property
     void givenTwoGraphsWithDifferentAllowsSelfLoops_whenCalculatingUnion_thenIaeIsThrown(
         // given
-        @ForAll("twoGraphsWithDifferentAllowsSelfLoops") TwoGraphs graphs) {
+        @ForAll(supplier = TwoGraphsWithDifferentAllowsSelfLoops.class) TwoGraphs graphs) {
       // when
       ThrowingCallable codeUnderTest = () -> MoreGraphs.union(graphs.first(), graphs.second());
 
@@ -95,7 +95,7 @@ class MoreGraphsUnionPropertyBasedTests {
     @Property
     void givenTwoGraphsWithDifferentNodeOrder_whenCalculatingUnion_thenIaeIsThrown(
         // given
-        @ForAll("twoGraphsWithDifferentNodeOrder") TwoGraphs graphs) {
+        @ForAll(supplier = TwoGraphsWithDifferentNodeOrder.class) TwoGraphs graphs) {
       // when
       ThrowingCallable codeUnderTest = () -> MoreGraphs.union(graphs.first(), graphs.second());
 
@@ -113,7 +113,7 @@ class MoreGraphsUnionPropertyBasedTests {
     @Property
     void givenTwoGraphsWithDifferentIncidentEdgeOrder_whenCalculatingUnion_thenIaeIsThrown(
         // given
-        @ForAll("twoGraphsWithDifferentIncidentEdgeOrder") TwoGraphs graphs) {
+        @ForAll(supplier = TwoGraphsWithDifferentIncidentEdgeOrder.class) TwoGraphs graphs) {
 
       // when
       ThrowingCallable codeUnderTest = () -> MoreGraphs.union(graphs.first(), graphs.second());
@@ -707,107 +707,115 @@ class MoreGraphsUnionPropertyBasedTests {
     }
   }
 
-  @Provide
-  Arbitrary<TwoGraphs> twoGraphsWithDifferentIsDirected() {
-    var arbitraryIsDirected = MoreArbitraries.booleans();
-    var arbitraryAllowsSelfLoops = MoreArbitraries.booleans();
+  static class TwoGraphsWithDifferentIsDirected implements ArbitrarySupplier<TwoGraphs> {
+    @Override
+    public Arbitrary<TwoGraphs> get() {
+      var arbitraryIsDirected = MoreArbitraries.booleans();
+      var arbitraryAllowsSelfLoops = MoreArbitraries.booleans();
 
-    return Combinators.combine(
-            arbitraryIsDirected,
-            arbitraryAllowsSelfLoops,
-            MoreArbitraries.nodes(),
-            MoreArbitraries.nodeOrders(),
-            MoreArbitraries.incidentEdgeOrders())
-        .flatAs(
-            (isDirected, allowsSelfLoops, nodes, nodeOrder, incidentEdgeOrder) ->
-                MoreArbitraries.twoGraphs(
-                    isDirected,
-                    !isDirected,
-                    allowsSelfLoops,
-                    allowsSelfLoops,
-                    nodes,
-                    nodes,
-                    nodeOrder,
-                    nodeOrder,
-                    incidentEdgeOrder,
-                    incidentEdgeOrder));
+      return Combinators.combine(
+              arbitraryIsDirected,
+              arbitraryAllowsSelfLoops,
+              MoreArbitraries.nodes(),
+              MoreArbitraries.nodeOrders(),
+              MoreArbitraries.incidentEdgeOrders())
+          .flatAs(
+              (isDirected, allowsSelfLoops, nodes, nodeOrder, incidentEdgeOrder) ->
+                  MoreArbitraries.twoGraphs(
+                      isDirected,
+                      !isDirected,
+                      allowsSelfLoops,
+                      allowsSelfLoops,
+                      nodes,
+                      nodes,
+                      nodeOrder,
+                      nodeOrder,
+                      incidentEdgeOrder,
+                      incidentEdgeOrder));
+    }
   }
 
-  @Provide
-  Arbitrary<TwoGraphs> twoGraphsWithDifferentAllowsSelfLoops() {
-    var arbitraryIsDirected = MoreArbitraries.booleans();
-    var arbitraryAllowsSelfLoops = MoreArbitraries.booleans();
+  static class TwoGraphsWithDifferentAllowsSelfLoops implements ArbitrarySupplier<TwoGraphs> {
+    @Override
+    public Arbitrary<TwoGraphs> get() {
+      var arbitraryIsDirected = MoreArbitraries.booleans();
+      var arbitraryAllowsSelfLoops = MoreArbitraries.booleans();
 
-    return Combinators.combine(
-            arbitraryIsDirected,
-            arbitraryAllowsSelfLoops,
-            MoreArbitraries.nodes(),
-            MoreArbitraries.nodeOrders(),
-            MoreArbitraries.incidentEdgeOrders())
-        .flatAs(
-            (isDirected, allowsSelfLoops, nodes, nodeOrder, incidentEdgeOrder) ->
-                MoreArbitraries.twoGraphs(
-                    isDirected,
-                    isDirected,
-                    allowsSelfLoops,
-                    !allowsSelfLoops,
-                    nodes,
-                    nodes,
-                    nodeOrder,
-                    nodeOrder,
-                    incidentEdgeOrder,
-                    incidentEdgeOrder));
+      return Combinators.combine(
+              arbitraryIsDirected,
+              arbitraryAllowsSelfLoops,
+              MoreArbitraries.nodes(),
+              MoreArbitraries.nodeOrders(),
+              MoreArbitraries.incidentEdgeOrders())
+          .flatAs(
+              (isDirected, allowsSelfLoops, nodes, nodeOrder, incidentEdgeOrder) ->
+                  MoreArbitraries.twoGraphs(
+                      isDirected,
+                      isDirected,
+                      allowsSelfLoops,
+                      !allowsSelfLoops,
+                      nodes,
+                      nodes,
+                      nodeOrder,
+                      nodeOrder,
+                      incidentEdgeOrder,
+                      incidentEdgeOrder));
+    }
   }
 
-  @Provide
-  Arbitrary<TwoGraphs> twoGraphsWithDifferentNodeOrder() {
-    var arbitraryIsDirected = MoreArbitraries.booleans();
-    var arbitraryAllowsSelfLoops = MoreArbitraries.booleans();
+  static class TwoGraphsWithDifferentNodeOrder implements ArbitrarySupplier<TwoGraphs> {
+    @Override
+    public Arbitrary<TwoGraphs> get() {
+      var arbitraryIsDirected = MoreArbitraries.booleans();
+      var arbitraryAllowsSelfLoops = MoreArbitraries.booleans();
 
-    return Combinators.combine(
-            arbitraryIsDirected,
-            arbitraryAllowsSelfLoops,
-            MoreArbitraries.nodes(),
-            MoreArbitraries.twoDifferentNodeOrders(),
-            MoreArbitraries.incidentEdgeOrders())
-        .flatAs(
-            (isDirected, allowsSelfLoops, nodes, twoDifferentNodeOrders, incidentEdgeOrder) ->
-                MoreArbitraries.twoGraphs(
-                    isDirected,
-                    isDirected,
-                    allowsSelfLoops,
-                    allowsSelfLoops,
-                    nodes,
-                    nodes,
-                    twoDifferentNodeOrders.first(),
-                    twoDifferentNodeOrders.second(),
-                    incidentEdgeOrder,
-                    incidentEdgeOrder));
+      return Combinators.combine(
+              arbitraryIsDirected,
+              arbitraryAllowsSelfLoops,
+              MoreArbitraries.nodes(),
+              MoreArbitraries.twoDifferentNodeOrders(),
+              MoreArbitraries.incidentEdgeOrders())
+          .flatAs(
+              (isDirected, allowsSelfLoops, nodes, twoDifferentNodeOrders, incidentEdgeOrder) ->
+                  MoreArbitraries.twoGraphs(
+                      isDirected,
+                      isDirected,
+                      allowsSelfLoops,
+                      allowsSelfLoops,
+                      nodes,
+                      nodes,
+                      twoDifferentNodeOrders.first(),
+                      twoDifferentNodeOrders.second(),
+                      incidentEdgeOrder,
+                      incidentEdgeOrder));
+    }
   }
 
-  @Provide
-  Arbitrary<TwoGraphs> twoGraphsWithDifferentIncidentEdgeOrder() {
-    var arbitraryIsDirected = MoreArbitraries.booleans();
-    var arbitraryAllowsSelfLoops = MoreArbitraries.booleans();
+  static class TwoGraphsWithDifferentIncidentEdgeOrder implements ArbitrarySupplier<TwoGraphs> {
+    @Override
+    public Arbitrary<TwoGraphs> get() {
+      var arbitraryIsDirected = MoreArbitraries.booleans();
+      var arbitraryAllowsSelfLoops = MoreArbitraries.booleans();
 
-    return Combinators.combine(
-            arbitraryIsDirected,
-            arbitraryAllowsSelfLoops,
-            MoreArbitraries.nodes(),
-            MoreArbitraries.nodeOrders(),
-            MoreArbitraries.twoDifferentIncidentEdgeOrders())
-        .flatAs(
-            (isDirected, allowsSelfLoops, nodes, nodeOrder, twoDifferentIncidentEdgeOrders) ->
-                MoreArbitraries.twoGraphs(
-                    isDirected,
-                    isDirected,
-                    allowsSelfLoops,
-                    allowsSelfLoops,
-                    nodes,
-                    nodes,
-                    nodeOrder,
-                    nodeOrder,
-                    twoDifferentIncidentEdgeOrders.first(),
-                    twoDifferentIncidentEdgeOrders.second()));
+      return Combinators.combine(
+              arbitraryIsDirected,
+              arbitraryAllowsSelfLoops,
+              MoreArbitraries.nodes(),
+              MoreArbitraries.nodeOrders(),
+              MoreArbitraries.twoDifferentIncidentEdgeOrders())
+          .flatAs(
+              (isDirected, allowsSelfLoops, nodes, nodeOrder, twoDifferentIncidentEdgeOrders) ->
+                  MoreArbitraries.twoGraphs(
+                      isDirected,
+                      isDirected,
+                      allowsSelfLoops,
+                      allowsSelfLoops,
+                      nodes,
+                      nodes,
+                      nodeOrder,
+                      nodeOrder,
+                      twoDifferentIncidentEdgeOrders.first(),
+                      twoDifferentIncidentEdgeOrders.second()));
+    }
   }
 }

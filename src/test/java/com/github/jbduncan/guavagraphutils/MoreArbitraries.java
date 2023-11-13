@@ -391,6 +391,13 @@ final class MoreArbitraries {
                     .as(TwoElementOrders::new));
   }
 
+  static class TwoDifferentNodeOrders implements ArbitrarySupplier<TwoElementOrders> {
+    @Override
+    public Arbitrary<TwoElementOrders> get() {
+      return twoDifferentNodeOrders();
+    }
+  }
+
   static Arbitrary<ElementOrder<Integer>> incidentEdgeOrders() {
     return Arbitraries.of(ElementOrder.stable(), ElementOrder.unordered());
   }

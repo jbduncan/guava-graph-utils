@@ -14,13 +14,11 @@ import java.util.List;
 import java.util.Set;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
+import net.jqwik.api.ArbitrarySupplier;
 import net.jqwik.api.Combinators;
 import net.jqwik.api.Example;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
-import net.jqwik.api.Provide;
-import net.jqwik.api.Tuple;
-import net.jqwik.api.Tuple.Tuple2;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 
 // We test methods that purposefully use an unstable Guava API
@@ -122,11 +120,10 @@ public class MoreGraphsPropertyBasedTests {
 
   @Property
   void givenStartingNodesAndDag_whenCalculatingTopologicalOrdering_thenOrderIsValid(
-      @ForAll("directedAcyclicGraphsAndStartingNodes")
-          Tuple2<ImmutableGraph<Integer>, Set<Integer>> tuple) {
+      @ForAll(supplier = DirectedAcyclicGraphsAndStartingNodes.class) GraphAndNodes graphAndNodes) {
     // given
-    var graph = tuple.get1();
-    var startingNodes = tuple.get2();
+    var graph = graphAndNodes.graph();
+    var startingNodes = graphAndNodes.nodes();
 
     // when
     var topologicalOrdering = MoreGraphs.topologicalOrderingStartingFrom(startingNodes, graph);
@@ -137,10 +134,10 @@ public class MoreGraphsPropertyBasedTests {
 
   @Property
   void givenStartingNodesAndCyclicGraph_whenCalculatingTopologicalOrdering_thenIaeIsThrown(
-      @ForAll("cyclicGraphsAndStartingNodes") Tuple2<ImmutableGraph<Integer>, Set<Integer>> tuple) {
+      @ForAll(supplier = CyclicGraphsAndStartingNodes.class) GraphAndNodes graphAndNodes) {
     // given
-    var cyclicGraph = tuple.get1();
-    var startingNodes = tuple.get2();
+    var cyclicGraph = graphAndNodes.graph();
+    var startingNodes = graphAndNodes.nodes();
 
     // when
     ThrowingCallable codeUnderTest =
@@ -279,7 +276,7 @@ public class MoreGraphsPropertyBasedTests {
   }
 
   private static <N> void assertThatTopologicalOrderingIsValid(
-      ImmutableGraph<N> graph, Iterable<N> topologicalOrdering) {
+      Graph<N> graph, Iterable<N> topologicalOrdering) {
     // copy into list for good performance
     topologicalOrdering = ImmutableList.copyOf(topologicalOrdering);
 
@@ -293,7 +290,7 @@ public class MoreGraphsPropertyBasedTests {
   }
 
   private static <N> void assertThatTopologicalOrderingStartingWithIsValid(
-      Iterable<N> startingNodes, ImmutableGraph<N> graph, List<N> topologicalOrdering) {
+      Iterable<N> startingNodes, Graph<N> graph, List<N> topologicalOrdering) {
     Iterable<N> reachableNodes = Traverser.forGraph(graph).breadthFirst(startingNodes);
     assertThat(topologicalOrdering).containsExactlyInAnyOrderElementsOf(reachableNodes);
     assertThat(topologicalOrdering).doesNotHaveDuplicates();
@@ -305,21 +302,32 @@ public class MoreGraphsPropertyBasedTests {
     }
   }
 
-  @Provide
-  Arbitrary<Tuple2<ImmutableGraph<Integer>, Set<Integer>>> directedAcyclicGraphsAndStartingNodes(
-      @ForAll(supplier = MoreArbitraries.DirectedAcyclicGraphs.class)
-          ImmutableGraph<Integer> graph) {
-    return Combinators.combine(Arbitraries.just(graph), Arbitraries.subsetOf(graph.nodes()))
-        .as(Tuple::of);
+  record GraphAndNodes(Graph<Integer> graph, Set<Integer> nodes) {}
+
+  static class DirectedAcyclicGraphsAndStartingNodes implements ArbitrarySupplier<GraphAndNodes> {
+    @Override
+    public Arbitrary<GraphAndNodes> get() {
+      return new MoreArbitraries.DirectedAcyclicGraphs()
+          .get()
+          .flatMap(
+              graph ->
+                  Combinators.combine(Arbitraries.just(graph), Arbitraries.subsetOf(graph.nodes()))
+                      .as(GraphAndNodes::new));
+    }
   }
 
-  @Provide
-  Arbitrary<Tuple2<ImmutableGraph<Integer>, Set<Integer>>> cyclicGraphsAndStartingNodes(
-      @ForAll(supplier = MoreArbitraries.CyclicGraphs.class) ImmutableGraph<Integer> graph) {
-    return Combinators.combine(
-            Arbitraries.just(graph),
-            Arbitraries.subsetOf(graph.nodes())
-                .ofMinSize(MIN_STARTING_NODES_COUNT_FOR_CYCLIC_GRAPH))
-        .as(Tuple::of);
+  static class CyclicGraphsAndStartingNodes implements ArbitrarySupplier<GraphAndNodes> {
+    @Override
+    public Arbitrary<GraphAndNodes> get() {
+      return new MoreArbitraries.CyclicGraphs()
+          .get()
+          .flatMap(
+              graph ->
+                  Combinators.combine(
+                          Arbitraries.just(graph),
+                          Arbitraries.subsetOf(graph.nodes())
+                              .ofMinSize(MIN_STARTING_NODES_COUNT_FOR_CYCLIC_GRAPH))
+                      .as(GraphAndNodes::new));
+    }
   }
 }

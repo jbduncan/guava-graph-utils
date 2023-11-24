@@ -10,6 +10,7 @@ import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ForwardingSet;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multiset;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
@@ -24,11 +25,13 @@ import com.google.common.graph.MutableGraph;
 import com.google.common.graph.SuccessorsFunction;
 import com.google.common.graph.ValueGraph;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
@@ -407,14 +410,8 @@ public final class MoreGraphs {
        * [2] https://dl.acm.org/doi/pdf/10.1145/368996.369025
        */
 
-      var roots =
-          graph.nodes().stream()
-              .filter(node -> graph.inDegree(node) == 0)
-              .collect(toCollection(ArrayDeque::new));
-      var nonRoots =
-          graph.nodes().stream()
-              .filter(node -> graph.inDegree(node) > 0)
-              .collect(toMultiset(node -> node, graph::inDegree, HashMultiset::create));
+      Queue<N> roots = rootsOf(graph);
+      Multiset<N> nonRoots = nonRootsOf(graph);
 
       return new AbstractIterator<>() {
         @Override
@@ -422,9 +419,8 @@ public final class MoreGraphs {
           if (!roots.isEmpty()) {
             N next = roots.remove();
             for (N successor : graph.successors(next)) {
-              int newInDegree = nonRoots.count(successor) - 1;
-              nonRoots.setCount(successor, newInDegree);
-              if (newInDegree == 0) {
+              nonRoots.remove(successor, 1);
+              if (!nonRoots.contains(successor)) {
                 roots.add(successor);
               }
             }
@@ -489,7 +485,35 @@ public final class MoreGraphs {
    */
   public static <N> ImmutableList<N> topologicalOrdering(Graph<N> graph) {
     requireNonNull(graph, "graph");
-    return ImmutableList.copyOf(lazyTopologicalOrdering(graph));
+
+    Queue<N> roots = rootsOf(graph);
+    Multiset<N> nonRoots = nonRootsOf(graph);
+
+    var result = new ArrayList<N>();
+    while (!roots.isEmpty()) {
+      N next = roots.remove();
+      result.add(next);
+      for (N successor : graph.successors(next)) {
+        nonRoots.remove(successor, 1);
+        if (!nonRoots.contains(successor)) {
+          roots.add(successor);
+        }
+      }
+    }
+    checkArgument(nonRoots.isEmpty(), GRAPH_HAS_AT_LEAST_ONE_CYCLE);
+    return ImmutableList.copyOf(result);
+  }
+
+  private static <N> Multiset<N> nonRootsOf(Graph<N> graph) {
+    return graph.nodes().stream()
+        .filter(node -> graph.inDegree(node) > 0)
+        .collect(toMultiset(node -> node, graph::inDegree, HashMultiset::create));
+  }
+
+  private static <N> Queue<N> rootsOf(Graph<N> graph) {
+    return graph.nodes().stream()
+        .filter(node -> graph.inDegree(node) == 0)
+        .collect(toCollection(ArrayDeque::new));
   }
 
   /**

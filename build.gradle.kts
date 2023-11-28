@@ -5,10 +5,10 @@ import org.gradle.api.tasks.compile.JavaCompile
 plugins {
     java
 
-    id("com.diffplug.spotless") version "6.22.0"
-    id("com.github.ben-manes.versions") version "0.49.0"
+    id("com.diffplug.spotless") version "6.23.0"
+    id("com.github.ben-manes.versions") version "0.50.0"
     id("net.ltgt.errorprone") version "3.1.0"
-    id("org.openrewrite.rewrite") version "6.3.18"
+    id("org.openrewrite.rewrite") version "6.5.8"
 }
 
 val rootPackage = "com.github.jbduncan.guavagraphutils"
@@ -18,7 +18,8 @@ version = "0.1.0-SNAPSHOT"
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(21))
+        vendor.set(JvmVendorSpec.AZUL)
     }
 }
 
@@ -29,23 +30,23 @@ repositories {
 dependencies {
     implementation("com.google.guava:guava:32.1.3-jre")
 
-    testImplementation("net.jqwik:jqwik:1.8.1")
+    testImplementation("net.jqwik:jqwik:1.8.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.jgrapht:jgrapht-guava:1.5.2")
     testImplementation("org.jgrapht:jgrapht-core:1.5.2")
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
+    testImplementation(platform("org.junit:junit-bom:5.10.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     compileOnly("org.jspecify:jspecify:0.3.0")
 
-    errorprone("com.google.errorprone:error_prone_core:2.22.0")
-    errorprone("com.uber.nullaway:nullaway:0.10.14")
+    errorprone("com.google.errorprone:error_prone_core:2.23.0")
+    errorprone("com.uber.nullaway:nullaway:0.10.17")
 
-    rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:2.3.1"))
+    rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:2.5.1"))
     rewrite("org.openrewrite.recipe:rewrite-java-security")
     rewrite("org.openrewrite.recipe:rewrite-migrate-java")
-    rewrite("org.openrewrite.recipe:rewrite-recommendations:1.0.4")
+    rewrite("org.openrewrite.recipe:rewrite-recommendations:1.0.6")
     rewrite("org.openrewrite.recipe:rewrite-testing-frameworks")
 }
 

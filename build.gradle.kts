@@ -18,7 +18,7 @@ version = "0.1.0-SNAPSHOT"
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(17))
         vendor.set(JvmVendorSpec.AZUL)
     }
 }
@@ -39,6 +39,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     compileOnly("org.jspecify:jspecify:0.3.0")
+    testCompileOnly("org.jspecify:jspecify:0.3.0")
 
     errorprone("com.google.errorprone:error_prone_core:2.23.0")
     errorprone("com.uber.nullaway:nullaway:0.10.17")

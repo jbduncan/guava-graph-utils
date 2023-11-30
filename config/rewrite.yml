@@ -2,34 +2,32 @@
 type: specs.openrewrite.org/v1beta/recipe
 name: com.github.jbduncan.rewrite.CodeCleanup
 recipeList:
-  - org.openrewrite.java.ShortenFullyQualifiedTypeReferences
   - org.openrewrite.java.RemoveObjectsIsNull
-  - org.openrewrite.java.RemoveUnusedImports
+  - org.openrewrite.java.ShortenFullyQualifiedTypeReferences
   - org.openrewrite.java.format.BlankLines
   - org.openrewrite.java.format.MethodParamPad
-  - org.openrewrite.java.format.RemoveTrailingWhitespace
   - org.openrewrite.java.format.NoWhitespaceAfter
   - org.openrewrite.java.format.NoWhitespaceBefore
   - org.openrewrite.java.format.PadEmptyForLoopComponents
-  - org.openrewrite.java.testing.assertj.Assertj
+  - org.openrewrite.java.format.RemoveTrailingWhitespace
+  - org.openrewrite.java.migrate.UpgradeToJava17
+  - org.openrewrite.java.migrate.guava.NoGuavaJava11
+  - org.openrewrite.java.migrate.io.ReplaceFileInOrOutputStreamFinalizeWithClose
+  - org.openrewrite.java.migrate.lang.JavaLangAPIs
+  - org.openrewrite.java.migrate.lang.StringFormatted
+  - org.openrewrite.java.migrate.lang.StringRulesRecipes
+  - org.openrewrite.java.migrate.lang.UseStringIsEmptyRecipe
+  - org.openrewrite.java.migrate.util.MigrateCollectionsUnmodifiableList
+  - org.openrewrite.java.migrate.util.MigrateCollectionsUnmodifiableSet
+  - org.openrewrite.java.migrate.util.OptionalStreamRecipe
+  - org.openrewrite.java.migrate.util.ReplaceStreamCollectWithToList
   - org.openrewrite.java.testing.assertj.AdoptAssertJDurationAssertions
+  - org.openrewrite.java.testing.assertj.Assertj
   - org.openrewrite.java.testing.cleanup.AssertEqualsBooleanToAssertBoolean
   - org.openrewrite.java.testing.cleanup.AssertNotEqualsBooleanToAssertBoolean
   - org.openrewrite.java.testing.cleanup.BestPractices
   - org.openrewrite.java.testing.junit5.JUnit5BestPractices
   - org.openrewrite.java.testing.mockito.Mockito1to3Migration
-  - org.openrewrite.java.migrate.UpgradeToJava21
-  - org.openrewrite.java.migrate.io.ReplaceFileInOrOutputStreamFinalizeWithClose
-  - org.openrewrite.java.migrate.guava.NoGuavaJava11
-  - org.openrewrite.java.migrate.lang.JavaLangAPIs
-  - org.openrewrite.java.migrate.lang.StringFormatted
-  - org.openrewrite.java.migrate.lang.StringRulesRecipes
-  - org.openrewrite.java.migrate.util.MigrateCollectionsUnmodifiableList
-  - org.openrewrite.java.migrate.util.MigrateCollectionsUnmodifiableSet
-  - org.openrewrite.java.migrate.util.OptionalStreamRecipe
-  - org.openrewrite.java.migrate.util.ReplaceStreamCollectWithToList
-  - org.openrewrite.java.migrate.util.SequencedCollection
-  - org.openrewrite.java.migrate.lang.UseStringIsEmptyRecipe
   - org.openrewrite.recommendations.CodeHealth
   - org.openrewrite.staticanalysis.AddSerialVersionUidToSerializable
   - org.openrewrite.staticanalysis.AtomicPrimitiveEqualsUsesGet
@@ -39,8 +37,6 @@ recipeList:
   - org.openrewrite.staticanalysis.CatchClauseOnlyRethrows
   - org.openrewrite.staticanalysis.ChainStringBuilderAppendCalls
   - org.openrewrite.staticanalysis.CodeCleanup
-  - org.openrewrite.staticanalysis.UseJavaStyleArrayDeclarations
-  - org.openrewrite.staticanalysis.RemoveExtraSemicolons
   - org.openrewrite.staticanalysis.CombineSemanticallyEqualCatchBlocks
   - org.openrewrite.staticanalysis.CommonDeclarationSiteTypeVariances
   - org.openrewrite.staticanalysis.CommonStaticAnalysis
@@ -62,36 +58,35 @@ recipeList:
   - org.openrewrite.staticanalysis.HiddenField
   - org.openrewrite.staticanalysis.HideUtilityClassConstructor
   - org.openrewrite.staticanalysis.IndexOfChecksShouldUseAStartPosition
-  - org.openrewrite.staticanalysis.IndexOfShouldNotCompareGreaterThanZero
   - org.openrewrite.staticanalysis.IndexOfReplaceableByContains
+  - org.openrewrite.staticanalysis.IndexOfShouldNotCompareGreaterThanZero
   - org.openrewrite.staticanalysis.InlineVariable
   - org.openrewrite.staticanalysis.InstanceOfPatternMatch
   - org.openrewrite.staticanalysis.IsEmptyCallOnCollections
   - org.openrewrite.staticanalysis.JavaApiBestPractices
-  - org.openrewrite.staticanalysis.LowercasePackage
   - org.openrewrite.staticanalysis.LambdaBlockToExpression
-  - org.openrewrite.staticanalysis.NewStringBuilderBufferWithCharArgument
-  - org.openrewrite.staticanalysis.NoEmptyCollectionWithRawType
-  - org.openrewrite.staticanalysis.NoFinalizedLocalVariables
-  - org.openrewrite.staticanalysis.NoPrimitiveWrappersForToStringOrCompareTo
-  - org.openrewrite.staticanalysis.NoRedundantJumpStatements
+  - org.openrewrite.staticanalysis.LowercasePackage
   - org.openrewrite.staticanalysis.MethodNameCasing
   - org.openrewrite.staticanalysis.MinimumSwitchCases
   - org.openrewrite.staticanalysis.MissingOverrideAnnotation
   - org.openrewrite.staticanalysis.ModifierOrder
   - org.openrewrite.staticanalysis.MultipleVariableDeclarations
   - org.openrewrite.staticanalysis.NestedEnumsAreNotStatic
+  - org.openrewrite.staticanalysis.NewStringBuilderBufferWithCharArgument
+  - org.openrewrite.staticanalysis.NoEmptyCollectionWithRawType
   - org.openrewrite.staticanalysis.NoEqualityInForCondition
+  - org.openrewrite.staticanalysis.NoFinalizedLocalVariables
+  - org.openrewrite.staticanalysis.NoPrimitiveWrappersForToStringOrCompareTo
+  - org.openrewrite.staticanalysis.NoRedundantJumpStatements
   - org.openrewrite.staticanalysis.NoToStringOnStringType
   - org.openrewrite.staticanalysis.NoValueOfOnStringType
   - org.openrewrite.staticanalysis.ObjectFinalizeCallsSuper
   - org.openrewrite.staticanalysis.OperatorWrap
   - org.openrewrite.staticanalysis.PrimitiveWrapperClassConstructorToValueOf
   - org.openrewrite.staticanalysis.RedundantFileCreation
-  - org.openrewrite.staticanalysis.RenameLocalVariablesToCamelCase
-  - org.openrewrite.staticanalysis.RenameMethodsNamedHashcodeEqualOrTostring
-  - org.openrewrite.staticanalysis.RenamePrivateFieldsToCamelCase
+  - org.openrewrite.staticanalysis.ReferentialEqualityToObjectEquals
   - org.openrewrite.staticanalysis.RemoveCallsToSystemGc
+  - org.openrewrite.staticanalysis.RemoveExtraSemicolons
   - org.openrewrite.staticanalysis.RemoveHashCodeCallsFromArrayInstances
   - org.openrewrite.staticanalysis.RemoveRedundantTypeCast
   - org.openrewrite.staticanalysis.RemoveToStringCallsFromArrayInstances
@@ -100,7 +95,9 @@ recipeList:
   - org.openrewrite.staticanalysis.RemoveUnusedLocalVariables
   - org.openrewrite.staticanalysis.RemoveUnusedPrivateFields
   - org.openrewrite.staticanalysis.RemoveUnusedPrivateMethods
-  - org.openrewrite.staticanalysis.ReferentialEqualityToObjectEquals
+  - org.openrewrite.staticanalysis.RenameLocalVariablesToCamelCase
+  - org.openrewrite.staticanalysis.RenameMethodsNamedHashcodeEqualOrTostring
+  - org.openrewrite.staticanalysis.RenamePrivateFieldsToCamelCase
   - org.openrewrite.staticanalysis.ReplaceDeprecatedRuntimeExecMethods
   - org.openrewrite.staticanalysis.ReplaceDuplicateStringLiterals
   - org.openrewrite.staticanalysis.ReplaceLambdaWithMethodReference
@@ -131,6 +128,7 @@ recipeList:
   - org.openrewrite.staticanalysis.UseCollectionInterfaces
   - org.openrewrite.staticanalysis.UseDiamondOperator
   - org.openrewrite.staticanalysis.UseForEachRemoveInsteadOfSetRemoveAll
+  - org.openrewrite.staticanalysis.UseJavaStyleArrayDeclarations
   - org.openrewrite.staticanalysis.UseLambdaForFunctionalInterface
   - org.openrewrite.staticanalysis.UseListSort
   - org.openrewrite.staticanalysis.UseMapContainsKey

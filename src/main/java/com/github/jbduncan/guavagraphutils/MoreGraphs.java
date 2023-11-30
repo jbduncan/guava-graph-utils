@@ -352,6 +352,13 @@ public final class MoreGraphs {
    * traversal of the graph in which each node is visited only after all its {@linkplain
    * Graph#predecessors(Object) predecessors} and other ancestors have been visited.
    *
+   * <p>This method is preferable to {@link MoreGraphs#topologicalOrdering(Graph)
+   * MoreGraphs.topologicalOrdering} if the topological ordering will be iterated on only once, as
+   * it will avoid putting the result into an intermediate list. Also, it is preferable to {@link
+   * MoreGraphs#topologicalOrderingStartingFrom(Iterable, SuccessorsFunction)}
+   * topologicalOrderingStartingFrom} when the given graph can be represented as a {@code Graph} and
+   * a topological ordering over the entire graph is needed.
+   *
    * <p>The given graph must be non-null, otherwise a {@code NullPointerException} will be thrown.
    *
    * <p>The returned iterable is an <i>unmodifiable, lazy view</i> of the graph's nodes, and each
@@ -440,7 +447,10 @@ public final class MoreGraphs {
    *
    * <p>This method is preferable to {@link MoreGraphs#lazyTopologicalOrdering(Graph)
    * MoreGraphs.lazyTopologicalOrdering} if the topological ordering will be iterated on multiple
-   * times, as it will avoid recalculating the topological ordering each time.
+   * times, as it will avoid recalculating the topological ordering each time. Also, it is
+   * preferable to {@link MoreGraphs#topologicalOrderingStartingFrom(Iterable, SuccessorsFunction)}
+   * topologicalOrderingStartingFrom} when the given graph can be represented as a {@code Graph} and
+   * a topological ordering over the entire graph is needed.
    *
    * <p>The given graph must be non-null, otherwise a {@code NullPointerException} will be thrown.
    *

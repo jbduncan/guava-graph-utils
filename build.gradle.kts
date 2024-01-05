@@ -5,15 +5,13 @@ import org.gradle.api.tasks.compile.JavaCompile
 plugins {
     java
 
-    id("com.diffplug.spotless") version "6.23.0"
+    id("com.diffplug.spotless") version "6.23.3"
     id("com.github.ben-manes.versions") version "0.50.0"
     id("net.ltgt.errorprone") version "3.1.0"
-    id("org.openrewrite.rewrite") version "6.5.8"
+    id("org.openrewrite.rewrite") version "6.6.3"
 }
 
-val rootPackage = "com.github.jbduncan.guavagraphutils"
-
-group = rootPackage
+group = "com.github.jbduncan.guavagraphutils"
 version = "0.1.0-SNAPSHOT"
 
 java {
@@ -28,10 +26,10 @@ repositories {
 }
 
 dependencies {
-    implementation("com.google.guava:guava:32.1.3-jre")
+    implementation("com.google.guava:guava:33.0.0-jre")
 
     testImplementation("net.jqwik:jqwik:1.8.2")
-    testImplementation("org.assertj:assertj-core:3.24.2")
+    testImplementation("org.assertj:assertj-core:3.25.1")
     testImplementation("org.jgrapht:jgrapht-guava:1.5.2")
     testImplementation("org.jgrapht:jgrapht-core:1.5.2")
     testImplementation(platform("org.junit:junit-bom:5.10.1"))
@@ -41,13 +39,13 @@ dependencies {
     compileOnly("org.jspecify:jspecify:0.3.0")
     testCompileOnly("org.jspecify:jspecify:0.3.0")
 
-    errorprone("com.google.errorprone:error_prone_core:2.23.0")
-    errorprone("com.uber.nullaway:nullaway:0.10.17")
+    errorprone("com.google.errorprone:error_prone_core:2.24.1")
+    errorprone("com.uber.nullaway:nullaway:0.10.19")
 
-    rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:2.5.1"))
+    rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:2.5.4"))
     rewrite("org.openrewrite.recipe:rewrite-java-security")
     rewrite("org.openrewrite.recipe:rewrite-migrate-java")
-    rewrite("org.openrewrite.recipe:rewrite-recommendations:1.0.6")
+    rewrite("org.openrewrite.recipe:rewrite-recommendations:1.0.9")
     rewrite("org.openrewrite.recipe:rewrite-testing-frameworks")
 }
 
@@ -65,7 +63,7 @@ tasks.withType<JavaCompile>().configureEach {
 tasks.compileJava.configure {
     options.errorprone {
         error("NullAway")
-        option("NullAway:AnnotatedPackages", rootPackage)
+        option("NullAway:AnnotatedPackages", "${project.group}")
         option("NullAway:CheckOptionalEmptiness", "true")
         option("NullAway:HandleTestAssertionLibraries", "true")
     }
@@ -81,11 +79,13 @@ tasks.compileTestJava.configure {
 tasks.withType<AbstractArchiveTask>().configureEach {
     isPreserveFileTimestamps = false
     isReproducibleFileOrder = true
+    dirMode = Integer.parseInt("0755", 8)
+    fileMode = Integer.parseInt("0644", 8)
 }
 
 spotless {
     java {
-        googleJavaFormat("1.18.1")
+        googleJavaFormat("1.19.1")
             .reflowLongStrings()
             .reorderImports(true)
             .formatJavadoc(true)
@@ -107,8 +107,9 @@ tasks.withType<DependencyUpdatesTask>().configureEach {
 
 rewrite {
     activeRecipe(
-            "com.github.jbduncan.rewrite.CodeCleanup",
-            "com.github.jbduncan.rewrite.SecurityBestPractices")
+        "com.github.jbduncan.rewrite.CodeCleanup",
+        "com.github.jbduncan.rewrite.SecurityBestPractices"
+    )
 
     configFile = file("$rootDir/config/rewrite.yml")
     failOnDryRunResults = true
@@ -116,25 +117,32 @@ rewrite {
 
 val rewriteRun: Task by tasks.getting {
     notCompatibleWithConfigurationCache(
-            "Uses Task, Project and Task.project at configuration time, which are unsupported by " +
-                    "the configuration cache")
+        "Uses Task, Project and Task.project at configuration time, which are unsupported by " +
+                "the configuration cache"
+    )
 }
 
 val rewriteDryRun: Task by tasks.getting {
     notCompatibleWithConfigurationCache(
-            "Uses Task, Project and Task.project at configuration time, which are unsupported by " +
-                    "the configuration cache")
+        "Uses Task, Project and Task.project at configuration time, which are unsupported by " +
+                "the configuration cache"
+    )
 }
 
 val rewriteResolveDependencies: Task by tasks.getting {
     notCompatibleWithConfigurationCache(
-            "Uses Configuration, Project and Task.project at configuration time, which are " +
-                    "unsupported by the configuration cache")
+        "Uses Configuration, Project and Task.project at configuration time, which are " +
+                "unsupported by the configuration cache"
+    )
 }
 
 tasks.named("check").configure {
     dependsOn(rewriteDryRun)
 }
+
+// TODO: Use Gradle version catalogs (see other personal projects)
+
+// TODO: Follow https://github.com/binkley/modern-java-practices
 
 // TODO: Expand use of OpenRewrite:
 //   - https://docs.openrewrite.org/recipes/java/migrate/guava
@@ -164,8 +172,6 @@ tasks.named("check").configure {
 //   - https://github.com/PicnicSupermarket/error-prone-support
 
 // TODO: Use CI
-
-// TODO: Use Gradle version catalogs (see other personal projects)
 
 // TODO: Use RenovateBot
 

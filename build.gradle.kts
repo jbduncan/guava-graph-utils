@@ -5,10 +5,10 @@ import org.gradle.api.tasks.compile.JavaCompile
 plugins {
     java
 
-    id("com.diffplug.spotless") version "6.23.3"
-    id("com.github.ben-manes.versions") version "0.50.0"
+    id("com.diffplug.spotless") version "6.25.0"
+    id("com.github.ben-manes.versions") version "0.51.0"
     id("net.ltgt.errorprone") version "3.1.0"
-    id("org.openrewrite.rewrite") version "6.6.3"
+    id("org.openrewrite.rewrite") version "6.8.1"
 }
 
 group = "com.github.jbduncan.guavagraphutils"
@@ -29,10 +29,10 @@ dependencies {
     implementation("com.google.guava:guava:33.0.0-jre")
 
     testImplementation("net.jqwik:jqwik:1.8.2")
-    testImplementation("org.assertj:assertj-core:3.25.1")
+    testImplementation("org.assertj:assertj-core:3.25.3")
     testImplementation("org.jgrapht:jgrapht-guava:1.5.2")
     testImplementation("org.jgrapht:jgrapht-core:1.5.2")
-    testImplementation(platform("org.junit:junit-bom:5.10.1"))
+    testImplementation(platform("org.junit:junit-bom:5.10.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
@@ -40,12 +40,12 @@ dependencies {
     testCompileOnly("org.jspecify:jspecify:0.3.0")
 
     errorprone("com.google.errorprone:error_prone_core:2.24.1")
-    errorprone("com.uber.nullaway:nullaway:0.10.19")
+    errorprone("com.uber.nullaway:nullaway:0.10.22")
 
-    rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:2.5.4"))
+    rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:2.6.2"))
     rewrite("org.openrewrite.recipe:rewrite-java-security")
     rewrite("org.openrewrite.recipe:rewrite-migrate-java")
-    rewrite("org.openrewrite.recipe:rewrite-recommendations:1.0.9")
+    rewrite("org.openrewrite.recipe:rewrite-recommendations")
     rewrite("org.openrewrite.recipe:rewrite-testing-frameworks")
 }
 
@@ -85,7 +85,7 @@ tasks.withType<AbstractArchiveTask>().configureEach {
 
 spotless {
     java {
-        googleJavaFormat("1.19.1")
+        googleJavaFormat("1.19.2")
             .reflowLongStrings()
             .reorderImports(true)
             .formatJavadoc(true)

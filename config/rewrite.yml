@@ -143,5 +143,4 @@ recipeList:
   - org.openrewrite.java.search.FindSecrets
   - org.openrewrite.java.security.JavaSecurityBestPractices
   - org.openrewrite.java.security.OwaspTopTen
-  - org.openrewrite.java.security.OwaspA04
   - org.openrewrite.gradle.security.UseHttpsForRepositories

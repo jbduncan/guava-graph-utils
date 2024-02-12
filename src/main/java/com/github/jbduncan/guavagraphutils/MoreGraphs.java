@@ -717,19 +717,16 @@ public final class MoreGraphs {
 
       @Override
       public boolean isDirected() {
-        // TODO: throw IllegalStateException if (first|second).isDirected() ever differs
         return first.isDirected();
       }
 
       @Override
       public boolean allowsSelfLoops() {
-        // TODO: throw IllegalStateException if (first|second).allowsSelfLoops() ever differs
         return first.allowsSelfLoops();
       }
 
       @Override
       public ElementOrder<N> nodeOrder() {
-        // TODO: throw IllegalStateException if (first|second).nodeOrder() ever differs
         return first.nodeOrder();
       }
 
@@ -754,12 +751,15 @@ public final class MoreGraphs {
             "Node %s is not an element of this graph.",
             node);
 
-        // Re-evaluate which graph's neighbours to return each and every time this set is used, to
-        // account for the fact that `first` and `second` may be mutated in the future.
+        // A ForwardingSet is used to re-evaluate the set every time it is used for two reasons:
+        // - "neighbours" throws IAE if "first" or "second" do not contain "node", so Sets.union
+        //   cannot always be used.
+        // - The neighbours of "node" can change if "first" or "second" are ever mutated, so if
+        //   only "first" or "second"'s neighbours were returned, the result could become
+        //   outdated.
         return new ForwardingSet<>() {
           @Override
           protected Set<N> delegate() {
-            // TODO: Throw IllegalStateException if first and second end up with no adjacent nodes.
             if (!second.nodes().contains(node)) {
               return neighbours.apply(first, node);
             }
@@ -773,7 +773,6 @@ public final class MoreGraphs {
 
       @Override
       public ElementOrder<N> incidentEdgeOrder() {
-        // TODO: throw IllegalStateException if (first|second).incidentEdgeOrder() ever differs
         return first.incidentEdgeOrder();
       }
     };

@@ -25,7 +25,6 @@ import com.google.common.graph.MutableGraph;
 import com.google.common.graph.SuccessorsFunction;
 import com.google.common.graph.ValueGraph;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
@@ -499,7 +498,7 @@ public final class MoreGraphs {
     Queue<N> roots = rootsOf(graph);
     Multiset<N> nonRoots = nonRootsOf(graph);
 
-    var result = new ArrayList<N>();
+    ImmutableList.Builder<N> result = ImmutableList.builder();
     while (!roots.isEmpty()) {
       N next = roots.remove();
       result.add(next);
@@ -511,7 +510,7 @@ public final class MoreGraphs {
       }
     }
     checkArgument(nonRoots.isEmpty(), GRAPH_HAS_AT_LEAST_ONE_CYCLE);
-    return ImmutableList.copyOf(result);
+    return result.build();
   }
 
   private static <N> Multiset<N> nonRootsOf(Graph<N> graph) {
@@ -624,6 +623,7 @@ public final class MoreGraphs {
     }
 
     ImmutableList<T> recurse() {
+      //noinspection ConstantValue
       return Stream.generate(this::next)
           .takeWhile(Objects::nonNull) // null signals end of data
           .collect(toImmutableList())

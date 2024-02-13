@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 // We test methods that purposefully use an unstable Guava API
 @SuppressWarnings("UnstableApiUsage")
-class MoreGraphsTests {
+class MoreGraphsBuildGraphTests {
 
   @Test
   void whenBuildingGraphWithBftAndEmptyStartingNodes_thenResultIsEmptyGraph() {

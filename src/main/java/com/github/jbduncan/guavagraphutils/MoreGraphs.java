@@ -2,7 +2,10 @@ package com.github.jbduncan.guavagraphutils;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.ImmutableList.toImmutableList;
+import static com.google.common.collect.ImmutableMap.toImmutableMap;
 import static com.google.common.collect.Multisets.toMultiset;
+import static java.util.Comparator.reverseOrder;
+import static java.util.Map.Entry.comparingByValue;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toCollection;
 
@@ -10,6 +13,8 @@ import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ForwardingSet;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
@@ -776,6 +781,52 @@ public final class MoreGraphs {
         return first.incidentEdgeOrder();
       }
     };
+  }
+
+  private static final double DAMPING_FACTOR = 0.85;
+  private static final int DEFAULT_ITERATIONS = 10_000;
+
+  // TODO: Change into a builder that accepts dampingFactor, maxIterations and tolerance.
+  // TODO: Javadoc
+  public static <N> ImmutableMap<N, Double> pageRanks(Graph<N> graph) {
+    int n = graph.nodes().size();
+    Map<N, Double> currentPageRanks = Maps.newHashMapWithExpectedSize(n);
+    for (N node : graph.nodes()) {
+      currentPageRanks.put(node, 1.0 / n);
+    }
+    Map<N, Double> nextPageRanks = Maps.newHashMapWithExpectedSize(n);
+
+    for (int i = 0; i < DEFAULT_ITERATIONS; i++) {
+      double left = 0.0;
+      for (N node : graph.nodes()) {
+        left +=
+            graph.successors(node).isEmpty()
+                ? requireNonNull(currentPageRanks.get(node))
+                : (1 - DAMPING_FACTOR) * requireNonNull(currentPageRanks.get(node));
+      }
+      left /= n;
+
+      for (N node : graph.nodes()) {
+        double sum = 0.0;
+        for (N predecessor : graph.predecessors(node)) {
+          sum +=
+              requireNonNull(currentPageRanks.get(predecessor))
+                  / graph.successors(predecessor).size();
+        }
+        double right = DAMPING_FACTOR * sum;
+
+        double pr = left + right;
+        nextPageRanks.put(node, pr);
+      }
+
+      var tmp = currentPageRanks;
+      currentPageRanks = nextPageRanks;
+      nextPageRanks = tmp;
+    }
+
+    return currentPageRanks.entrySet().stream()
+        .sorted(comparingByValue(reverseOrder()))
+        .collect(toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   private MoreGraphs() {}

@@ -19,5 +19,6 @@ This is a Java library with a few utilities for working with Guava graphs. Speci
   nodes.
 - [`MoreGraphs.union`](src/main/java/com/github/jbduncan/guavagraphutils/MoreGraphs.java): returns
   a view of the union of the given graphs.
+- [`MoreGraphs.pageRanks`](): returns the page ranks of all nodes of the given graph as per the [PageRank](https://en.wikipedia.org/wiki/PageRank) algorithm.
 
 See these methods' javadocs for more information.

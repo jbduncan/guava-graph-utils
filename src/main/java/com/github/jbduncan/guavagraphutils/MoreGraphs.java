@@ -500,6 +500,12 @@ public final class MoreGraphs {
   public static <N> ImmutableList<N> topologicalOrdering(Graph<N> graph) {
     requireNonNull(graph, "graph");
 
+    /*
+     * Kahn's algorithm. Derived from [1], in turn derived from [2].
+     *
+     * [1] https://web.archive.org/web/20230225053309/https://en.wikipedia.org/wiki/Topological_sorting#Kahn's_algorithm
+     * [2] https://dl.acm.org/doi/pdf/10.1145/368996.369025
+     */
     Queue<N> roots = rootsOf(graph);
     Multiset<N> nonRoots = nonRootsOf(graph);
 

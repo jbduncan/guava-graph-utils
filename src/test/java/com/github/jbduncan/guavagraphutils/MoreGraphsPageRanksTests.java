@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 // We test a method that purposefully use an unstable Guava API
 @SuppressWarnings("UnstableApiUsage")
-class MoreGraphsPageRanksTest {
+class MoreGraphsPageRanksTests {
   @Test
   void whenCalculatingPageRanksOfWikipediaExampleGraph_thenExpectedRanksAreReturned() {
     // given

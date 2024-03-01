@@ -656,8 +656,8 @@ public final class MoreGraphs {
           if (next instanceof Closure closure) {
             closure.run();
           } else {
-            // frameStack only contains Ns and Closures, so the type is
-            // guaranteed to be N here.
+            // frameStack only contains Ts and Closures, so the type is
+            // guaranteed to be T here.
             @SuppressWarnings("unchecked")
             T result = (T) next;
             return result;

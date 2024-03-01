@@ -1,7 +1,6 @@
 package com.github.jbduncan.guavagraphutils;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
 import static com.google.common.collect.Multisets.toMultiset;
 import static java.util.Comparator.reverseOrder;
@@ -30,15 +29,15 @@ import com.google.common.graph.MutableGraph;
 import com.google.common.graph.SuccessorsFunction;
 import com.google.common.graph.ValueGraph;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 
 // This class purposefully expands upon an unstable Guava API
@@ -634,11 +633,16 @@ public final class MoreGraphs {
     }
 
     ImmutableList<T> recurse() {
-      //noinspection ConstantValue
-      return Stream.generate(this::next)
-          .takeWhile(Objects::nonNull) // null signals end of data
-          .collect(toImmutableList())
-          .reverse();
+      List<T> list = new ArrayList<>();
+      while (true) {
+        T t = next();
+        if (t == null) {
+          // null signals end of data
+          break;
+        }
+        list.add(t);
+      }
+      return ImmutableList.copyOf(list).reverse();
     }
 
     private @Nullable T next() {

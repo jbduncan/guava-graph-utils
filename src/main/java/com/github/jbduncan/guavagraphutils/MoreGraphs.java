@@ -50,12 +50,12 @@ public final class MoreGraphs {
       "successors function has at least one cycle";
 
   /**
-   * Returns an immutable directed graph from a given set of starting nodes and a {@linkplain
+   * Returns an <i>immutable directed graph</i> from a given set of starting nodes and a {@linkplain
    * SuccessorsFunction successors function}. The successors function is applied to the starting
    * nodes, then their children, then their grand-children, and so on and so forth in a
    * breadth-first manner until all descendants have been traversed.
    *
-   * <p>For example, given the starting node {@code "a"} and the following successors function:
+   * <p>For example, given the starting node {@code "a"} and the following successors function...
    *
    * <pre>{@code
    * node -> {
@@ -116,7 +116,9 @@ public final class MoreGraphs {
 
   /**
    * Returns an <i>unmodifiable, directed {@linkplain ValueGraph value graph} view</i> of the given
-   * table where:
+   * table.
+   *
+   * <p>The value graph has the following characteristics:
    *
    * <ul>
    *   <li>The row keys and column keys of the table are viewed as the graph's nodes.
@@ -260,8 +262,7 @@ public final class MoreGraphs {
    *     hashCode()} implementations as described in "<a
    *     href='https://github.com/google/guava/wiki/GraphsExplained#graph-elements-nodes-and-edges'>
    *     Graphs Explained</a>".
-   * @param <E> the edge type; does not have to have {@code equals()} or {@code hashCode()}
-   *     implementations
+   * @param <E> the edge type; does not need {@code equals()} or {@code hashCode()} implementations
    * @return a {@code ValueGraph} view of the given table; never null
    * @see <a href='https://github.com/google/guava/wiki/GraphsExplained'>Graphs Explained</a>
    */
@@ -351,23 +352,18 @@ public final class MoreGraphs {
   }
 
   /**
-   * Returns an iterable representing the topological ordering of the given graph; that is, a
-   * traversal of the graph in which each node is visited only after all its {@linkplain
-   * Graph#predecessors(Object) predecessors} and other ancestors have been visited.
+   * Returns an <i>unmodifiable, lazy iterable view</i> representing the topological ordering of the
+   * given graph; that is, a traversal of the graph in which each node is visited only after all its
+   * {@linkplain Graph#predecessors(Object) predecessors} and other ancestors have been visited.
    *
    * <p>This method is preferable to {@link MoreGraphs#topologicalOrdering(Graph)
-   * MoreGraphs.topologicalOrdering} if the topological ordering will be iterated on only once, as
+   * MoreGraphs.topologicalOrdering} when the topological ordering will be iterated on only once, as
    * it will avoid putting the result into an intermediate list. Also, it is preferable to {@link
    * MoreGraphs#topologicalOrderingStartingFrom(Iterable, SuccessorsFunction)}
    * topologicalOrderingStartingFrom} when the given graph can be represented as a {@code Graph} and
    * a topological ordering over the entire graph is needed.
    *
    * <p>The given graph must be non-null, otherwise a {@code NullPointerException} will be thrown.
-   *
-   * <p>The returned iterable is an <i>unmodifiable, lazy view</i> of the graph's nodes, and each
-   * and every iteration recalculates the topological ordering. So if the iterable is used multiple
-   * times, use {@link MoreGraphs#topologicalOrdering(Graph) MoreGraphs.topologicalOrdering} and use
-   * that list instead.
    *
    * <p>The given graph may have multiple valid topological orderings. This method does not
    * guarantee which topological ordering is returned on any iteration, or even that the same
@@ -444,13 +440,13 @@ public final class MoreGraphs {
   }
 
   /**
-   * Returns an immutable list representing the topological ordering of the given graph; that is, a
-   * traversal of the graph in which each node is visited only after all its {@linkplain
+   * Returns an <i>immutable list</i> representing the topological ordering of the given graph; that
+   * is, a traversal of the graph in which each node is visited only after all its {@linkplain
    * Graph#predecessors(Object) predecessors} and other ancestors have been visited.
    *
    * <p>This method is preferable to {@link MoreGraphs#lazyTopologicalOrdering(Graph)
-   * MoreGraphs.lazyTopologicalOrdering} if the topological ordering will be iterated on multiple
-   * times, as it will avoid recalculating the topological ordering each time. Also, it is
+   * MoreGraphs.lazyTopologicalOrdering} when the topological ordering will be iterated on multiple
+   * times, as it will avoid recalculating the topological ordering each and every time. Also, it is
    * preferable to {@link MoreGraphs#topologicalOrderingStartingFrom(Iterable, SuccessorsFunction)}
    * topologicalOrderingStartingFrom} when the given graph can be represented as a {@code Graph} and
    * a topological ordering over the entire graph is needed.
@@ -536,11 +532,12 @@ public final class MoreGraphs {
   }
 
   /**
-   * Returns an immutable list representing the topological ordering of the graph, specifically the
-   * subgraph that is {@linkplain com.google.common.graph.Graphs#reachableNodes(Graph, Object)
-   * reachable} from the given starting nodes. A topological ordering is a traversal of the subgraph
-   * in which each node is visited only after all its {@linkplain Graph#predecessors(Object)
-   * predecessors} and other ancestors have been visited.
+   * Returns an <i>immutable list</i> representing the topological ordering of the graph,
+   * specifically the subgraph that is {@linkplain
+   * com.google.common.graph.Graphs#reachableNodes(Graph, Object) reachable} from the given starting
+   * nodes. A topological ordering is a traversal of the subgraph in which each node is visited only
+   * after all its {@linkplain Graph#predecessors(Object) predecessors} and other ancestors have
+   * been visited.
    *
    * <p>This method is preferable to {@link MoreGraphs#lazyTopologicalOrdering(Graph)
    * lazyTopologicalOrdering} and {@link MoreGraphs#topologicalOrdering(Graph) topologicalOrdering}

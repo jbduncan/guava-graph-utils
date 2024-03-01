@@ -78,10 +78,8 @@ public class MoreGraphsPropertyBasedTests {
 
     // when
     ThrowingCallable codeUnderTest =
-        () -> {
-          // Force the topological ordering to be evaluated.
-          MoreGraphs.lazyTopologicalOrdering(graph).forEach(__ -> {});
-        };
+        // Force the topological ordering to be evaluated.
+        () -> MoreGraphs.lazyTopologicalOrdering(graph).forEach(__ -> {});
 
     // then
     assertThatCode(codeUnderTest)
@@ -101,10 +99,8 @@ public class MoreGraphsPropertyBasedTests {
       @ForAll(supplier = MoreArbitraries.CyclicGraphs.class) ImmutableGraph<Integer> graph) {
     // when
     ThrowingCallable codeUnderTest =
-        () -> {
-          // Force the topological ordering to be evaluated.
-          MoreGraphs.lazyTopologicalOrdering(graph).forEach(__ -> {});
-        };
+        // Force the topological ordering to be evaluated.
+        () -> MoreGraphs.lazyTopologicalOrdering(graph).forEach(__ -> {});
 
     // then
     assertThatCode(codeUnderTest)
@@ -277,7 +273,7 @@ public class MoreGraphsPropertyBasedTests {
 
   private static <N> void assertThatTopologicalOrderingIsValid(
       Graph<N> graph, Iterable<N> topologicalOrdering) {
-    // copy into list for good performance
+    // copy into list for better performance
     topologicalOrdering = ImmutableList.copyOf(topologicalOrdering);
 
     assertThat(topologicalOrdering).containsExactlyInAnyOrderElementsOf(graph.nodes());

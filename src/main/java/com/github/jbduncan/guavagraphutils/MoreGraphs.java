@@ -28,6 +28,7 @@ import com.google.common.graph.ImmutableGraph;
 import com.google.common.graph.MutableGraph;
 import com.google.common.graph.SuccessorsFunction;
 import com.google.common.graph.ValueGraph;
+import com.google.common.math.StatsAccumulator;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -804,14 +805,14 @@ public final class MoreGraphs {
     Map<N, Double> nextPageRanks = Maps.newHashMapWithExpectedSize(n);
 
     for (int i = 0; i < DEFAULT_ITERATIONS; i++) {
-      double left = 0.0;
+      var statsAccumulator = new StatsAccumulator();
       for (N node : graph.nodes()) {
-        left +=
+        statsAccumulator.add(
             graph.successors(node).isEmpty()
                 ? requireNonNull(currentPageRanks.get(node))
-                : (1 - DAMPING_FACTOR) * requireNonNull(currentPageRanks.get(node));
+                : (1 - DAMPING_FACTOR) * requireNonNull(currentPageRanks.get(node)));
       }
-      left /= n;
+      double left = statsAccumulator.mean();
 
       for (N node : graph.nodes()) {
         double sum = 0.0;

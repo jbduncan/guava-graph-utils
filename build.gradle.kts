@@ -1,6 +1,10 @@
+import com.diffplug.gradle.spotless.SpotlessApply
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import net.ltgt.gradle.errorprone.errorprone
 import org.gradle.api.tasks.compile.JavaCompile
+import org.openrewrite.gradle.ResolveRewriteDependenciesTask
+import org.openrewrite.gradle.RewriteDryRunTask
+import org.openrewrite.gradle.RewriteRunTask
 
 plugins {
     java
@@ -115,29 +119,33 @@ rewrite {
     failOnDryRunResults = true
 }
 
-val rewriteRun: Task by tasks.getting {
+tasks.withType<RewriteRunTask>().configureEach {
     notCompatibleWithConfigurationCache(
         "Uses Task, Project and Task.project at configuration time, which are unsupported by " +
                 "the configuration cache"
     )
 }
 
-val rewriteDryRun: Task by tasks.getting {
+tasks.withType<RewriteDryRunTask>().configureEach {
     notCompatibleWithConfigurationCache(
         "Uses Task, Project and Task.project at configuration time, which are unsupported by " +
                 "the configuration cache"
     )
 }
 
-val rewriteResolveDependencies: Task by tasks.getting {
+tasks.withType<ResolveRewriteDependenciesTask>().configureEach {
     notCompatibleWithConfigurationCache(
         "Uses Configuration, Project and Task.project at configuration time, which are " +
                 "unsupported by the configuration cache"
     )
 }
 
-tasks.named("check").configure {
-    dependsOn(rewriteDryRun)
+tasks.check.configure {
+    dependsOn(tasks.withType<RewriteDryRunTask>())
+}
+
+tasks.withType<SpotlessApply>().configureEach {
+    mustRunAfter(tasks.withType<RewriteRunTask>())
 }
 
 // TODO: Use Gradle version catalogs (see other personal projects)
@@ -173,12 +181,7 @@ tasks.named("check").configure {
 
 // TODO: Use CI
 
-// TODO: Use RenovateBot
+// TODO: Use RenovateBot or Dependabot with Gradle's dependency-submission action:
+//       https://github.com/gradle/actions/blob/main/dependency-submission/README.md
 
 // TODO: Do GitHub releases and upload to Maven Central. See JUnit 5 and junit-pioneer for examples.
-
-// TODO: Enable Gradle Build Cache (local):
-//   - https://docs.gradle.org/current/userguide/build_cache.html
-//   - https://docs.gradle.org/current/userguide/caching_java_projects.html
-//   - https://docs.gradle.org/current/userguide/build_cache_debugging.html
-//   - https://docs.gradle.org/current/userguide/common_caching_problems.html

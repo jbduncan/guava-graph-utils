@@ -13,21 +13,28 @@ recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava21
   - org.openrewrite.java.migrate.guava.NoGuavaJava21
   - org.openrewrite.java.migrate.io.ReplaceFileInOrOutputStreamFinalizeWithClose
+  - org.openrewrite.java.migrate.lang.UseTextBlocks
+  - org.openrewrite.java.migrate.net.URLConstructorsToURIRecipes
+  - org.openrewrite.java.migrate.net.JavaNetAPIs
+  - org.openrewrite.java.migrate.util.SequencedCollection
   - org.openrewrite.java.migrate.lang.JavaLangAPIs
   - org.openrewrite.java.migrate.lang.StringFormatted
   - org.openrewrite.java.migrate.lang.StringRulesRecipes
   - org.openrewrite.java.migrate.lang.UseStringIsEmptyRecipe
-  - org.openrewrite.java.migrate.util.MigrateCollectionsUnmodifiableList
-  - org.openrewrite.java.migrate.util.MigrateCollectionsUnmodifiableSet
+  - org.openrewrite.java.migrate.UseJavaUtilBase64
+  - org.openrewrite.java.migrate.concurrent.JavaConcurrentAPIs
+  - org.openrewrite.java.migrate.logging.JavaLoggingAPIs
   - org.openrewrite.java.migrate.util.OptionalStreamRecipe
-  - org.openrewrite.java.migrate.util.ReplaceStreamCollectWithToList
   - org.openrewrite.java.testing.assertj.AdoptAssertJDurationAssertions
   - org.openrewrite.java.testing.assertj.Assertj
-  - org.openrewrite.java.testing.cleanup.AssertEqualsBooleanToAssertBoolean
-  - org.openrewrite.java.testing.cleanup.AssertNotEqualsBooleanToAssertBoolean
+  - org.openrewrite.staticanalysis.NoDoubleBraceInitialization
+  - org.openrewrite.java.testing.cleanup.AssertTrueNullToAssertNull
   - org.openrewrite.java.testing.cleanup.BestPractices
+  - org.openrewrite.java.testing.cleanup.RemoveEmptyTests
+  - org.openrewrite.java.testing.cleanup.TestsShouldIncludeAssertions
+  - org.openrewrite.java.testing.junit5.JUnit4to5Migration
   - org.openrewrite.java.testing.junit5.JUnit5BestPractices
-  - org.openrewrite.java.testing.mockito.Mockito1to3Migration
+  - org.openrewrite.java.testing.mockito.ReplacePowerMockito
   - org.openrewrite.recommendations.CodeHealth
   - org.openrewrite.staticanalysis.AddSerialVersionUidToSerializable
   - org.openrewrite.staticanalysis.AtomicPrimitiveEqualsUsesGet
@@ -140,7 +147,12 @@ recipeList:
 type: specs.openrewrite.org/v1beta/recipe
 name: com.github.jbduncan.rewrite.SecurityBestPractices
 recipeList:
+  - org.openrewrite.gradle.security.UseHttpsForRepositories
   - org.openrewrite.java.search.FindSecrets
+  - org.openrewrite.java.security.FindTextDirectionChanges
+  - org.openrewrite.java.security.FixCwe338
   - org.openrewrite.java.security.JavaSecurityBestPractices
   - org.openrewrite.java.security.OwaspTopTen
-  - org.openrewrite.gradle.security.UseHttpsForRepositories
+  - org.openrewrite.java.security.RegularExpressionDenialOfService
+  - org.openrewrite.java.security.SecureRandom
+  - org.openrewrite.java.security.SecureRandomPrefersDefaultSeed

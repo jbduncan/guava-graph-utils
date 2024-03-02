@@ -152,28 +152,6 @@ tasks.withType<SpotlessApply>().configureEach {
 
 // TODO: Follow https://github.com/binkley/modern-java-practices
 
-// TODO: Expand use of OpenRewrite:
-//   - https://docs.openrewrite.org/recipes/java/migrate/guava
-//   - https://docs.openrewrite.org/recipes/java/migrate/util/javautilapis
-//   - https://docs.openrewrite.org/recipes/java/testing/assertj
-//   - https://docs.openrewrite.org/recipes/java/testing/cleanup
-//   - https://docs.openrewrite.org/recipes/java/testing/hamcrest
-//   - https://docs.openrewrite.org/recipes/java/testing/junit5
-//   - https://docs.openrewrite.org/recipes/java/migrate/usejavautilbase64
-//   - https://docs.openrewrite.org/recipes/java/migrate/io
-//   - https://docs.openrewrite.org/recipes/java/migrate/lang/usetextblocks
-//   - https://docs.openrewrite.org/recipes/java/migrate/net
-//   - https://docs.openrewrite.org/recipes/java/migrate/sql
-//   - https://docs.openrewrite.org/recipes/java/migrate/util
-//   - https://docs.openrewrite.org/recipes/java/migrate/concurrent
-//   - https://docs.openrewrite.org/recipes/java/migrate/logging
-//   - https://docs.openrewrite.org/recipes/java/migrate/javax
-//   - https://docs.openrewrite.org/recipes/java/security
-//   - https://docs.openrewrite.org/recipes/java/migrate/lang/stringrulesrecipes
-//   - https://docs.openrewrite.org/recipes/java/testing/mockito
-//   - https://docs.openrewrite.org/recipes/kotlin
-//   - https://docs.openrewrite.org/recipes/staticanalysis/nodoublebraceinitialization
-
 // TODO: Can we simplify config/rewrite.yml by finding and removing redundant recipes?
 
 // TODO: Use static analysis tools:

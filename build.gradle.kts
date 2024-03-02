@@ -152,8 +152,6 @@ tasks.withType<SpotlessApply>().configureEach {
 
 // TODO: Follow https://github.com/binkley/modern-java-practices
 
-// TODO: Can we simplify config/rewrite.yml by finding and removing redundant recipes?
-
 // TODO: Use static analysis tools:
 //   - https://github.com/PicnicSupermarket/error-prone-support
 

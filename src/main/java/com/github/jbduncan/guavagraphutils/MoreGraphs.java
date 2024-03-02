@@ -797,20 +797,20 @@ public final class MoreGraphs {
   // TODO: Change into a builder that accepts dampingFactor, maxIterations and tolerance.
   // TODO: Javadoc
   public static <N> ImmutableMap<N, Double> pageRanks(Graph<N> graph) {
-    int n = graph.nodes().size();
-    Map<N, Double> currentPageRanks = Maps.newHashMapWithExpectedSize(n);
+    Map<N, Double> currentPageRanks = Maps.newHashMapWithExpectedSize(graph.nodes().size());
     for (N node : graph.nodes()) {
-      currentPageRanks.put(node, 1.0 / n);
+      currentPageRanks.put(node, 1.0 / graph.nodes().size());
     }
-    Map<N, Double> nextPageRanks = Maps.newHashMapWithExpectedSize(n);
+    Map<N, Double> nextPageRanks = Maps.newHashMapWithExpectedSize(graph.nodes().size());
 
     for (int i = 0; i < DEFAULT_ITERATIONS; i++) {
       var statsAccumulator = new StatsAccumulator();
       for (N node : graph.nodes()) {
+        double currentPageRank = requireNonNull(currentPageRanks.get(node));
         statsAccumulator.add(
             graph.successors(node).isEmpty()
-                ? requireNonNull(currentPageRanks.get(node))
-                : (1 - DAMPING_FACTOR) * requireNonNull(currentPageRanks.get(node)));
+                ? currentPageRank
+                : (1 - DAMPING_FACTOR) * currentPageRank);
       }
       double left = statsAccumulator.mean();
 
@@ -823,8 +823,8 @@ public final class MoreGraphs {
         }
         double right = DAMPING_FACTOR * sum;
 
-        double pr = left + right;
-        nextPageRanks.put(node, pr);
+        double pageRank = left + right;
+        nextPageRanks.put(node, pageRank);
       }
 
       var tmp = currentPageRanks;

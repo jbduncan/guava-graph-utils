@@ -7,7 +7,7 @@ import org.openrewrite.gradle.RewriteDryRunTask
 import org.openrewrite.gradle.RewriteRunTask
 
 plugins {
-    java
+    `java-library`
 
     id("com.diffplug.spotless") version "6.25.0"
     id("com.github.ben-manes.versions") version "0.51.0"
@@ -30,7 +30,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.google.guava:guava:33.0.0-jre")
+    api("com.google.guava:guava:33.0.0-jre")
 
     testImplementation("net.jqwik:jqwik:1.8.3")
     testImplementation("org.assertj:assertj-core:3.25.3")

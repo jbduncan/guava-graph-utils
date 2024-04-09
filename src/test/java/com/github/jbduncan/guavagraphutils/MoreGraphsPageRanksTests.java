@@ -19,13 +19,11 @@ class MoreGraphsPageRanksTests {
     var graph = wikipediaPageRanksExampleGraph();
 
     // when
-    var pageRanks = MoreGraphs.pageRanks(graph);
+    var pageRanks = MoreGraphs.pageRanks(graph).execute();
 
     // then
     assertAll(
         "page ranks",
-        () -> assertThat(pageRanks).isUnmodifiable(),
-        () -> assertSorted(pageRanks.values()),
         () -> assertThat(pageRanks.get("a")).isCloseTo(0.0327815, offset(1.0e-7)),
         () -> assertThat(pageRanks.get("b")).isCloseTo(0.3844010, offset(1.0e-7)),
         () -> assertThat(pageRanks.get("c")).isCloseTo(0.3429103, offset(1.0e-7)),
@@ -37,6 +35,30 @@ class MoreGraphsPageRanksTests {
         () -> assertThat(pageRanks.get("i")).isCloseTo(0.0161695, offset(1.0e-7)),
         () -> assertThat(pageRanks.get("j")).isCloseTo(0.0161695, offset(1.0e-7)),
         () -> assertThat(pageRanks.get("k")).isCloseTo(0.0161695, offset(1.0e-7)));
+  }
+
+  @Test
+  void whenCalculatingPageRanks_thenResultIsUnmodifiable() {
+    // given
+    var graph = wikipediaPageRanksExampleGraph();
+
+    // when
+    var pageRanks = MoreGraphs.pageRanks(graph).execute();
+
+    // then
+    assertThat(pageRanks).isUnmodifiable();
+  }
+
+  @Test
+  void whenCalculatingPageRanks_thenRanksAreSorted() {
+    // given
+    var graph = wikipediaPageRanksExampleGraph();
+
+    // when
+    var pageRanks = MoreGraphs.pageRanks(graph).execute();
+
+    // then
+    assertSorted(pageRanks.values());
   }
 
   // Based on https://commons.wikimedia.org/wiki/File:PageRanks-Example.svg

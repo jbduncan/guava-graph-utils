@@ -794,9 +794,30 @@ public final class MoreGraphs {
   private static final double DAMPING_FACTOR = 0.85;
   private static final int DEFAULT_ITERATIONS = 10_000;
 
-  // TODO: Change into a builder that accepts dampingFactor, maxIterations and tolerance.
   // TODO: Javadoc
-  public static <N> ImmutableMap<N, Double> pageRanks(Graph<N> graph) {
+  // TODO: Accept maxIterations and tolerance.
+  public static <N> PageRanksAlgorithm<N> pageRanks(Graph<N> graph) {
+    // TODO: checkNotNull(graph)
+    return new PageRanksAlgorithm<>(graph);
+  }
+
+  public static final class PageRanksAlgorithm<N> {
+    private final Graph<N> graph;
+
+    public PageRanksAlgorithm(Graph<N> graph) {
+      this.graph = graph;
+    }
+
+    public PageRanksAlgorithm<N> withDampingFactor(double dampingFactor) {
+      return this;
+    }
+
+    public ImmutableMap<N, Double> execute() {
+      return pageRanksInternal(graph);
+    }
+  }
+
+  private static <N> ImmutableMap<N, Double> pageRanksInternal(Graph<N> graph) {
     Map<N, Double> currentPageRanks = Maps.newHashMapWithExpectedSize(graph.nodes().size());
     for (N node : graph.nodes()) {
       currentPageRanks.put(node, 1.0 / graph.nodes().size());

@@ -8,56 +8,77 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import com.google.common.collect.Streams;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.ImmutableGraph;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 // We test a method that purposefully use an unstable Guava API
 @SuppressWarnings("UnstableApiUsage")
 class MoreGraphsPageRanksTests {
-  @Test
-  void whenCalculatingPageRanksOfWikipediaExampleGraph_thenExpectedRanksAreReturned() {
-    // given
-    var graph = wikipediaPageRanksExampleGraph();
+  @ParameterizedTest
+  @MethodSource("pageRanksAlgorithmsWithDampingFactorOf0Point85")
+  void wikipediaGraphWithDampingFactor0Point85(
+      MoreGraphs.PageRanksAlgorithm<String> pageRanksAlgorithm) {
+    var pageRanks = pageRanksAlgorithm.execute();
 
-    // when
-    var pageRanks = MoreGraphs.pageRanks(graph).execute();
-
-    // then
     assertAll(
         "page ranks",
-        () -> assertThat(pageRanks.get("a")).isCloseTo(0.0327815, offset(1.0e-7)),
-        () -> assertThat(pageRanks.get("b")).isCloseTo(0.3844010, offset(1.0e-7)),
-        () -> assertThat(pageRanks.get("c")).isCloseTo(0.3429103, offset(1.0e-7)),
-        () -> assertThat(pageRanks.get("d")).isCloseTo(0.0390871, offset(1.0e-7)),
-        () -> assertThat(pageRanks.get("e")).isCloseTo(0.0808857, offset(1.0e-7)),
-        () -> assertThat(pageRanks.get("f")).isCloseTo(0.0390871, offset(1.0e-7)),
-        () -> assertThat(pageRanks.get("g")).isCloseTo(0.0161695, offset(1.0e-7)),
-        () -> assertThat(pageRanks.get("h")).isCloseTo(0.0161695, offset(1.0e-7)),
-        () -> assertThat(pageRanks.get("i")).isCloseTo(0.0161695, offset(1.0e-7)),
-        () -> assertThat(pageRanks.get("j")).isCloseTo(0.0161695, offset(1.0e-7)),
-        () -> assertThat(pageRanks.get("k")).isCloseTo(0.0161695, offset(1.0e-7)));
+        () -> assertThat(pageRanks.get("a")).isCloseTo(0.032782, offset(1.0e-6)),
+        () -> assertThat(pageRanks.get("b")).isCloseTo(0.384401, offset(1.0e-6)),
+        () -> assertThat(pageRanks.get("c")).isCloseTo(0.342910, offset(1.0e-6)),
+        () -> assertThat(pageRanks.get("d")).isCloseTo(0.039087, offset(1.0e-6)),
+        () -> assertThat(pageRanks.get("e")).isCloseTo(0.080886, offset(1.0e-6)),
+        () -> assertThat(pageRanks.get("f")).isCloseTo(0.039087, offset(1.0e-6)),
+        () -> assertThat(pageRanks.get("g")).isCloseTo(0.016170, offset(1.0e-6)),
+        () -> assertThat(pageRanks.get("h")).isCloseTo(0.016170, offset(1.0e-6)),
+        () -> assertThat(pageRanks.get("i")).isCloseTo(0.016170, offset(1.0e-6)),
+        () -> assertThat(pageRanks.get("j")).isCloseTo(0.016170, offset(1.0e-6)),
+        () -> assertThat(pageRanks.get("k")).isCloseTo(0.016170, offset(1.0e-6)));
+  }
+
+  private static Stream<MoreGraphs.PageRanksAlgorithm<String>> pageRanksAlgorithmsWithDampingFactorOf0Point85() {
+    var graph = wikipediaPageRanksExampleGraph();
+    return Stream.of(
+        MoreGraphs.pageRanks(graph), MoreGraphs.pageRanks(graph).withDampingFactor(0.85));
   }
 
   @Test
-  void whenCalculatingPageRanks_thenResultIsUnmodifiable() {
-    // given
+  void wikipediaGraphWithDampingFactor0Point9() {
     var graph = wikipediaPageRanksExampleGraph();
 
-    // when
+    var pageRanks = MoreGraphs.pageRanks(graph).withDampingFactor(0.9).execute();
+
+    assertAll(
+        "page ranks",
+        () -> assertThat(pageRanks.get("a")).isCloseTo(0.023958, offset(1.0e-6)),
+        () -> assertThat(pageRanks.get("b")).isCloseTo(0.417685, offset(1.0e-6)),
+        () -> assertThat(pageRanks.get("c")).isCloseTo(0.386968, offset(1.0e-6)),
+        () -> assertThat(pageRanks.get("d")).isCloseTo(0.028682, offset(1.0e-6)),
+        () -> assertThat(pageRanks.get("e")).isCloseTo(0.058769, offset(1.0e-6)),
+        () -> assertThat(pageRanks.get("f")).isCloseTo(0.028682, offset(1.0e-6)),
+        () -> assertThat(pageRanks.get("g")).isCloseTo(0.011051, offset(1.0e-6)),
+        () -> assertThat(pageRanks.get("h")).isCloseTo(0.011051, offset(1.0e-6)),
+        () -> assertThat(pageRanks.get("i")).isCloseTo(0.011051, offset(1.0e-6)),
+        () -> assertThat(pageRanks.get("j")).isCloseTo(0.011051, offset(1.0e-6)),
+        () -> assertThat(pageRanks.get("k")).isCloseTo(0.011051, offset(1.0e-6)));
+  }
+
+  @Test
+  void resultIsUnmodifiable() {
+    var graph = wikipediaPageRanksExampleGraph();
+
     var pageRanks = MoreGraphs.pageRanks(graph).execute();
 
-    // then
     assertThat(pageRanks).isUnmodifiable();
   }
 
   @Test
-  void whenCalculatingPageRanks_thenRanksAreSorted() {
-    // given
+  void resultRanksAreSorted() {
     var graph = wikipediaPageRanksExampleGraph();
 
-    // when
     var pageRanks = MoreGraphs.pageRanks(graph).execute();
 
-    // then
     assertSorted(pageRanks.values());
   }
 

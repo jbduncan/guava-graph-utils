@@ -791,7 +791,7 @@ public final class MoreGraphs {
     };
   }
 
-  private static final double DAMPING_FACTOR = 0.85;
+  private static final double DEFAULT_DAMPING_FACTOR = 0.85;
   private static final int DEFAULT_ITERATIONS = 10_000;
 
   // TODO: Javadoc
@@ -803,21 +803,24 @@ public final class MoreGraphs {
 
   public static final class PageRanksAlgorithm<N> {
     private final Graph<N> graph;
+    private double dampingFactor = DEFAULT_DAMPING_FACTOR;
 
     public PageRanksAlgorithm(Graph<N> graph) {
       this.graph = graph;
     }
 
     public PageRanksAlgorithm<N> withDampingFactor(double dampingFactor) {
+      this.dampingFactor = dampingFactor;
       return this;
     }
 
     public ImmutableMap<N, Double> execute() {
-      return pageRanksInternal(graph);
+      return pageRanksInternal(graph, dampingFactor);
     }
   }
 
-  private static <N> ImmutableMap<N, Double> pageRanksInternal(Graph<N> graph) {
+  private static <N> ImmutableMap<N, Double> pageRanksInternal(
+      Graph<N> graph, double dampingFactor) {
     Map<N, Double> currentPageRanks = Maps.newHashMapWithExpectedSize(graph.nodes().size());
     for (N node : graph.nodes()) {
       currentPageRanks.put(node, 1.0 / graph.nodes().size());
@@ -829,20 +832,16 @@ public final class MoreGraphs {
       for (N node : graph.nodes()) {
         double currentPageRank = requireNonNull(currentPageRanks.get(node));
         statsAccumulator.add(
-            graph.successors(node).isEmpty()
-                ? currentPageRank
-                : (1 - DAMPING_FACTOR) * currentPageRank);
+            graph.outDegree(node) == 0 ? currentPageRank : (1 - dampingFactor) * currentPageRank);
       }
       double left = statsAccumulator.mean();
 
       for (N node : graph.nodes()) {
         double sum = 0.0;
         for (N predecessor : graph.predecessors(node)) {
-          sum +=
-              requireNonNull(currentPageRanks.get(predecessor))
-                  / graph.successors(predecessor).size();
+          sum += requireNonNull(currentPageRanks.get(predecessor)) / graph.outDegree(predecessor);
         }
-        double right = DAMPING_FACTOR * sum;
+        double right = dampingFactor * sum;
 
         double pageRank = left + right;
         nextPageRanks.put(node, pageRank);

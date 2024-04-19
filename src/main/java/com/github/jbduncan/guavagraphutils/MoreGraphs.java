@@ -28,7 +28,6 @@ import com.google.common.graph.ImmutableGraph;
 import com.google.common.graph.MutableGraph;
 import com.google.common.graph.SuccessorsFunction;
 import com.google.common.graph.ValueGraph;
-import com.google.common.math.StatsAccumulator;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -509,6 +508,7 @@ public final class MoreGraphs {
     while (!roots.isEmpty()) {
       N next = roots.remove();
       result.add(next);
+
       for (N successor : graph.successors(next)) {
         nonRoots.remove(successor, 1);
         if (!nonRoots.contains(successor)) {
@@ -516,6 +516,7 @@ public final class MoreGraphs {
         }
       }
     }
+
     checkArgument(nonRoots.isEmpty(), GRAPH_HAS_AT_LEAST_ONE_CYCLE);
     return result.build();
   }
@@ -797,7 +798,7 @@ public final class MoreGraphs {
   // TODO: Javadoc
   // TODO: Accept maxIterations and tolerance.
   public static <N> PageRanksAlgorithm<N> pageRanks(Graph<N> graph) {
-    // TODO: checkNotNull(graph)
+    // TODO: requireNonNull(graph)
     return new PageRanksAlgorithm<>(graph);
   }
 
@@ -815,46 +816,55 @@ public final class MoreGraphs {
     }
 
     public ImmutableMap<N, Double> execute() {
-      return pageRanksInternal(graph, dampingFactor);
-    }
-  }
+      Map<N, Double> currentPageRanks = Maps.newHashMapWithExpectedSize(graph.nodes().size());
+      for (N node : graph.nodes()) {
+        currentPageRanks.put(node, 1.0 / graph.nodes().size());
+      }
+      Map<N, Double> nextPageRanks = Maps.newHashMapWithExpectedSize(graph.nodes().size());
 
-  private static <N> ImmutableMap<N, Double> pageRanksInternal(
-      Graph<N> graph, double dampingFactor) {
-    Map<N, Double> currentPageRanks = Maps.newHashMapWithExpectedSize(graph.nodes().size());
-    for (N node : graph.nodes()) {
-      currentPageRanks.put(node, 1.0 / graph.nodes().size());
-    }
-    Map<N, Double> nextPageRanks = Maps.newHashMapWithExpectedSize(graph.nodes().size());
+      for (int i = 0; i < DEFAULT_ITERATIONS; i++) {
+        double left = left(graph, dampingFactor, currentPageRanks);
 
-    for (int i = 0; i < DEFAULT_ITERATIONS; i++) {
-      var statsAccumulator = new StatsAccumulator();
+        for (N node : graph.nodes()) {
+          double right = right(graph, dampingFactor, node, currentPageRanks);
+
+          double pageRank = left + right;
+          nextPageRanks.put(node, pageRank);
+        }
+
+        var tmp = currentPageRanks;
+        currentPageRanks = nextPageRanks;
+        nextPageRanks = tmp;
+      }
+
+      return currentPageRanks.entrySet().stream()
+          .sorted(comparingByValue(reverseOrder()))
+          .collect(toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    private static <N> double left(
+        Graph<N> graph, double dampingFactor, Map<N, Double> currentPageRanks) {
+      double sum = 0.0;
       for (N node : graph.nodes()) {
         double currentPageRank = requireNonNull(currentPageRanks.get(node));
-        statsAccumulator.add(
-            graph.outDegree(node) == 0 ? currentPageRank : (1 - dampingFactor) * currentPageRank);
-      }
-      double left = statsAccumulator.mean();
-
-      for (N node : graph.nodes()) {
-        double sum = 0.0;
-        for (N predecessor : graph.predecessors(node)) {
-          sum += requireNonNull(currentPageRanks.get(predecessor)) / graph.outDegree(predecessor);
+        if (graph.outDegree(node) == 0) {
+          sum += currentPageRank;
+        } else {
+          sum += (1 - dampingFactor) * currentPageRank;
         }
-        double right = dampingFactor * sum;
-
-        double pageRank = left + right;
-        nextPageRanks.put(node, pageRank);
       }
-
-      var tmp = currentPageRanks;
-      currentPageRanks = nextPageRanks;
-      nextPageRanks = tmp;
+      return sum / graph.nodes().size();
     }
 
-    return currentPageRanks.entrySet().stream()
-        .sorted(comparingByValue(reverseOrder()))
-        .collect(toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+    private static <N> double right(
+        Graph<N> graph, double dampingFactor, N node, Map<N, Double> currentPageRanks) {
+      double sum = 0.0;
+      for (N predecessor : graph.predecessors(node)) {
+        double currentPageRank = requireNonNull(currentPageRanks.get(predecessor));
+        sum += currentPageRank / graph.outDegree(predecessor);
+      }
+      return dampingFactor * sum;
+    }
   }
 
   private MoreGraphs() {}

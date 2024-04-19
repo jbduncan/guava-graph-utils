@@ -37,7 +37,8 @@ class MoreGraphsPageRanksTests {
         () -> assertThat(pageRanks.get("k")).isCloseTo(0.016170, offset(1.0e-6)));
   }
 
-  private static Stream<MoreGraphs.PageRanksAlgorithm<String>> pageRanksAlgorithmsWithDampingFactorOf0Point85() {
+  private static Stream<MoreGraphs.PageRanksAlgorithm<String>>
+      pageRanksAlgorithmsWithDampingFactorOf0Point85() {
     var graph = wikipediaPageRanksExampleGraph();
     return Stream.of(
         MoreGraphs.pageRanks(graph), MoreGraphs.pageRanks(graph).withDampingFactor(0.85));

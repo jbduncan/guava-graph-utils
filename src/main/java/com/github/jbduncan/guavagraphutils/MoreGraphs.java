@@ -524,7 +524,11 @@ public final class MoreGraphs {
   private static <N> Multiset<N> nonRootsOf(Graph<N> graph) {
     return graph.nodes().stream()
         .filter(node -> graph.inDegree(node) > 0)
-        .collect(toMultiset(node -> node, graph::inDegree, HashMultiset::create));
+        .collect(
+            toMultiset(
+                /* elementFunction= */ node -> node,
+                /* countFunction= */ graph::inDegree,
+                /* multisetSupplier= */ HashMultiset::create));
   }
 
   private static <N> Queue<N> rootsOf(Graph<N> graph) {
@@ -762,18 +766,24 @@ public final class MoreGraphs {
       private Set<N> neighbours(N node, BiFunction<Graph<N>, N, Set<N>> neighbours) {
         checkArgument(
             first.nodes().contains(node) || second.nodes().contains(node),
-            "Node %s is not an element of this graph.",
+            NODE_IS_NOT_IN_THIS_GRAPH,
             node);
 
-        // A ForwardingSet is used to re-evaluate the set every time it is used for two reasons:
-        // - "neighbours" throws IAE if "first" or "second" do not contain "node", so Sets.union
-        //   cannot always be used.
+        // A ForwardingSet is used to re-evaluate the set every time it is accessed because:
+        // - "neighbours" throws IAE if "first" or "second" don't contain "node", but the graph
+        //   union should only throw IAE if both "first" _and_ "second" don't contain "node", so
+        //   Sets.union cannot always be used.
         // - The neighbours of "node" can change if "first" or "second" are ever mutated, so if
-        //   only "first" or "second"'s neighbours were returned, the result could become
-        //   outdated.
+        //   only "first" or "second"'s neighbours were ever returned, the result could become
+        //   out-of-date.
         return new ForwardingSet<>() {
           @Override
           protected Set<N> delegate() {
+            // TODO: test
+            //            checkArgument(
+            //                first.nodes().contains(node) || second.nodes().contains(node),
+            //                NODE_IS_NOT_IN_THIS_GRAPH,
+            //                node);
             if (!second.nodes().contains(node)) {
               return neighbours.apply(first, node);
             }

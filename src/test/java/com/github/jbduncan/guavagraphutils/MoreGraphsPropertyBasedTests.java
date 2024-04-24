@@ -29,25 +29,21 @@ public class MoreGraphsPropertyBasedTests {
 
   @Property
   void givenADag_whenCalculatingLazyTopologicalOrdering_thenOrderingIsValid(
-      // given
       @ForAll(supplier = MoreArbitraries.DirectedAcyclicGraphs.class)
           ImmutableGraph<Integer> graph) {
-    // when
+
     var topologicalOrdering = MoreGraphs.lazyTopologicalOrdering(graph);
 
-    // then
     assertThatTopologicalOrderingIsValid(graph, topologicalOrdering);
   }
 
   @Property
   void givenADag_whenCalculatingLazyTopologicalOrdering_thenSizeIsNumNodesOfDag(
-      // given
       @ForAll(supplier = MoreArbitraries.DirectedAcyclicGraphs.class)
           ImmutableGraph<Integer> graph) {
-    // when
+
     var topologicalOrdering = MoreGraphs.lazyTopologicalOrdering(graph);
 
-    // then
     assertThat(topologicalOrdering)
         .as(
             """
@@ -60,10 +56,9 @@ public class MoreGraphsPropertyBasedTests {
 
   @Example
   void givenNullGraph_whenCalculatingLazyTopologicalOrdering_thenNpeIsThrown() {
-    // when
+
     ThrowingCallable codeUnderTest = () -> MoreGraphs.lazyTopologicalOrdering(null);
 
-    // then
     assertThatCode(codeUnderTest)
         .as("MoreGraphs.lazyTopologicalOrdering(null) expected to throw NullPointerException")
         .isInstanceOf(NullPointerException.class)
@@ -72,16 +67,14 @@ public class MoreGraphsPropertyBasedTests {
 
   @Example
   void givenSelfLoopingDag_whenCalculatingLazyTopologicalOrdering_thenIaeIsThrown() {
-    // given
+
     ImmutableGraph<Integer> graph =
         GraphBuilder.directed().allowsSelfLoops(true).<Integer>immutable().putEdge(0, 0).build();
 
-    // when
     ThrowingCallable codeUnderTest =
         // Force the topological ordering to be evaluated.
         () -> MoreGraphs.lazyTopologicalOrdering(graph).forEach(__ -> {});
 
-    // then
     assertThatCode(codeUnderTest)
         .as(
             """
@@ -95,14 +88,12 @@ public class MoreGraphsPropertyBasedTests {
 
   @Property
   void givenCyclicGraph_whenCalculatingLazyTopologicalOrdering_thenIaeIsThrown(
-      // given
       @ForAll(supplier = MoreArbitraries.CyclicGraphs.class) ImmutableGraph<Integer> graph) {
-    // when
+
     ThrowingCallable codeUnderTest =
         // Force the topological ordering to be evaluated.
         () -> MoreGraphs.lazyTopologicalOrdering(graph).forEach(__ -> {});
 
-    // then
     assertThatCode(codeUnderTest)
         .as(
             """
@@ -117,29 +108,25 @@ public class MoreGraphsPropertyBasedTests {
   @Property
   void givenStartingNodesAndDag_whenCalculatingTopologicalOrdering_thenOrderIsValid(
       @ForAll(supplier = DirectedAcyclicGraphsAndStartingNodes.class) GraphAndNodes graphAndNodes) {
-    // given
+
     var graph = graphAndNodes.graph();
     var startingNodes = graphAndNodes.nodes();
 
-    // when
     var topologicalOrdering = MoreGraphs.topologicalOrderingStartingFrom(startingNodes, graph);
 
-    // then
     assertThatTopologicalOrderingStartingWithIsValid(startingNodes, graph, topologicalOrdering);
   }
 
   @Property
   void givenStartingNodesAndCyclicGraph_whenCalculatingTopologicalOrdering_thenIaeIsThrown(
       @ForAll(supplier = CyclicGraphsAndStartingNodes.class) GraphAndNodes graphAndNodes) {
-    // given
+
     var cyclicGraph = graphAndNodes.graph();
     var startingNodes = graphAndNodes.nodes();
 
-    // when
     ThrowingCallable codeUnderTest =
         () -> MoreGraphs.topologicalOrderingStartingFrom(startingNodes, cyclicGraph);
 
-    // then
     assertThatCode(codeUnderTest)
         .as(
             """
@@ -153,13 +140,11 @@ public class MoreGraphsPropertyBasedTests {
 
   @Property
   void givenNullSuccessorsFunction_whenCalculatingTopologicalOrdering_thenNpeIsThrown(
-      // given
       @ForAll List<Integer> startingNodes) {
-    // when
+
     ThrowingCallable codeUnderTest =
         () -> MoreGraphs.topologicalOrderingStartingFrom(startingNodes, null);
 
-    // then
     assertThatCode(codeUnderTest)
         .as(
             """
@@ -172,12 +157,10 @@ public class MoreGraphsPropertyBasedTests {
 
   @Property
   void givenNullStartingNodes_whenCalculatingTopologicalOrdering_thenNpeIsThrown(
-      // given
       @ForAll(supplier = MoreArbitraries.Graphs.class) Graph<Integer> graph) {
-    // when
+
     ThrowingCallable codeUnderTest = () -> MoreGraphs.topologicalOrderingStartingFrom(null, graph);
 
-    // then
     assertThatCode(codeUnderTest)
         .as(
             """
@@ -190,13 +173,11 @@ public class MoreGraphsPropertyBasedTests {
 
   @Property
   void givenStartingNodesWithNullNode_whenCalculatingTopologicalOrdering_thenNpeIsThrown(
-      // given
       @ForAll(supplier = MoreArbitraries.Graphs.class) Graph<Integer> graph) {
-    // when
+
     ThrowingCallable codeUnderTest =
         () -> MoreGraphs.topologicalOrderingStartingFrom(singleton(null), graph);
 
-    // then
     assertThatCode(codeUnderTest)
         .as(
             """
@@ -209,10 +190,9 @@ public class MoreGraphsPropertyBasedTests {
 
   @Example
   void givenNullGraph_whenCalculatingTopologicalOrdering_thenNpeIsThrown() {
-    // when
+
     ThrowingCallable codeUnderTest = () -> MoreGraphs.topologicalOrdering(null);
 
-    // then
     assertThatCode(codeUnderTest)
         .as("MoreGraphs.topologicalOrdering(null) expected to throw NullPointerException")
         .isInstanceOf(NullPointerException.class)
@@ -221,26 +201,22 @@ public class MoreGraphsPropertyBasedTests {
 
   @Property
   void givenADag_whenCalculatingTopologicalOrdering_thenOrderingIsValid(
-      // given
       @ForAll(supplier = MoreArbitraries.DirectedAcyclicGraphs.class)
           ImmutableGraph<Integer> graph) {
-    // when
+
     var topologicalOrdering = MoreGraphs.topologicalOrdering(graph);
 
-    // then
     assertThatTopologicalOrderingIsValid(graph, topologicalOrdering);
   }
 
   @Example
   void givenSelfLoopingDag_whenCalculatingTopologicalOrdering_thenIaeIsThrown() {
-    // given
+
     ImmutableGraph<Integer> graph =
         GraphBuilder.directed().allowsSelfLoops(true).<Integer>immutable().putEdge(0, 0).build();
 
-    // when
     ThrowingCallable codeUnderTest = () -> MoreGraphs.topologicalOrdering(graph);
 
-    // then
     assertThatCode(codeUnderTest)
         .as(
             """
@@ -254,12 +230,10 @@ public class MoreGraphsPropertyBasedTests {
 
   @Property
   void givenCyclicGraph_whenCalculatingTopologicalOrdering_thenIaeIsThrown(
-      // given
       @ForAll(supplier = MoreArbitraries.CyclicGraphs.class) ImmutableGraph<Integer> graph) {
-    // when
+
     ThrowingCallable codeUnderTest = () -> MoreGraphs.topologicalOrdering(graph);
 
-    // then
     assertThatCode(codeUnderTest)
         .as(
             """

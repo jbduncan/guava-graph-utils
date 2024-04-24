@@ -2,8 +2,8 @@ package com.github.jbduncan.guavagraphutils;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.function.Predicate.not;
+import static net.jqwik.api.Arbitraries.just;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.common.graph.ElementOrder;
 import com.google.common.graph.EndpointPair;
@@ -57,22 +57,40 @@ final class MoreArbitraries {
                 arbitraryAllowsSelfLoops,
                 arbitraryNodeOrder,
                 arbitraryIncidentEdgeOrder)
-            .as(
-                (isDirected, allowsSelfLoops, nodeOrder, incidentEdgeOrder) -> {
-                  GraphBuilder<Object> graphBuilder =
-                      isDirected ? GraphBuilder.directed() : GraphBuilder.undirected();
-                  return graphBuilder
-                      .allowsSelfLoops(allowsSelfLoops)
-                      .nodeOrder(nodeOrder)
-                      .incidentEdgeOrder(incidentEdgeOrder)
-                      .build();
-                });
+            .as(MoreArbitraries::emptyMutableGraph);
 
     Arbitrary<Double> arbitraryEdgeProbabilities =
         Arbitraries.doubles().between(0d, 1d).withSpecialValue(0d).withSpecialValue(1d);
     return Combinators.combine(
             arbitraryEmptyGraphs, arbitraryNodes, arbitraryEdgeProbabilities, Arbitraries.randoms())
         .as(MoreArbitraries::populateGraph);
+  }
+
+  static Arbitrary<Graph<Integer>> graphs(
+      boolean isDirected,
+      boolean allowsSelfLoops,
+      Set<Integer> nodes,
+      ElementOrder<Integer> nodeOrder,
+      ElementOrder<Integer> incidentEdgeOrder) {
+    return graphs(
+        just(isDirected),
+        just(allowsSelfLoops),
+        just(nodes),
+        just(nodeOrder),
+        just(incidentEdgeOrder));
+  }
+
+  private static MutableGraph<Integer> emptyMutableGraph(
+      boolean isDirected,
+      boolean allowsSelfLoops,
+      ElementOrder<Integer> nodeOrder,
+      ElementOrder<Integer> incidentEdgeOrder) {
+    var graphBuilder = isDirected ? GraphBuilder.directed() : GraphBuilder.undirected();
+    return graphBuilder
+        .allowsSelfLoops(allowsSelfLoops)
+        .nodeOrder(nodeOrder)
+        .incidentEdgeOrder(incidentEdgeOrder)
+        .build();
   }
 
   private static Graph<Integer> populateGraph(
@@ -96,8 +114,7 @@ final class MoreArbitraries {
   }
 
   private static ImmutableGraph<Integer> dagWithRandomEdges(
-      Collection<Integer> nodes, ElementOrder<Integer> nodeOrder, Random random) {
-    Integer[] nodesArray = nodes.toArray(Integer[]::new);
+      Set<Integer> nodes, ElementOrder<Integer> nodeOrder, Random random) {
     int edgeCount =
         maxEdgesForDag(nodes.size()) == 0 //
             ? 0
@@ -113,6 +130,7 @@ final class MoreArbitraries {
     ImmutableGraph.Builder<Integer> graphBuilder =
         GraphBuilder.directed().allowsSelfLoops(false).nodeOrder(nodeOrder).immutable();
 
+    int[] nodesArray = nodes.stream().mapToInt(i -> i).toArray();
     int index = 0;
     for (int i = 0; i < nodes.size() - 1; i++) {
       for (int j = i + 1; j < nodes.size(); j++) {
@@ -162,7 +180,7 @@ final class MoreArbitraries {
           .filter(not(graph -> graph.nodes().isEmpty()))
           .flatMap(
               graph ->
-                  Combinators.combine(Arbitraries.just(graph), Arbitraries.of(graph.nodes()))
+                  Combinators.combine(just(graph), Arbitraries.of(graph.nodes()))
                       .as(GraphAndNode::new));
     }
   }
@@ -182,18 +200,10 @@ final class MoreArbitraries {
       ElementOrder<Integer> incidentEdgeOrderB) {
     var firstGraph =
         MoreArbitraries.graphs(
-            Arbitraries.just(isDirectedA),
-            Arbitraries.just(allowsSelfLoopsA),
-            Arbitraries.just(nodesA),
-            Arbitraries.just(nodeOrderA),
-            Arbitraries.just(incidentEdgeOrderA));
+            isDirectedA, allowsSelfLoopsA, nodesA, nodeOrderA, incidentEdgeOrderA);
     var secondGraph =
         MoreArbitraries.graphs(
-            Arbitraries.just(isDirectedB),
-            Arbitraries.just(allowsSelfLoopsB),
-            Arbitraries.just(nodesB),
-            Arbitraries.just(nodeOrderB),
-            Arbitraries.just(incidentEdgeOrderB));
+            isDirectedB, allowsSelfLoopsB, nodesB, nodeOrderB, incidentEdgeOrderB);
     return Combinators.combine(firstGraph, secondGraph).as(TwoGraphs::new);
   }
 
@@ -209,11 +219,11 @@ final class MoreArbitraries {
               (isDirected, allowsSelfLoops, nodeOrder, incidentEdgeOrder) -> {
                 var arbitraryGraphsWithFixedFlags =
                     graphs(
-                        Arbitraries.just(isDirected),
-                        Arbitraries.just(allowsSelfLoops),
+                        just(isDirected),
+                        just(allowsSelfLoops),
                         MoreArbitraries.nodes(),
-                        Arbitraries.just(nodeOrder),
-                        Arbitraries.just(incidentEdgeOrder));
+                        just(nodeOrder),
+                        just(incidentEdgeOrder));
                 return arbitraryGraphsWithFixedFlags
                     .tuple2()
                     .map(t -> new TwoGraphs(t.get1(), t.get2()));
@@ -304,19 +314,16 @@ final class MoreArbitraries {
     for (int i = index; i < list.size(); i++) {
       nodesB.add(list.get(i));
     }
-    return Tuple.of(ImmutableSet.copyOf(nodesA), ImmutableSet.copyOf(nodesB));
+    return Tuple.of(Set.copyOf(nodesA), Set.copyOf(nodesB));
   }
 
   static class TwoMutableGraphsWithSameFlagsAndCommonNode
       implements ArbitrarySupplier<TwoMutableGraphsAndNode> {
     @Override
     public Arbitrary<TwoMutableGraphsAndNode> get() {
-      Arbitrary<Boolean> arbitraryIsDirected = booleans();
-      Arbitrary<Boolean> arbitraryAllowsSelfLoops = booleans();
-
       return Combinators.combine(
-              arbitraryIsDirected,
-              arbitraryAllowsSelfLoops,
+              booleans(),
+              booleans(),
               MoreArbitraries.nodes(),
               MoreArbitraries.nodes(),
               Arbitraries.integers(),
@@ -332,18 +339,18 @@ final class MoreArbitraries {
                   incidentEdgeOrder) ->
                   Combinators.combine(
                           MoreArbitraries.graphs(
-                              Arbitraries.just(isDirected),
-                              Arbitraries.just(allowsSelfLoops),
-                              Arbitraries.just(Sets.union(nodesA, Set.of(commonNode))),
-                              Arbitraries.just(nodeOrder),
-                              Arbitraries.just(incidentEdgeOrder)),
+                              isDirected,
+                              allowsSelfLoops,
+                              Sets.union(nodesA, Set.of(commonNode)),
+                              nodeOrder,
+                              incidentEdgeOrder),
                           MoreArbitraries.graphs(
-                              Arbitraries.just(isDirected),
-                              Arbitraries.just(allowsSelfLoops),
-                              Arbitraries.just(Sets.union(nodesB, Set.of(commonNode))),
-                              Arbitraries.just(nodeOrder),
-                              Arbitraries.just(incidentEdgeOrder)),
-                          Arbitraries.just(commonNode))
+                              isDirected,
+                              allowsSelfLoops,
+                              Sets.union(nodesB, Set.of(commonNode)),
+                              nodeOrder,
+                              incidentEdgeOrder),
+                          just(commonNode))
                       .as(
                           (a, b, node) -> {
                             MutableGraph<Integer> first = com.google.common.graph.Graphs.copyOf(a);
@@ -386,7 +393,7 @@ final class MoreArbitraries {
         .flatMap(
             nodeOrder ->
                 Combinators.combine(
-                        Arbitraries.just(nodeOrder),
+                        just(nodeOrder),
                         Arbitraries.of(Sets.difference(NODE_ORDERS, Set.of(nodeOrder))))
                     .as(TwoElementOrders::new));
   }

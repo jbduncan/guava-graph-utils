@@ -15,19 +15,17 @@ class MoreGraphsBuildGraphTests {
 
   @Test
   void whenBuildingGraphWithBftAndEmptyStartingNodes_thenResultIsEmptyGraph() {
-    // when
+
     var result = MoreGraphs.buildGraph(Set.of(), node -> Set.of("any old node"));
 
-    // then
     assertThat(result).isEqualTo(GraphBuilder.directed().allowsSelfLoops(true).immutable().build());
   }
 
   @Test
   void whenBuildingGraphWithBftAndEmptySuccessorsFunction_thenResultIsEqualToStartingNodes() {
-    // when
+
     var result = MoreGraphs.buildGraph(Set.of("any old node"), node -> Set.of());
 
-    // then
     assertThat(result)
         .isEqualTo(
             GraphBuilder.directed()
@@ -39,11 +37,10 @@ class MoreGraphsBuildGraphTests {
 
   @Test
   void whenBuildingGraphWithBftAndCyclicSuccessorsFunction_thenResultTerminatesAndContainsCycle() {
-    // when
+
     var result =
         MoreGraphs.buildGraph(Set.of(1), node -> (node * 2) <= 4 ? Set.of(node * 2) : Set.of(1));
 
-    // then
     assertThat(result)
         .isEqualTo(
             GraphBuilder.directed()
@@ -57,7 +54,7 @@ class MoreGraphsBuildGraphTests {
 
   @Test
   void whenBuildingGraphWithBftAndTreeShapedSuccessorsFunction_thenResultContainsTree() {
-    // when
+
     var result =
         MoreGraphs.buildGraph(
             Set.of(1),
@@ -68,7 +65,6 @@ class MoreGraphsBuildGraphTests {
               return Set.of();
             });
 
-    // then
     assertThat(result)
         .isEqualTo(
             GraphBuilder.directed()
@@ -81,14 +77,12 @@ class MoreGraphsBuildGraphTests {
 
   @Test
   void whenBuildingGraphWithBftAndDirectedSelfLoopingGuavaGraph_thenResultIsIdentical() {
-    // given
+
     var expectedGraph =
         GraphBuilder.directed().allowsSelfLoops(true).<Integer>immutable().putEdge(1, 1).build();
 
-    // when
     var result = MoreGraphs.buildGraph(Set.of(1), expectedGraph);
 
-    // then
     assertThat(result).isEqualTo(expectedGraph);
   }
 
@@ -96,14 +90,11 @@ class MoreGraphsBuildGraphTests {
   void
       whenBuildingGraphWithBftAndUndirectedGuavaGraph_thenResultHasTwoDirectedEdgesPerUndirectedEdgeInTheInputGraph() {
 
-    // given
     var successorsFunction =
         GraphBuilder.undirected().allowsSelfLoops(false).<Integer>immutable().putEdge(1, 2).build();
 
-    // when
     ImmutableGraph<Integer> result = MoreGraphs.buildGraph(Set.of(1), successorsFunction);
 
-    // then
     assertThat(result)
         .isEqualTo(
             GraphBuilder.directed()
@@ -116,10 +107,9 @@ class MoreGraphsBuildGraphTests {
 
   @Test
   void whenBuildingGraphWithBftAndNullSuccessorsFunction_thenNpeIsThrown() {
-    // when
+
     ThrowingCallable codeUnderTest = () -> MoreGraphs.buildGraph(Set.of(), null);
 
-    // then
     assertThatCode(codeUnderTest)
         .as(
             """
@@ -132,10 +122,9 @@ class MoreGraphsBuildGraphTests {
 
   @Test
   void whenBuildingGraphWithBftAndNullStartingNodes_thenNpeIsThrown() {
-    // when
+
     ThrowingCallable codeUnderTest = () -> MoreGraphs.buildGraph(null, __ -> Set.of());
 
-    // then
     assertThatCode(codeUnderTest)
         .as(
             """

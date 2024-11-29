@@ -148,6 +148,8 @@ tasks.withType<SpotlessApply>().configureEach {
     mustRunAfter(tasks.withType<RewriteRunTask>())
 }
 
+// TODO: Adjust use of Gradle toolchains as per https://jakewharton.com/gradle-toolchains-are-rarely-a-good-idea/
+
 // TODO: Use Gradle version catalogs (see other personal projects)
 
 // TODO: Follow https://github.com/binkley/modern-java-practices
@@ -155,7 +157,8 @@ tasks.withType<SpotlessApply>().configureEach {
 // TODO: Use static analysis tools:
 //   - https://github.com/PicnicSupermarket/error-prone-support
 
-// TODO: Use CI
+// TODO: Use CI, building on latest Java and testing all the way through to the lowest Java
+//       as per https://jakewharton.com/build-on-latest-java-test-through-lowest-java/
 
 // TODO: Use RenovateBot or Dependabot with Gradle's dependency-submission action:
 //       https://github.com/gradle/actions/blob/main/dependency-submission/README.md

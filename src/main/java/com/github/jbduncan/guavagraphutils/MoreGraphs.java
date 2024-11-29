@@ -421,7 +421,7 @@ public final class MoreGraphs {
 
       return new AbstractIterator<>() {
         @Override
-        protected N computeNext() {
+        protected @Nullable N computeNext() {
           if (!roots.isEmpty()) {
             N next = roots.remove();
             for (N successor : graph.successors(next)) {

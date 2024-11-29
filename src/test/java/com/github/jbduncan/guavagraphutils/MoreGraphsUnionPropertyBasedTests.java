@@ -1,5 +1,6 @@
 package com.github.jbduncan.guavagraphutils;
 
+import static com.google.common.collect.Sets.union;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
@@ -20,10 +21,15 @@ import net.jqwik.api.Property;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 
 @SuppressWarnings({
-  // We test methods that purposefully use an unstable Guava API
+  // We test methods that purposefully build upon an unstable Guava API
   "UnstableApiUsage",
   // jqwik's @Group is equivalent to JUnit 5's @Nested, so they can be safely ignored
-  "ClassCanBeStatic"
+  "ClassCanBeStatic",
+  // SonarLint thinks this class contains no tests, but they're all jqwik ones, which
+  // it doesn't recognise.
+  "java:S2187",
+  // We test that methods react gracefully in the face of nulls.
+  "DataFlowIssue"
 })
 class MoreGraphsUnionPropertyBasedTests {
   @Group
@@ -128,7 +134,7 @@ class MoreGraphsUnionPropertyBasedTests {
               MoreGraphs.union(first, second).nodes() expected to be union \
               of first's and second's nodes\
               """)
-          .isEqualTo(Sets.union(graphs.first().nodes(), graphs.second().nodes()));
+          .isEqualTo(union(graphs.first().nodes(), graphs.second().nodes()));
     }
   }
 
@@ -196,6 +202,7 @@ class MoreGraphsUnionPropertyBasedTests {
           !graphs.first().nodes().contains(node) && !graphs.second().nodes().contains(node));
 
       var union = MoreGraphs.union(graphs.first(), graphs.second());
+      @SuppressWarnings("ResultOfMethodCallIgnored") // adjacentNodes should throw, not return
       ThrowingCallable codeUnderTest = () -> union.adjacentNodes(node);
 
       assertThatCode(codeUnderTest)
@@ -264,8 +271,7 @@ class MoreGraphsUnionPropertyBasedTests {
               second.adjacentNodes(node)\
               """)
           .isEqualTo(
-              Sets.union(
-                  firstGraph.adjacentNodes(commonNode), secondGraph.adjacentNodes(commonNode)));
+              union(firstGraph.adjacentNodes(commonNode), secondGraph.adjacentNodes(commonNode)));
     }
 
     @Property
@@ -335,6 +341,7 @@ class MoreGraphsUnionPropertyBasedTests {
           !graphs.first().nodes().contains(node) && !graphs.second().nodes().contains(node));
 
       var union = MoreGraphs.union(graphs.first(), graphs.second());
+      @SuppressWarnings("ResultOfMethodCallIgnored") // predecessors should throw, not return
       ThrowingCallable codeUnderTest = () -> union.predecessors(node);
 
       assertThatCode(codeUnderTest)
@@ -403,8 +410,7 @@ class MoreGraphsUnionPropertyBasedTests {
               second.predecessors(node)\
               """)
           .isEqualTo(
-              Sets.union(
-                  firstGraph.predecessors(commonNode), secondGraph.predecessors(commonNode)));
+              union(firstGraph.predecessors(commonNode), secondGraph.predecessors(commonNode)));
     }
 
     @Property
@@ -474,6 +480,7 @@ class MoreGraphsUnionPropertyBasedTests {
           !graphs.first().nodes().contains(node) && !graphs.second().nodes().contains(node));
 
       var union = MoreGraphs.union(graphs.first(), graphs.second());
+      @SuppressWarnings("ResultOfMethodCallIgnored") // successors should throw, not return
       ThrowingCallable codeUnderTest = () -> union.successors(node);
 
       assertThatCode(codeUnderTest)
@@ -541,8 +548,7 @@ class MoreGraphsUnionPropertyBasedTests {
               be equal to union of first.successors(node) and \
               second.successors(node)\
               """)
-          .isEqualTo(
-              Sets.union(firstGraph.successors(commonNode), secondGraph.successors(commonNode)));
+          .isEqualTo(union(firstGraph.successors(commonNode), secondGraph.successors(commonNode)));
     }
 
     @Property

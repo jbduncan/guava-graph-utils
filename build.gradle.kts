@@ -1,18 +1,13 @@
-import com.diffplug.gradle.spotless.SpotlessApply
-import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 import net.ltgt.gradle.errorprone.errorprone
-import org.gradle.api.tasks.compile.JavaCompile
-import org.openrewrite.gradle.ResolveRewriteDependenciesTask
-import org.openrewrite.gradle.RewriteDryRunTask
-import org.openrewrite.gradle.RewriteRunTask
 
 plugins {
     `java-library`
 
     id("com.diffplug.spotless") version "6.25.0"
     id("com.github.ben-manes.versions") version "0.51.0"
-    id("net.ltgt.errorprone") version "3.1.0"
-    id("org.openrewrite.rewrite") version "6.8.4"
+    id("net.ltgt.errorprone") version "4.1.0"
+    id("org.gradlex.reproducible-builds") version "1.0"
+    id("org.openrewrite.rewrite") version "6.28.1"
 }
 
 group = "com.github.jbduncan.guavagraphutils"
@@ -30,23 +25,24 @@ repositories {
 }
 
 dependencies {
-    api("com.google.guava:guava:33.0.0-jre")
+    api("com.google.guava:guava:33.3.1-jre")
 
-    testImplementation("net.jqwik:jqwik:1.8.3")
-    testImplementation("org.assertj:assertj-core:3.25.3")
+    testImplementation("net.jqwik:jqwik:1.9.1")
+    testImplementation("org.assertj:assertj-core:3.26.3")
     testImplementation("org.jgrapht:jgrapht-guava:1.5.2")
     testImplementation("org.jgrapht:jgrapht-core:1.5.2")
-    testImplementation(platform("org.junit:junit-bom:5.10.2"))
+    testImplementation(platform("org.junit:junit-bom:5.11.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
-    compileOnly("org.jspecify:jspecify:0.3.0")
-    testCompileOnly("org.jspecify:jspecify:0.3.0")
+    compileOnly("org.jspecify:jspecify:1.0.0")
+    testCompileOnly("org.jspecify:jspecify:1.0.0")
 
-    errorprone("com.google.errorprone:error_prone_core:2.25.0")
-    errorprone("com.uber.nullaway:nullaway:0.10.23")
+    errorprone("com.google.errorprone:error_prone_core:2.36.0")
+    errorprone("com.uber.nullaway:nullaway:0.12.1")
 
-    rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:2.7.1"))
+    rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:2.23.1"))
+    rewrite("org.openrewrite.recipe:rewrite-java-dependencies")
     rewrite("org.openrewrite.recipe:rewrite-java-security")
     rewrite("org.openrewrite.recipe:rewrite-migrate-java")
     rewrite("org.openrewrite.recipe:rewrite-recommendations")
@@ -59,12 +55,8 @@ tasks.test.configure {
     }
 }
 
-tasks.withType<JavaCompile>().configureEach {
-    options.compilerArgs = listOf("-Xlint:all,-processing")
-    options.encoding = "UTF-8"
-}
-
 tasks.compileJava.configure {
+    options.compilerArgs = listOf("-Xlint:all,-processing")
     options.errorprone {
         error("NullAway")
         option("NullAway:AnnotatedPackages", "${project.group}")
@@ -80,16 +72,9 @@ tasks.compileTestJava.configure {
     options.errorprone.disable("NullAway")
 }
 
-tasks.withType<AbstractArchiveTask>().configureEach {
-    isPreserveFileTimestamps = false
-    isReproducibleFileOrder = true
-    dirMode = Integer.parseInt("0755", 8)
-    fileMode = Integer.parseInt("0644", 8)
-}
-
 spotless {
     java {
-        googleJavaFormat("1.20.0")
+        googleJavaFormat("1.25.0")
             .reflowLongStrings()
             .reorderImports(true)
             .formatJavadoc(true)
@@ -97,7 +82,7 @@ spotless {
     }
 }
 
-tasks.withType<DependencyUpdatesTask>().configureEach {
+tasks.dependencyUpdates.configure {
     fun isStable(version: String): Boolean {
         val regex = "^[0-9,.v-]+(-r)?$".toRegex()
         val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.uppercase().contains(it) }
@@ -114,38 +99,18 @@ rewrite {
         "com.github.jbduncan.rewrite.CodeCleanup",
         "com.github.jbduncan.rewrite.SecurityBestPractices"
     )
+    isExportDatatables = true
 
     configFile = file("$rootDir/config/rewrite.yml")
     failOnDryRunResults = true
 }
 
-tasks.withType<RewriteRunTask>().configureEach {
-    notCompatibleWithConfigurationCache(
-        "Uses Task, Project and Task.project at configuration time, which are unsupported by " +
-                "the configuration cache"
-    )
-}
-
-tasks.withType<RewriteDryRunTask>().configureEach {
-    notCompatibleWithConfigurationCache(
-        "Uses Task, Project and Task.project at configuration time, which are unsupported by " +
-                "the configuration cache"
-    )
-}
-
-tasks.withType<ResolveRewriteDependenciesTask>().configureEach {
-    notCompatibleWithConfigurationCache(
-        "Uses Configuration, Project and Task.project at configuration time, which are " +
-                "unsupported by the configuration cache"
-    )
-}
-
 tasks.check.configure {
-    dependsOn(tasks.withType<RewriteDryRunTask>())
+    dependsOn(tasks.rewriteDryRun)
 }
 
-tasks.withType<SpotlessApply>().configureEach {
-    mustRunAfter(tasks.withType<RewriteRunTask>())
+tasks.spotlessApply.configure {
+    mustRunAfter(tasks.rewriteRun)
 }
 
 // TODO: Adjust use of Gradle toolchains as per https://jakewharton.com/gradle-toolchains-are-rarely-a-good-idea/

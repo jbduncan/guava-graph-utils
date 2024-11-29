@@ -1,10 +1,13 @@
 package com.github.jbduncan.guavagraphutils;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Sets.difference;
+import static com.google.common.collect.Sets.union;
+import static java.util.Collections.shuffle;
+import static java.util.Objects.requireNonNull;
 import static java.util.function.Predicate.not;
 import static net.jqwik.api.Arbitraries.just;
 
-import com.google.common.collect.Sets;
 import com.google.common.graph.ElementOrder;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.Graph;
@@ -14,7 +17,6 @@ import com.google.common.graph.MutableGraph;
 import com.google.common.primitives.Booleans;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Random;
 import java.util.Set;
@@ -57,13 +59,25 @@ final class MoreArbitraries {
                 arbitraryAllowsSelfLoops,
                 arbitraryNodeOrder,
                 arbitraryIncidentEdgeOrder)
-            .as(MoreArbitraries::emptyMutableGraph);
+            .as(
+                (isDirected, allowsSelfLoops, nodeOrder, incidentEdgeOrder) ->
+                    emptyMutableGraph(
+                        requireNonNull(isDirected),
+                        requireNonNull(allowsSelfLoops),
+                        requireNonNull(nodeOrder),
+                        requireNonNull(incidentEdgeOrder)));
 
     Arbitrary<Double> arbitraryEdgeProbabilities =
         Arbitraries.doubles().between(0d, 1d).withSpecialValue(0d).withSpecialValue(1d);
     return Combinators.combine(
             arbitraryEmptyGraphs, arbitraryNodes, arbitraryEdgeProbabilities, Arbitraries.randoms())
-        .as(MoreArbitraries::populateGraph);
+        .as(
+            (graph, nodes, edgeProbability, random) ->
+                populateGraph(
+                    requireNonNull(graph),
+                    requireNonNull(nodes),
+                    requireNonNull(edgeProbability),
+                    requireNonNull(random)));
   }
 
   static Arbitrary<Graph<Integer>> graphs(
@@ -109,7 +123,10 @@ final class MoreArbitraries {
     @Override
     public Arbitrary<ImmutableGraph<Integer>> get() {
       return Combinators.combine(nodes(), nodeOrders(), Arbitraries.randoms())
-          .as(MoreArbitraries::dagWithRandomEdges);
+          .as(
+              (nodes, nodeOrder, random) ->
+                  dagWithRandomEdges(
+                      requireNonNull(nodes), requireNonNull(nodeOrder), requireNonNull(random)));
     }
   }
 
@@ -125,7 +142,7 @@ final class MoreArbitraries {
     for (int i = 0; i < edgeCount; i++) {
       randomEdges[i] = true;
     }
-    Collections.shuffle(Booleans.asList(randomEdges), random);
+    shuffle(Booleans.asList(randomEdges), random);
 
     ImmutableGraph.Builder<Integer> graphBuilder =
         GraphBuilder.directed().allowsSelfLoops(false).nodeOrder(nodeOrder).immutable();
@@ -155,9 +172,8 @@ final class MoreArbitraries {
   static class CyclicGraphs implements ArbitrarySupplier<ImmutableGraph<Integer>> {
     @Override
     public Arbitrary<ImmutableGraph<Integer>> get() {
-      return Combinators.combine(
-              nodes(MIN_NODES_COUNT_FOR_CYCLIC_GRAPH, MAX_NODES_COUNT_FOR_ANY_GRAPH), nodeOrders())
-          .as(MoreArbitraries::ringGraph);
+      return Combinators.combine(nodes(MIN_NODES_COUNT_FOR_CYCLIC_GRAPH), nodeOrders())
+          .as((nodes, nodeOrder) -> ringGraph(requireNonNull(nodes), requireNonNull(nodeOrder)));
     }
   }
 
@@ -181,7 +197,7 @@ final class MoreArbitraries {
           .flatMap(
               graph ->
                   Combinators.combine(just(graph), Arbitraries.of(graph.nodes()))
-                      .as(GraphAndNode::new));
+                      .as((g, node) -> new GraphAndNode(requireNonNull(g), requireNonNull(node))));
     }
   }
 
@@ -204,7 +220,8 @@ final class MoreArbitraries {
     var secondGraph =
         MoreArbitraries.graphs(
             isDirectedB, allowsSelfLoopsB, nodesB, nodeOrderB, incidentEdgeOrderB);
-    return Combinators.combine(firstGraph, secondGraph).as(TwoGraphs::new);
+    return Combinators.combine(firstGraph, secondGraph)
+        .as((first, second) -> new TwoGraphs(requireNonNull(first), requireNonNull(second)));
   }
 
   static class TwoGraphsWithSameFlags implements ArbitrarySupplier<TwoGraphs> {
@@ -286,6 +303,11 @@ final class MoreArbitraries {
             incidentEdgeOrders())
         .flatAs(
             (isDirected, allowsSelfLoops, nodes, nodeOrder, incidentEdgeOrder) -> {
+              requireNonNull(isDirected);
+              requireNonNull(allowsSelfLoops);
+              requireNonNull(nodes);
+              requireNonNull(nodeOrder);
+              requireNonNull(incidentEdgeOrder);
               var nodesASize = Arbitraries.integers().between(0, nodes.size());
               var splitNodes = nodesASize.map(n -> splitAtIndex(nodes, n));
               return splitNodes.flatMap(
@@ -336,40 +358,51 @@ final class MoreArbitraries {
                   nodesB,
                   commonNode,
                   nodeOrder,
-                  incidentEdgeOrder) ->
-                  Combinators.combine(
-                          MoreArbitraries.graphs(
-                              isDirected,
-                              allowsSelfLoops,
-                              Sets.union(nodesA, Set.of(commonNode)),
-                              nodeOrder,
-                              incidentEdgeOrder),
-                          MoreArbitraries.graphs(
-                              isDirected,
-                              allowsSelfLoops,
-                              Sets.union(nodesB, Set.of(commonNode)),
-                              nodeOrder,
-                              incidentEdgeOrder),
-                          just(commonNode))
-                      .as(
-                          (a, b, node) -> {
-                            MutableGraph<Integer> first = com.google.common.graph.Graphs.copyOf(a);
-                            MutableGraph<Integer> second = com.google.common.graph.Graphs.copyOf(b);
-                            return new TwoMutableGraphsAndNode(first, second, node);
-                          }));
+                  incidentEdgeOrder) -> {
+                requireNonNull(isDirected);
+                requireNonNull(allowsSelfLoops);
+                requireNonNull(nodesA);
+                requireNonNull(nodesB);
+                requireNonNull(commonNode);
+                requireNonNull(nodeOrder);
+                requireNonNull(incidentEdgeOrder);
+                return Combinators.combine(
+                        MoreArbitraries.graphs(
+                            isDirected,
+                            allowsSelfLoops,
+                            union(nodesA, Set.of(commonNode)),
+                            nodeOrder,
+                            incidentEdgeOrder),
+                        MoreArbitraries.graphs(
+                            isDirected,
+                            allowsSelfLoops,
+                            union(nodesB, Set.of(commonNode)),
+                            nodeOrder,
+                            incidentEdgeOrder),
+                        just(commonNode))
+                    .as(
+                        (a, b, node) -> {
+                          requireNonNull(a);
+                          requireNonNull(b);
+                          requireNonNull(node);
+                          MutableGraph<Integer> first = com.google.common.graph.Graphs.copyOf(a);
+                          MutableGraph<Integer> second = com.google.common.graph.Graphs.copyOf(b);
+                          return new TwoMutableGraphsAndNode(first, second, node);
+                        });
+              });
     }
   }
 
   static SetArbitrary<Integer> nodes() {
-    return nodes(MIN_NODES_COUNT_FOR_ANY_GRAPH, MAX_NODES_COUNT_FOR_ANY_GRAPH);
+    return nodes(MIN_NODES_COUNT_FOR_ANY_GRAPH);
   }
 
-  static SetArbitrary<Integer> nodes(int minNodesCount, int maxNodesCount) {
+  static SetArbitrary<Integer> nodes(int minNodesCount) {
     return Arbitraries.integers()
         .between(SMALLEST_NODE, LARGEST_NODE)
         .set()
         .ofMinSize(minNodesCount)
-        .ofMaxSize(maxNodesCount);
+        .ofMaxSize(MoreArbitraries.MAX_NODES_COUNT_FOR_ANY_GRAPH);
   }
 
   record TwoElementOrders(ElementOrder<Integer> first, ElementOrder<Integer> second) {}
@@ -393,9 +426,10 @@ final class MoreArbitraries {
         .flatMap(
             nodeOrder ->
                 Combinators.combine(
-                        just(nodeOrder),
-                        Arbitraries.of(Sets.difference(NODE_ORDERS, Set.of(nodeOrder))))
-                    .as(TwoElementOrders::new));
+                        just(nodeOrder), Arbitraries.of(difference(NODE_ORDERS, Set.of(nodeOrder))))
+                    .as(
+                        (first, second) ->
+                            new TwoElementOrders(requireNonNull(first), requireNonNull(second))));
   }
 
   static class TwoDifferentNodeOrders implements ArbitrarySupplier<TwoElementOrders> {

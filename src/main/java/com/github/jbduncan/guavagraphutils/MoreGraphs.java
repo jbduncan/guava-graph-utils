@@ -3,6 +3,8 @@ package com.github.jbduncan.guavagraphutils;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
 import static com.google.common.collect.Multisets.toMultiset;
+import static com.google.common.collect.Queues.newArrayDeque;
+import static java.util.Collections.unmodifiableSet;
 import static java.util.Comparator.reverseOrder;
 import static java.util.Map.Entry.comparingByValue;
 import static java.util.Objects.requireNonNull;
@@ -15,7 +17,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.graph.AbstractGraph;
@@ -30,7 +31,6 @@ import com.google.common.graph.SuccessorsFunction;
 import com.google.common.graph.ValueGraph;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
@@ -101,7 +101,7 @@ public final class MoreGraphs {
 
     MutableGraph<N> result = GraphBuilder.directed().allowsSelfLoops(true).build();
     startingNodes.forEach(result::addNode);
-    var nodesRemaining = Queues.newArrayDeque(startingNodes);
+    var nodesRemaining = newArrayDeque(startingNodes);
     while (!nodesRemaining.isEmpty()) {
       N next = nodesRemaining.remove();
       for (N successor : successorsFunction.successors(next)) {
@@ -284,21 +284,21 @@ public final class MoreGraphs {
       public Set<N> successors(N node) {
         requireNonNull(node, "node");
         checkArgument(nodes().contains(node), NODE_IS_NOT_IN_THIS_GRAPH, node);
-        return Collections.unmodifiableSet(table.row(node).keySet());
+        return unmodifiableSet(table.row(node).keySet());
       }
 
       @Override
       public Set<N> predecessors(N node) {
         requireNonNull(node, "node");
         checkArgument(nodes().contains(node), NODE_IS_NOT_IN_THIS_GRAPH, node);
-        return Collections.unmodifiableSet(table.column(node).keySet());
+        return unmodifiableSet(table.column(node).keySet());
       }
 
       @Override
       public Set<N> adjacentNodes(N node) {
         requireNonNull(node, "node");
         checkArgument(nodes().contains(node), NODE_IS_NOT_IN_THIS_GRAPH, node);
-        return Collections.unmodifiableSet(
+        return unmodifiableSet(
             table.rowKeySet().contains(node)
                 ? table.row(node).keySet()
                 : table.column(node).keySet());

@@ -250,8 +250,9 @@ public class MoreGraphsPropertyBasedTests {
     // copy into list for better performance
     topologicalOrdering = ImmutableList.copyOf(topologicalOrdering);
 
-    assertThat(topologicalOrdering).containsExactlyInAnyOrderElementsOf(graph.nodes());
-    assertThat(topologicalOrdering).doesNotHaveDuplicates();
+    assertThat(topologicalOrdering)
+        .containsExactlyInAnyOrderElementsOf(graph.nodes())
+        .doesNotHaveDuplicates();
 
     for (var edge : graph.edges()) {
       assertThat(edge.isOrdered()).isTrue();
@@ -262,8 +263,9 @@ public class MoreGraphsPropertyBasedTests {
   private static <N> void assertThatTopologicalOrderingStartingWithIsValid(
       Iterable<N> startingNodes, Graph<N> graph, List<N> topologicalOrdering) {
     Iterable<N> reachableNodes = Traverser.forGraph(graph).breadthFirst(startingNodes);
-    assertThat(topologicalOrdering).containsExactlyInAnyOrderElementsOf(reachableNodes);
-    assertThat(topologicalOrdering).doesNotHaveDuplicates();
+    assertThat(topologicalOrdering)
+        .containsExactlyInAnyOrderElementsOf(reachableNodes)
+        .doesNotHaveDuplicates();
 
     Graph<N> reachableSubgraph = Graphs.inducedSubgraph(graph, reachableNodes);
     for (var edge : reachableSubgraph.edges()) {

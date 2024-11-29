@@ -154,6 +154,7 @@ class MoreGraphsAsValueGraphTests {
     var table = emptyTable();
     var graph = MoreGraphs.asValueGraph(table);
 
+    @SuppressWarnings("ResultOfMethodCallIgnored") // successors should throw, not return
     ThrowingCallable codeUnderTest = () -> graph.successors(null);
 
     assertThatCode(codeUnderTest)
@@ -192,6 +193,7 @@ class MoreGraphsAsValueGraphTests {
     var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
+    @SuppressWarnings("ResultOfMethodCallIgnored") // successors should throw, not return
     ThrowingCallable codeUnderTest = () -> graph.successors(A_KEY_NOT_IN_TABLE);
 
     assertThatCode(codeUnderTest)
@@ -219,6 +221,7 @@ class MoreGraphsAsValueGraphTests {
     var table = emptyTable();
     var graph = MoreGraphs.asValueGraph(table);
 
+    @SuppressWarnings("ResultOfMethodCallIgnored") // predecessors should throw, not return
     ThrowingCallable codeUnderTest = () -> graph.predecessors(null);
 
     assertThatCode(codeUnderTest)
@@ -257,6 +260,7 @@ class MoreGraphsAsValueGraphTests {
     var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
+    @SuppressWarnings("ResultOfMethodCallIgnored") // predecessors should throw, not return
     ThrowingCallable codeUnderTest = () -> graph.predecessors(A_KEY_NOT_IN_TABLE);
 
     assertThatCode(codeUnderTest)
@@ -284,6 +288,7 @@ class MoreGraphsAsValueGraphTests {
     var table = emptyTable();
     var graph = MoreGraphs.asValueGraph(table);
 
+    @SuppressWarnings("ResultOfMethodCallIgnored") // adjacentNodes should throw, not return
     ThrowingCallable codeUnderTest = () -> graph.adjacentNodes(null);
 
     assertThatCode(codeUnderTest)
@@ -324,6 +329,7 @@ class MoreGraphsAsValueGraphTests {
     var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
+    @SuppressWarnings("ResultOfMethodCallIgnored") // predecessors should throw, not return
     ThrowingCallable codeUnderTest = () -> graph.predecessors(A_KEY_NOT_IN_TABLE);
 
     assertThatCode(codeUnderTest)
@@ -390,6 +396,7 @@ class MoreGraphsAsValueGraphTests {
     var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
+    @SuppressWarnings("ResultOfMethodCallIgnored") // edgeValueOrDefault should throw, not return
     ThrowingCallable codeUnderTest =
         () -> graph.edgeValueOrDefault(null, A_COLUMN_KEY, THE_DEFAULT_EDGE_VALUE);
 
@@ -409,6 +416,7 @@ class MoreGraphsAsValueGraphTests {
     var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
+    @SuppressWarnings("ResultOfMethodCallIgnored") // edgeValueOrDefault should throw, not return
     ThrowingCallable codeUnderTest =
         () -> graph.edgeValueOrDefault(A_ROW_KEY, null, THE_DEFAULT_EDGE_VALUE);
 
@@ -428,6 +436,7 @@ class MoreGraphsAsValueGraphTests {
     var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
+    @SuppressWarnings("ResultOfMethodCallIgnored") // edgeValueOrDefault should throw, not return
     ThrowingCallable codeUnderTest =
         () -> graph.edgeValueOrDefault(A_KEY_NOT_IN_TABLE, A_COLUMN_KEY, THE_DEFAULT_EDGE_VALUE);
 
@@ -448,6 +457,7 @@ class MoreGraphsAsValueGraphTests {
     var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
+    @SuppressWarnings("ResultOfMethodCallIgnored") // edgeValueOrDefault should throw, not return
     ThrowingCallable codeUnderTest =
         () -> graph.edgeValueOrDefault(A_ROW_KEY, A_KEY_NOT_IN_TABLE, THE_DEFAULT_EDGE_VALUE);
 
@@ -510,6 +520,7 @@ class MoreGraphsAsValueGraphTests {
     var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
+    @SuppressWarnings("ResultOfMethodCallIgnored") // edgeValueOrDefault should throw, not return
     ThrowingCallable codeUnderTest = () -> graph.edgeValueOrDefault(null, THE_DEFAULT_EDGE_VALUE);
 
     assertThatCode(codeUnderTest)
@@ -528,6 +539,7 @@ class MoreGraphsAsValueGraphTests {
     var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
+    @SuppressWarnings("ResultOfMethodCallIgnored") // edgeValueOrDefault should throw, not return
     ThrowingCallable codeUnderTest =
         () ->
             graph.edgeValueOrDefault(
@@ -550,6 +562,7 @@ class MoreGraphsAsValueGraphTests {
     var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
+    @SuppressWarnings("ResultOfMethodCallIgnored") // edgeValueOrDefault should throw, not return
     ThrowingCallable codeUnderTest =
         () ->
             graph.edgeValueOrDefault(
@@ -572,6 +585,7 @@ class MoreGraphsAsValueGraphTests {
     var table = singleCellTable();
     var graph = MoreGraphs.asValueGraph(table);
 
+    @SuppressWarnings("ResultOfMethodCallIgnored") // edgeValueOrDefault should throw, not return
     ThrowingCallable codeUnderTest =
         () ->
             graph.edgeValueOrDefault(

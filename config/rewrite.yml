@@ -2,6 +2,7 @@
 type: specs.openrewrite.org/v1beta/recipe
 name: com.github.jbduncan.rewrite.CodeCleanup
 recipeList:
+  - org.openrewrite.gradle.MigrateToGradle8
   - org.openrewrite.java.RemoveObjectsIsNull
   - org.openrewrite.java.ShortenFullyQualifiedTypeReferences
   - org.openrewrite.java.UseStaticImport:

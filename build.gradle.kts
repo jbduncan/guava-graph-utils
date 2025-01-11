@@ -120,6 +120,14 @@ tasks.spotlessApply.configure {
 
 // TODO: Use static analysis tools:
 //   - https://github.com/PicnicSupermarket/error-prone-support
+//   - Custom Refaster templates:
+//       - Guava Refaster templates
+//       - Examples on Refaster website
+//       - Inspirations for new templates from eg templates and ast-grep rules in https://github.com/jbduncan/go-containers
+
+// TODO: Adopt mise (mise.jdx.dev) and make some tasks like "github.com/jbduncan/go-container"'s x.sh or mise setup.
+
+// TODO: Adopt pre-commit (https://github.com/pre-commit/pre-commit)
 
 // TODO: Use CI, building on latest Java and testing all the way through to the lowest Java
 //       as per https://jakewharton.com/build-on-latest-java-test-through-lowest-java/

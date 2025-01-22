@@ -3,3 +3,4 @@
 build/
 out/
 .jqwik-database
+.DS_Store

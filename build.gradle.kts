@@ -116,6 +116,8 @@ tasks.spotlessApply.configure {
 
 // TODO: Use Gradle version catalogs (see other personal projects)
 
+// TODO: Experiment with Declarative Gradle (https://declarative.gradle.org/)
+
 // TODO: Follow https://github.com/binkley/modern-java-practices
 
 // TODO: Use static analysis tools:

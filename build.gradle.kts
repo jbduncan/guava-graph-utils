@@ -2,7 +2,6 @@ import net.ltgt.gradle.errorprone.errorprone
 
 plugins {
     `java-library`
-    `jvm-test-suite`
 
     alias(libs.plugins.ben.manes.versions)
     alias(libs.plugins.diffplug.spotless)
@@ -13,12 +12,6 @@ plugins {
 
 group = "com.github.jbduncan.guavagraphutils"
 version = "0.1.0-SNAPSHOT"
-
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-    }
-}
 
 repositories {
     mavenCentral()
@@ -49,13 +42,8 @@ dependencies {
     rewrite(libs.openrewrite.recipe.rewrite.testing.frameworks)
 }
 
-tasks.test {
-    useJUnitPlatform {
-        includeEngines("junit-jupiter", "jqwik")
-    }
-}
-
 tasks.compileJava {
+    options.release.set(17)
     options.compilerArgs = listOf("-Xlint:all,-processing")
     options.errorprone {
         error("NullAway")
@@ -66,10 +54,42 @@ tasks.compileJava {
 }
 
 tasks.compileTestJava {
+    options.release.set(17)
     options.compilerArgs = listOf("-parameters")
     // Disable NullAway for tests because it gives too many false positives for
     // tests that check nullness at runtime.
     options.errorprone.disable("NullAway")
+}
+
+tasks.test {
+    useJUnitPlatformEngines()
+}
+
+listOf(17, 21).forEach { majorVersion ->
+    val jdkTest = tasks.register<Test>("testJdk${majorVersion}Version") {
+        javaLauncher = javaToolchains.launcherFor {
+            languageVersion = JavaLanguageVersion.of(majorVersion)
+        }
+
+        description = "Runs the test suite on JDK $majorVersion"
+        group = LifecycleBasePlugin.VERIFICATION_GROUP
+
+        // Copy inputs from normal Test task.
+        classpath = sourceSets["test"].runtimeClasspath
+        testClassesDirs = sourceSets["test"].output.classesDirs
+
+        useJUnitPlatformEngines()
+    }
+
+    tasks.check {
+        dependsOn(jdkTest)
+    }
+}
+
+private fun Test.useJUnitPlatformEngines() {
+    useJUnitPlatform {
+        includeEngines("junit-jupiter", "jqwik")
+    }
 }
 
 spotless {
@@ -96,8 +116,7 @@ tasks.dependencyUpdates {
 
 rewrite {
     activeRecipe(
-        "com.github.jbduncan.rewrite.CodeCleanup",
-        "com.github.jbduncan.rewrite.SecurityBestPractices"
+        "com.github.jbduncan.rewrite.CodeCleanup", "com.github.jbduncan.rewrite.SecurityBestPractices"
     )
     isExportDatatables = true
 
@@ -113,8 +132,6 @@ tasks.spotlessApply {
     mustRunAfter(tasks.rewriteRun)
 }
 
-// TODO: Adjust use of Gradle toolchains as per https://jakewharton.com/gradle-toolchains-are-rarely-a-good-idea/
-
 // TODO: Experiment with Declarative Gradle (https://declarative.gradle.org/)
 
 // TODO: Follow https://github.com/binkley/modern-java-practices
@@ -127,9 +144,6 @@ tasks.spotlessApply {
 //       - Inspirations for new templates from eg templates and ast-grep rules in https://github.com/jbduncan/go-containers
 
 // TODO: Adopt pre-commit (https://github.com/pre-commit/pre-commit)
-
-// TODO: Use CI, building on latest Java and testing all the way through to the lowest Java
-//       as per https://jakewharton.com/build-on-latest-java-test-through-lowest-java/
 
 // TODO: Use RenovateBot or Dependabot with Gradle's dependency-submission action:
 //       https://github.com/gradle/actions/blob/main/dependency-submission/README.md

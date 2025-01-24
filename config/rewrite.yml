@@ -12,7 +12,7 @@ recipeList:
   - org.openrewrite.java.format.PadEmptyForLoopComponents
   - org.openrewrite.java.format.RemoveTrailingWhitespace
   - org.openrewrite.java.jspecify.MigrateToJspecify
-  - org.openrewrite.java.migrate.UpgradeToJava21
+  - org.openrewrite.java.migrate.UpgradeToJava17
   - org.openrewrite.java.migrate.UseJavaUtilBase64
   - org.openrewrite.java.migrate.concurrent.JavaConcurrentAPIs
   - org.openrewrite.java.migrate.guava.NoGuavaAtomicsNewReference

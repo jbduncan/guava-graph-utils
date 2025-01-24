@@ -11,11 +11,10 @@ plugins {
 }
 
 group = "com.github.jbduncan.guavagraphutils"
+
 version = "0.1.0-SNAPSHOT"
 
-repositories {
-    mavenCentral()
-}
+repositories { mavenCentral() }
 
 dependencies {
     api(libs.guava)
@@ -50,11 +49,7 @@ tasks.updateDaemonJvm {
     jvmVersion = JavaLanguageVersion.of(newestTestedJavaVersion)
 }
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(newestTestedJavaVersion))
-    }
-}
+java.toolchain.languageVersion.set(JavaLanguageVersion.of(newestTestedJavaVersion))
 
 tasks.compileJava {
     options.release.set(oldestSupportedJavaVersion)
@@ -75,37 +70,33 @@ tasks.compileTestJava {
     options.errorprone.disable("NullAway")
 }
 
-tasks.test {
-    useJUnitPlatformEngines()
-}
+tasks.test { useJUnitPlatformEngines() }
 
 listOf(oldestSupportedJavaVersion, newestTestedJavaVersion).forEach { majorVersion ->
-    val jdkTest = tasks.register<Test>("testJdk${majorVersion}Version") {
-        javaLauncher = javaToolchains.launcherFor {
-            languageVersion = JavaLanguageVersion.of(majorVersion)
+    val jdkTest =
+        tasks.register<Test>("testJdk${majorVersion}Version") {
+            javaLauncher =
+                javaToolchains.launcherFor {
+                    languageVersion = JavaLanguageVersion.of(majorVersion)
+                }
+
+            description = "Runs the test suite on JDK $majorVersion"
+            group = LifecycleBasePlugin.VERIFICATION_GROUP
+
+            // Copy inputs from normal Test task.
+            classpath = sourceSets["test"].runtimeClasspath
+            testClassesDirs = sourceSets["test"].output.classesDirs
+
+            useJUnitPlatformEngines()
+
+            dependsOn(tasks.compileTestJava)
         }
 
-        description = "Runs the test suite on JDK $majorVersion"
-        group = LifecycleBasePlugin.VERIFICATION_GROUP
-
-        // Copy inputs from normal Test task.
-        classpath = sourceSets["test"].runtimeClasspath
-        testClassesDirs = sourceSets["test"].output.classesDirs
-
-        useJUnitPlatformEngines()
-
-        dependsOn(tasks.compileTestJava)
-    }
-
-    tasks.check {
-        dependsOn(jdkTest)
-    }
+    tasks.check { dependsOn(jdkTest) }
 }
 
 private fun Test.useJUnitPlatformEngines() {
-    useJUnitPlatform {
-        includeEngines("junit-jupiter", "jqwik")
-    }
+    useJUnitPlatform { includeEngines("junit-jupiter", "jqwik") }
 }
 
 spotless {
@@ -116,23 +107,27 @@ spotless {
             .formatJavadoc(true)
         formatAnnotations()
     }
+    kotlin {
+        ktfmt().kotlinlangStyle()
+        target("**/*.kt", "**/*.kts")
+    }
 }
 
 tasks.dependencyUpdates {
+    val regex = "^[0-9,.v-]+(-r)?$".toRegex()
     fun isStable(version: String): Boolean {
-        val regex = "^[0-9,.v-]+(-r)?$".toRegex()
-        val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.contains(it, ignoreCase = true) }
+        val stableKeyword =
+            listOf("RELEASE", "FINAL", "GA").any { version.contains(it, ignoreCase = true) }
         return stableKeyword || regex.matches(version)
     }
 
-    rejectVersionIf {
-        isStable(currentVersion) && !isStable(candidate.version)
-    }
+    rejectVersionIf { isStable(currentVersion) && !isStable(candidate.version) }
 }
 
 rewrite {
     activeRecipe(
-        "com.github.jbduncan.rewrite.CodeCleanup", "com.github.jbduncan.rewrite.SecurityBestPractices"
+        "com.github.jbduncan.rewrite.CodeCleanup",
+        "com.github.jbduncan.rewrite.SecurityBestPractices"
     )
     isExportDatatables = true
 
@@ -140,9 +135,7 @@ rewrite {
     failOnDryRunResults = true
 }
 
-tasks.check {
-    dependsOn(tasks.rewriteDryRun)
-}
+tasks.check { dependsOn(tasks.rewriteDryRun) }
 
 tasks.spotlessApply {
     mustRunAfter(tasks.rewriteRun)
@@ -157,7 +150,8 @@ tasks.spotlessApply {
 //   - Custom Refaster templates:
 //       - Guava Refaster templates
 //       - Examples on Refaster website
-//       - Inspirations for new templates from eg templates and ast-grep rules in https://github.com/jbduncan/go-containers
+//       - Inspirations for new templates from eg templates and ast-grep rules in
+//         https://github.com/jbduncan/go-containers
 
 // TODO: Adopt pre-commit (https://github.com/pre-commit/pre-commit)
 

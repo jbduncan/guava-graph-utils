@@ -42,8 +42,17 @@ dependencies {
     rewrite(libs.openrewrite.recipe.rewrite.testing.frameworks)
 }
 
+val minJavaVersion: Int = 17
+val maxTestedJavaVersion: Int = 21
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(maxTestedJavaVersion))
+    }
+}
+
 tasks.compileJava {
-    options.release.set(17)
+    options.release.set(minJavaVersion)
     options.compilerArgs = listOf("-Xlint:all,-processing")
     options.errorprone {
         error("NullAway")
@@ -54,7 +63,7 @@ tasks.compileJava {
 }
 
 tasks.compileTestJava {
-    options.release.set(17)
+    options.release.set(minJavaVersion)
     options.compilerArgs = listOf("-parameters")
     // Disable NullAway for tests because it gives too many false positives for
     // tests that check nullness at runtime.
@@ -65,7 +74,7 @@ tasks.test {
     useJUnitPlatformEngines()
 }
 
-listOf(17, 21).forEach { majorVersion ->
+listOf(minJavaVersion, maxTestedJavaVersion).forEach { majorVersion ->
     val jdkTest = tasks.register<Test>("testJdk${majorVersion}Version") {
         javaLauncher = javaToolchains.launcherFor {
             languageVersion = JavaLanguageVersion.of(majorVersion)

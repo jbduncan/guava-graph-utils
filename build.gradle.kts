@@ -2,12 +2,13 @@ import net.ltgt.gradle.errorprone.errorprone
 
 plugins {
     `java-library`
+    `jvm-test-suite`
 
-    id("com.diffplug.spotless") version "6.25.0"
-    id("com.github.ben-manes.versions") version "0.51.0"
-    id("net.ltgt.errorprone") version "4.1.0"
-    id("org.gradlex.reproducible-builds") version "1.0"
-    id("org.openrewrite.rewrite") version "6.28.1"
+    alias(libs.plugins.ben.manes.versions)
+    alias(libs.plugins.diffplug.spotless)
+    alias(libs.plugins.gradlex.reproducible.builds)
+    alias(libs.plugins.net.ltgt.errorprone)
+    alias(libs.plugins.openrewrite)
 }
 
 group = "com.github.jbduncan.guavagraphutils"
@@ -24,37 +25,37 @@ repositories {
 }
 
 dependencies {
-    api("com.google.guava:guava:33.3.1-jre")
+    api(libs.guava)
 
-    testImplementation("net.jqwik:jqwik:1.9.1")
-    testImplementation("org.assertj:assertj-core:3.26.3")
-    testImplementation("org.jgrapht:jgrapht-guava:1.5.2")
-    testImplementation("org.jgrapht:jgrapht-core:1.5.2")
-    testImplementation(platform("org.junit:junit-bom:5.11.3"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation(libs.jqwik)
+    testImplementation(libs.assertj)
+    testImplementation(libs.jgrapht)
+    testImplementation(libs.jgrapht.guava)
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter)
+    testRuntimeOnly(libs.junit.platform.launcher)
 
-    compileOnly("org.jspecify:jspecify:1.0.0")
-    testCompileOnly("org.jspecify:jspecify:1.0.0")
+    compileOnly(libs.jspecify)
+    testCompileOnly(libs.jspecify)
 
-    errorprone("com.google.errorprone:error_prone_core:2.36.0")
-    errorprone("com.uber.nullaway:nullaway:0.12.1")
+    errorprone(libs.errorprone)
+    errorprone(libs.nullaway)
 
-    rewrite(platform("org.openrewrite.recipe:rewrite-recipe-bom:2.23.1"))
-    rewrite("org.openrewrite.recipe:rewrite-java-dependencies")
-    rewrite("org.openrewrite.recipe:rewrite-java-security")
-    rewrite("org.openrewrite.recipe:rewrite-migrate-java")
-    rewrite("org.openrewrite.recipe:rewrite-recommendations")
-    rewrite("org.openrewrite.recipe:rewrite-testing-frameworks")
+    rewrite(platform(libs.openrewrite.recipe.bom))
+    rewrite(libs.openrewrite.recipe.rewrite.java.dependencies)
+    rewrite(libs.openrewrite.recipe.rewrite.java.security)
+    rewrite(libs.openrewrite.recipe.rewrite.migrate.java)
+    rewrite(libs.openrewrite.recipe.rewrite.recommendations)
+    rewrite(libs.openrewrite.recipe.rewrite.testing.frameworks)
 }
 
-tasks.test.configure {
+tasks.test {
     useJUnitPlatform {
         includeEngines("junit-jupiter", "jqwik")
     }
 }
 
-tasks.compileJava.configure {
+tasks.compileJava {
     options.compilerArgs = listOf("-Xlint:all,-processing")
     options.errorprone {
         error("NullAway")
@@ -64,7 +65,7 @@ tasks.compileJava.configure {
     }
 }
 
-tasks.compileTestJava.configure {
+tasks.compileTestJava {
     options.compilerArgs = listOf("-parameters")
     // Disable NullAway for tests because it gives too many false positives for
     // tests that check nullness at runtime.
@@ -73,7 +74,7 @@ tasks.compileTestJava.configure {
 
 spotless {
     java {
-        googleJavaFormat("1.25.0")
+        googleJavaFormat(libs.versions.googleJavaFormat.get())
             .reflowLongStrings()
             .reorderImports(true)
             .formatJavadoc(true)
@@ -81,10 +82,10 @@ spotless {
     }
 }
 
-tasks.dependencyUpdates.configure {
+tasks.dependencyUpdates {
     fun isStable(version: String): Boolean {
         val regex = "^[0-9,.v-]+(-r)?$".toRegex()
-        val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.uppercase().contains(it) }
+        val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.contains(it, ignoreCase = true) }
         return stableKeyword || regex.matches(version)
     }
 
@@ -104,17 +105,15 @@ rewrite {
     failOnDryRunResults = true
 }
 
-tasks.check.configure {
+tasks.check {
     dependsOn(tasks.rewriteDryRun)
 }
 
-tasks.spotlessApply.configure {
+tasks.spotlessApply {
     mustRunAfter(tasks.rewriteRun)
 }
 
 // TODO: Adjust use of Gradle toolchains as per https://jakewharton.com/gradle-toolchains-are-rarely-a-good-idea/
-
-// TODO: Use Gradle version catalogs (see other personal projects)
 
 // TODO: Experiment with Declarative Gradle (https://declarative.gradle.org/)
 

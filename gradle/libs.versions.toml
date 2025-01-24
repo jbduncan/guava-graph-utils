@@ -1,0 +1,42 @@
+[versions]
+assertj = "3.26.3"
+benManesVersionsPlugin = "0.51.0"
+diffplugSpotlessPlugin = "6.25.0"
+errorprone = "2.36.0"
+googleJavaFormat = "1.25.0"
+gradlexReproducibleBuildsPlugin = "1.0"
+guava = "33.3.1-jre"
+jgrapht = "1.5.2"
+jqwik = "1.9.1"
+jspecify = "1.0.0"
+junit = "5.11.3"
+netLtgtErrorpronePlugin = "4.1.0"
+nullaway = "0.12.1"
+openrewritePlugin = "6.28.1"
+openrewriteRecipe = "2.23.1"
+
+[libraries]
+assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+errorprone = { module = "com.google.errorprone:error_prone_core", version.ref = "errorprone" }
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
+jgrapht = { module = "org.jgrapht:jgrapht-core", version.ref = "jgrapht" }
+jgrapht-guava = { module = "org.jgrapht:jgrapht-guava", version.ref = "jgrapht" }
+jqwik = { module = "net.jqwik:jqwik", version.ref = "jqwik" }
+jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+nullaway = { module = "com.uber.nullaway:nullaway", version.ref = "nullaway" }
+openrewrite-recipe-bom = { module = "org.openrewrite.recipe:rewrite-recipe-bom", version.ref = "openrewriteRecipe" }
+openrewrite-recipe-rewrite-java-dependencies = { module = "org.openrewrite.recipe:rewrite-java-dependencies" }
+openrewrite-recipe-rewrite-java-security = { module = "org.openrewrite.recipe:rewrite-java-security" }
+openrewrite-recipe-rewrite-migrate-java = { module = "org.openrewrite.recipe:rewrite-migrate-java" }
+openrewrite-recipe-rewrite-recommendations = { module = "org.openrewrite.recipe:rewrite-recommendations" }
+openrewrite-recipe-rewrite-testing-frameworks = { module = "org.openrewrite.recipe:rewrite-testing-frameworks" }
+
+[plugins]
+ben-manes-versions = { id = "com.github.ben-manes.versions", version.ref = "benManesVersionsPlugin" }
+diffplug-spotless = { id = "com.diffplug.spotless", version.ref = "diffplugSpotlessPlugin" }
+gradlex-reproducible-builds = { id = "org.gradlex.reproducible-builds", version.ref = "gradlexReproducibleBuildsPlugin" }
+net-ltgt-errorprone = { id = "net.ltgt.errorprone", version.ref = "netLtgtErrorpronePlugin" }
+openrewrite = { id = "org.openrewrite.rewrite", version.ref = "openrewritePlugin" }

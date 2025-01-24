@@ -13,7 +13,7 @@ junit = "5.11.3"
 ktfmt = "0.54"
 netLtgtErrorpronePlugin = "4.1.0"
 nullaway = "0.12.1"
-openrewritePlugin = "6.28.1"
+openrewritePlugin = "7.0.4"
 openrewriteRecipe = "2.23.1"
 
 [libraries]

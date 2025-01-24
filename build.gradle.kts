@@ -108,7 +108,7 @@ spotless {
         formatAnnotations()
     }
     kotlin {
-        ktfmt().kotlinlangStyle()
+        ktfmt(libs.versions.ktfmt.get()).kotlinlangStyle()
         target("**/*.kt", "**/*.kts")
     }
 }
@@ -127,7 +127,7 @@ tasks.dependencyUpdates {
 rewrite {
     activeRecipe(
         "com.github.jbduncan.rewrite.CodeCleanup",
-        "com.github.jbduncan.rewrite.SecurityBestPractices"
+        "com.github.jbduncan.rewrite.SecurityBestPractices",
     )
     isExportDatatables = true
 

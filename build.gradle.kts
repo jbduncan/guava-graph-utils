@@ -42,22 +42,22 @@ dependencies {
     rewrite(libs.openrewrite.recipe.rewrite.testing.frameworks)
 }
 
-val minJavaVersion: Int = 17
-val maxTestedJavaVersion: Int = 21
+val oldestSupportedJavaVersion: Int = 17
+val newestTestedJavaVersion: Int = 21
 
 tasks.updateDaemonJvm {
     @Suppress("UnstableApiUsage")
-    jvmVersion = JavaLanguageVersion.of(maxTestedJavaVersion)
+    jvmVersion = JavaLanguageVersion.of(newestTestedJavaVersion)
 }
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(maxTestedJavaVersion))
+        languageVersion.set(JavaLanguageVersion.of(newestTestedJavaVersion))
     }
 }
 
 tasks.compileJava {
-    options.release.set(minJavaVersion)
+    options.release.set(oldestSupportedJavaVersion)
     options.compilerArgs = listOf("-Xlint:all,-processing")
     options.errorprone {
         error("NullAway")
@@ -68,7 +68,7 @@ tasks.compileJava {
 }
 
 tasks.compileTestJava {
-    options.release.set(minJavaVersion)
+    options.release.set(oldestSupportedJavaVersion)
     options.compilerArgs = listOf("-parameters")
     // Disable NullAway for tests because it gives too many false positives for
     // tests that check nullness at runtime.
@@ -79,7 +79,7 @@ tasks.test {
     useJUnitPlatformEngines()
 }
 
-listOf(minJavaVersion, maxTestedJavaVersion).forEach { majorVersion ->
+listOf(oldestSupportedJavaVersion, newestTestedJavaVersion).forEach { majorVersion ->
     val jdkTest = tasks.register<Test>("testJdk${majorVersion}Version") {
         javaLauncher = javaToolchains.launcherFor {
             languageVersion = JavaLanguageVersion.of(majorVersion)
@@ -93,6 +93,8 @@ listOf(minJavaVersion, maxTestedJavaVersion).forEach { majorVersion ->
         testClassesDirs = sourceSets["test"].output.classesDirs
 
         useJUnitPlatformEngines()
+
+        dependsOn(tasks.compileTestJava)
     }
 
     tasks.check {

@@ -45,6 +45,11 @@ dependencies {
 val minJavaVersion: Int = 17
 val maxTestedJavaVersion: Int = 21
 
+tasks.updateDaemonJvm {
+    @Suppress("UnstableApiUsage")
+    jvmVersion = JavaLanguageVersion.of(maxTestedJavaVersion)
+}
+
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(maxTestedJavaVersion))

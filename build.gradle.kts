@@ -141,10 +141,6 @@ tasks.spotlessApply {
     mustRunAfter(tasks.rewriteRun)
 }
 
-// TODO: Experiment with Declarative Gradle (https://declarative.gradle.org/)
-
-// TODO: Follow https://github.com/binkley/modern-java-practices
-
 // TODO: Use static analysis tools:
 //   - https://github.com/PicnicSupermarket/error-prone-support
 //   - Custom Refaster templates:
@@ -153,9 +149,36 @@ tasks.spotlessApply {
 //       - Inspirations for new templates from eg templates and ast-grep rules in
 //         https://github.com/jbduncan/go-containers
 
-// TODO: Adopt pre-commit (https://github.com/pre-commit/pre-commit)
+// TODO: Adopt pre-commit (https://github.com/pre-commit/pre-commit), lefthook (github.com/evilmartians/lefthook), or mise's support for git pre-commit hooks
+
+// TODO: Evaluate these Gradle plugins for use:
+//   - https://docs.gradle.org/current/userguide/jacoco_plugin.html
+//   - https://github.com/autonomousapps/dependency-analysis-gradle-plugin
+//   - https://github.com/vanniktech/gradle-dependency-graph-generator-plugin
+//   - https://github.com/dorongold/gradle-task-tree
+//   - https://github.com/cashapp/licensee
+//   - https://github.com/dropbox/dependency-guard
+//   - https://github.com/spring-io/nohttp
+//   - https://kordamp.org/kordamp-gradle-plugins
+//   - https://github.com/freefair/gradle-plugins
+//   - https://gradleup.com/projects/
+//   - https://gradlex.org/
+
+// TODO: Enable Gradle build scans: https://scans.gradle.com/
 
 // TODO: Use RenovateBot or Dependabot with Gradle's dependency-submission action:
 //       https://github.com/gradle/actions/blob/main/dependency-submission/README.md
 
-// TODO: Do GitHub releases and upload to Maven Central. See JUnit 5 and junit-pioneer for examples.
+// TODO: Look into flox (https://github.com/flox/flox) as an alternative to mise for tool management
+
+// TODO: Follow https://github.com/binkley/modern-java-practices
+
+// TODO: Structure Gradle project more idiomatically by following https://github.com/jjohannes/idiomatic-gradle
+
+// TODO: Do GitHub releases and upload to Maven Central. See JUnit 5 and junit-pioneer for examples. May need these plugins:
+//   - https://github.com/gradle-nexus/publish-plugin
+//   - https://github.com/shipkit/shipkit-changelog
+//   - https://github.com/shipkit/shipkit-auto-version
+//   - https://github.com/melix/japicmp-gradle-plugin
+
+// TODO: Experiment with Declarative Gradle (https://declarative.gradle.org/)

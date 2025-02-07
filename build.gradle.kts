@@ -173,6 +173,8 @@ tasks.spotlessApply {
 
 // TODO: Follow https://github.com/binkley/modern-java-practices
 
+// TODO: Adopt OpenSSF and CodeQL as per JUnit 5's GitHub Actions workflows
+
 // TODO: Structure Gradle project more idiomatically by following https://github.com/jjohannes/idiomatic-gradle
 
 // TODO: Do GitHub releases and upload to Maven Central. See JUnit 5 and junit-pioneer for examples. May need these plugins:

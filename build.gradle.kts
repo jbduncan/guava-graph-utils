@@ -141,7 +141,8 @@ tasks.spotlessApply {
     mustRunAfter(tasks.rewriteRun)
 }
 
-// TODO: Add Gradle dependency verification: https://britter.dev/blog/2025/02/10/gradle-dependency-verification/
+// TODO: Add Gradle dependency verification:
+//       https://britter.dev/blog/2025/02/10/gradle-dependency-verification/
 
 // TODO: Use static analysis tools:
 //   - https://github.com/PicnicSupermarket/error-prone-support
@@ -151,7 +152,8 @@ tasks.spotlessApply {
 //       - Inspirations for new templates from eg templates and ast-grep rules in
 //         https://github.com/jbduncan/go-containers
 
-// TODO: Adopt pre-commit (https://github.com/pre-commit/pre-commit), lefthook (github.com/evilmartians/lefthook), or mise's support for git pre-commit hooks
+// TODO: Adopt pre-commit (https://github.com/pre-commit/pre-commit), lefthook
+//       (github.com/evilmartians/lefthook), or mise's support for git pre-commit hooks
 
 // TODO: Evaluate these Gradle plugins for use:
 //   - https://docs.gradle.org/current/userguide/jacoco_plugin.html
@@ -177,9 +179,11 @@ tasks.spotlessApply {
 
 // TODO: Adopt OpenSSF and CodeQL as per JUnit 5's GitHub Actions workflows
 
-// TODO: Structure Gradle project more idiomatically by following https://github.com/jjohannes/idiomatic-gradle
+// TODO: Structure Gradle project more idiomatically by following
+// https://github.com/jjohannes/idiomatic-gradle
 
-// TODO: Do GitHub releases and upload to Maven Central. See JUnit 5 and junit-pioneer for examples. May need these plugins:
+// TODO: Do GitHub releases and upload to Maven Central. See JUnit 5 and junit-pioneer for examples.
+// May need these plugins:
 //   - https://github.com/gradle-nexus/publish-plugin
 //   - https://github.com/shipkit/shipkit-changelog
 //   - https://github.com/shipkit/shipkit-auto-version

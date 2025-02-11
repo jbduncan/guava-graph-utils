@@ -141,6 +141,8 @@ tasks.spotlessApply {
     mustRunAfter(tasks.rewriteRun)
 }
 
+// TODO: Add Gradle dependency verification: https://britter.dev/blog/2025/02/10/gradle-dependency-verification/
+
 // TODO: Use static analysis tools:
 //   - https://github.com/PicnicSupermarket/error-prone-support
 //   - Custom Refaster templates:

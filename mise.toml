@@ -1,5 +1,11 @@
+min_version = "2025.2.5"
+
 [hooks]
 enter = "mise i -q"
+
+[settings]
+experimental = true
+lockfile = true
 
 [tools]
 java = "temurin-21"

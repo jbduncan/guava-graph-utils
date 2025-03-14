@@ -109,7 +109,7 @@ spotless {
     }
     kotlin {
         ktfmt(libs.versions.ktfmt.get()).kotlinlangStyle()
-        target("**/*.kt", "**/*.kts")
+        target("*.kts")
     }
 }
 
@@ -152,6 +152,19 @@ tasks.spotlessApply {
 //       - Inspirations for new templates from eg templates and ast-grep rules in
 //         https://github.com/jbduncan/go-containers
 
+// TODO: Adopt errorprone annotations:
+//   - CheckReturnValue on package-info.java level
+//   - Var
+//       See Caffeine's source code for examples and see if any extra errorprone
+//       checks need to be enabled.
+
+// TODO: Caffeine seems to enable a JSpecify mode for Nullaway. Look into this
+//       and enable it here.
+
+// TODO: Look into other ways that Caffeine configures Nullaway.
+
+// TODO: Look into ways that Caffeine configures errorprone and Refaster.
+
 // TODO: Adopt pre-commit (https://github.com/pre-commit/pre-commit), lefthook
 //       (github.com/evilmartians/lefthook), or mise's support for git pre-commit hooks
 
@@ -177,16 +190,22 @@ tasks.spotlessApply {
 
 // TODO: Follow https://github.com/binkley/modern-java-practices
 
+// TODO: Add GitHub Actions CI. Refer to Caffeine's source code for inspiration:
+//       https://github.com/ben-manes/caffeine/tree/master/.github/workflows
+
 // TODO: Adopt OpenSSF and CodeQL as per JUnit 5's GitHub Actions workflows
 
 // TODO: Structure Gradle project more idiomatically by following
-// https://github.com/jjohannes/idiomatic-gradle
+//   https://github.com/jjohannes/idiomatic-gradle
 
 // TODO: Do GitHub releases and upload to Maven Central. See JUnit 5 and junit-pioneer for examples.
-// May need these plugins:
+//   May need these plugins:
 //   - https://github.com/gradle-nexus/publish-plugin
 //   - https://github.com/shipkit/shipkit-changelog
 //   - https://github.com/shipkit/shipkit-auto-version
 //   - https://github.com/melix/japicmp-gradle-plugin
 
 // TODO: Experiment with Declarative Gradle (https://declarative.gradle.org/)
+
+// TODO: Consider fuzzing with com.code_intelligence.jazzer. Search Caffeine's
+//       source code for more info.

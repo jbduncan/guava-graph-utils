@@ -65,8 +65,9 @@ tasks.compileJava {
 tasks.compileTestJava {
     options.release.set(oldestSupportedJavaVersion)
     options.compilerArgs = listOf("-parameters")
-    // Disable NullAway for tests because it gives too many false positives for
-    // tests that check nullness at runtime.
+
+    // Disable NullAway for tests because it generates too many false positives
+    // for tests that check nullness at runtime.
     options.errorprone.disable("NullAway")
 }
 

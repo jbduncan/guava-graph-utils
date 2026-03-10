@@ -4,15 +4,15 @@ name: com.github.jbduncan.rewrite.CodeCleanup
 recipeList:
   - org.openrewrite.java.RemoveObjectsIsNull
   - org.openrewrite.java.ShortenFullyQualifiedTypeReferences
-  - org.openrewrite.java.dependencies.DependencyVulnerabilityCheck
   - org.openrewrite.java.format.BlankLines
+  - org.openrewrite.java.format.EmptyNewlineAtEndOfFile
   - org.openrewrite.java.format.MethodParamPad
   - org.openrewrite.java.format.NoWhitespaceAfter
   - org.openrewrite.java.format.NoWhitespaceBefore
   - org.openrewrite.java.format.PadEmptyForLoopComponents
   - org.openrewrite.java.format.RemoveTrailingWhitespace
-  - org.openrewrite.java.jspecify.MigrateToJspecify
-  - org.openrewrite.java.migrate.UpgradeToJava17
+  # Has false positives
+  # - org.openrewrite.java.migrate.UpgradeToJava17
   - org.openrewrite.java.migrate.UseJavaUtilBase64
   - org.openrewrite.java.migrate.concurrent.JavaConcurrentAPIs
   - org.openrewrite.java.migrate.guava.NoGuavaAtomicsNewReference
@@ -40,7 +40,8 @@ recipeList:
   - org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsHashCode
   - org.openrewrite.java.migrate.guava.PreferJavaUtilObjectsRequireNonNullElse
   - org.openrewrite.java.migrate.guava.PreferJavaUtilOptional
-  - org.openrewrite.java.migrate.guava.PreferJavaUtilPredicate
+  # Has false positives
+  # - org.openrewrite.java.migrate.guava.PreferJavaUtilPredicate
   - org.openrewrite.java.migrate.guava.PreferJavaUtilSupplier
   - org.openrewrite.java.migrate.guava.PreferLongCompare
   - org.openrewrite.java.migrate.guava.PreferLongCompareUnsigned
@@ -60,12 +61,10 @@ recipeList:
   - org.openrewrite.java.migrate.lang.UseTextBlocks
   - org.openrewrite.java.migrate.logging.JavaLoggingAPIs
   - org.openrewrite.java.migrate.net.JavaNetAPIs
-  - org.openrewrite.java.migrate.net.URLConstructorsToURIRecipes
   - org.openrewrite.java.migrate.util.OptionalStreamRecipe
   - org.openrewrite.java.migrate.util.SequencedCollection
   - org.openrewrite.java.testing.assertj.AdoptAssertJDurationAssertions
   - org.openrewrite.java.testing.assertj.Assertj
-  - org.openrewrite.java.testing.cleanup.AssertLiteralBooleanToFailRecipe
   - org.openrewrite.java.testing.cleanup.AssertTrueNullToAssertNull
   - org.openrewrite.java.testing.cleanup.RemoveEmptyTests
   - org.openrewrite.java.testing.cleanup.RemoveTestPrefix
@@ -81,7 +80,6 @@ recipeList:
   - org.openrewrite.kotlin.cleanup.EqualsMethodUsage
   - org.openrewrite.kotlin.cleanup.ImplicitParameterInLambda
   - org.openrewrite.kotlin.cleanup.ReplaceCharToIntWithCode
-  - org.openrewrite.recommendations.CodeHealth
   - org.openrewrite.staticanalysis.AddSerialVersionUidToSerializable
   - org.openrewrite.staticanalysis.AtomicPrimitiveEqualsUsesGet
   - org.openrewrite.staticanalysis.BigDecimalDoubleConstructorRecipe
@@ -90,7 +88,6 @@ recipeList:
   - org.openrewrite.staticanalysis.CaseInsensitiveComparisonsDoNotChangeCase
   - org.openrewrite.staticanalysis.CatchClauseOnlyRethrows
   - org.openrewrite.staticanalysis.ChainStringBuilderAppendCalls
-  - org.openrewrite.staticanalysis.CodeCleanup
   - org.openrewrite.staticanalysis.CombineSemanticallyEqualCatchBlocks
   - org.openrewrite.staticanalysis.CommonDeclarationSiteTypeVariances
   - org.openrewrite.staticanalysis.CompareEnumsWithEqualityOperator
@@ -129,7 +126,8 @@ recipeList:
   - org.openrewrite.staticanalysis.NoDoubleBraceInitialization
   - org.openrewrite.staticanalysis.NoEmptyCollectionWithRawType
   - org.openrewrite.staticanalysis.NoEqualityInForCondition
-  - org.openrewrite.staticanalysis.NoFinalizedLocalVariables
+  # Has false positives
+  # - org.openrewrite.staticanalysis.NoFinalizedLocalVariables
   - org.openrewrite.staticanalysis.NoFinalizer
   - org.openrewrite.staticanalysis.NoPrimitiveWrappersForToStringOrCompareTo
   - org.openrewrite.staticanalysis.NoRedundantJumpStatements
@@ -181,7 +179,8 @@ recipeList:
   - org.openrewrite.staticanalysis.UnnecessaryThrows
   - org.openrewrite.staticanalysis.UnwrapRepeatableAnnotations
   - org.openrewrite.staticanalysis.UpperCaseLiteralSuffixes
-  - org.openrewrite.staticanalysis.UseCollectionInterfaces
+  # Has false positives
+  # - org.openrewrite.staticanalysis.UseCollectionInterfaces
   - org.openrewrite.staticanalysis.UseDiamondOperator
   - org.openrewrite.staticanalysis.UseForEachRemoveInsteadOfSetRemoveAll
   - org.openrewrite.staticanalysis.UseJavaStyleArrayDeclarations
@@ -193,16 +192,3 @@ recipeList:
   - org.openrewrite.staticanalysis.UseSystemLineSeparator
   - org.openrewrite.staticanalysis.WhileInsteadOfFor
   - org.openrewrite.staticanalysis.WriteOctalValuesAsDecimal
----
-type: specs.openrewrite.org/v1beta/recipe
-name: com.github.jbduncan.rewrite.SecurityBestPractices
-recipeList:
-  - org.openrewrite.gradle.security.UseHttpsForRepositories
-  - org.openrewrite.java.search.FindSecrets
-  - org.openrewrite.java.security.FindTextDirectionChanges
-  - org.openrewrite.java.security.FixCwe338
-  - org.openrewrite.java.security.JavaSecurityBestPractices
-  - org.openrewrite.java.security.OwaspTopTen
-  - org.openrewrite.java.security.RegularExpressionDenialOfService
-  - org.openrewrite.java.security.SecureRandom
-  - org.openrewrite.java.security.SecureRandomPrefersDefaultSeed

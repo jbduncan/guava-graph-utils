@@ -8,4 +8,4 @@ experimental = true
 lockfile = true
 
 [tools]
-java = "temurin-21"
+java = "temurin-25"

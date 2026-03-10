@@ -75,12 +75,7 @@ public final class MoreGraphs {
    * and the following successors function:
    *
    * <pre>{@code
-   * node -> {
-   *   if (nodes.equals("z") {
-   *       return ImmutableList.of("z");
-   *   }
-   *   return ImmutableList.of();
-   * }
+   * node -> return ImmutableList.of("z");
    * }</pre>
    *
    * <p>...then this method will terminate quickly and return the graph {@code {("z", "z")}}.
@@ -169,9 +164,9 @@ public final class MoreGraphs {
    * <p>The row keys and column keys in the given table must have {@link #equals(Object) equals()}
    * and {@link #hashCode() hashCode()} implementations as described in "<a
    * href='https://github.com/google/guava/wiki/GraphsExplained#graph-elements-nodes-and-edges'>Graphs
-   * Explained</a>", otherwise the behaviour of this graph is undefined.
+   * Explained</a>", otherwise the behavior of this graph is undefined.
    *
-   * <p>This value graph's methods have the following behaviour:
+   * <p>This value graph's methods have the following behavior:
    *
    * <ul>
    *   <li>{@link ValueGraph#isDirected() isDirected()}: {@code true}

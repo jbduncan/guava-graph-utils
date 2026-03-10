@@ -1,20 +1,20 @@
 [versions]
-assertj = "3.27.3"
-benManesVersionsPlugin = "0.52.0"
-diffplugSpotlessPlugin = "7.0.2"
-errorprone = "2.36.0"
-googleJavaFormat = "1.25.0"
-gradlexReproducibleBuildsPlugin = "1.0"
-guava = "33.4.0-jre"
+assertj = "3.27.7"
+benManesVersionsPlugin = "0.53.0"
+diffplugSpotlessPlugin = "8.3.0"
+errorprone = "2.48.0"
+googleJavaFormat = "1.35.0"
+gradlexReproducibleBuildsPlugin = "1.1"
+guava = "33.5.0-jre"
 jgrapht = "1.5.2"
-jqwik = "1.9.2"
+jqwik = "1.9.3"
 jspecify = "1.0.0"
-junit = "5.12.1"
-ktfmt = "0.54"
-netLtgtErrorpronePlugin = "4.1.0"
-nullaway = "0.12.4"
-openrewritePlugin = "7.0.4"
-openrewriteRecipe = "2.23.1"
+junit = "6.0.3"
+ktfmt = "0.61"
+netLtgtErrorpronePlugin = "5.1.0"
+nullaway = "0.13.1"
+openrewritePlugin = "7.26.0"
+openrewriteRecipe = "3.24.0"
 
 [libraries]
 assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
@@ -30,9 +30,7 @@ junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher
 nullaway = { module = "com.uber.nullaway:nullaway", version.ref = "nullaway" }
 openrewrite-recipe-bom = { module = "org.openrewrite.recipe:rewrite-recipe-bom", version.ref = "openrewriteRecipe" }
 openrewrite-recipe-rewrite-java-dependencies = { module = "org.openrewrite.recipe:rewrite-java-dependencies" }
-openrewrite-recipe-rewrite-java-security = { module = "org.openrewrite.recipe:rewrite-java-security" }
 openrewrite-recipe-rewrite-migrate-java = { module = "org.openrewrite.recipe:rewrite-migrate-java" }
-openrewrite-recipe-rewrite-recommendations = { module = "org.openrewrite.recipe:rewrite-recommendations" }
 openrewrite-recipe-rewrite-testing-frameworks = { module = "org.openrewrite.recipe:rewrite-testing-frameworks" }
 
 [plugins]

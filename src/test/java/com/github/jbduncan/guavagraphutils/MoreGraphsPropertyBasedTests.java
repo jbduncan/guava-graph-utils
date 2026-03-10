@@ -25,8 +25,6 @@ import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 @SuppressWarnings("UnstableApiUsage")
 public class MoreGraphsPropertyBasedTests {
 
-  private static final int MIN_STARTING_NODES_COUNT_FOR_CYCLIC_GRAPH = 1;
-
   @Property
   void givenADag_whenCalculatingLazyTopologicalOrdering_thenOrderingIsValid(
       @ForAll(supplier = MoreArbitraries.DirectedAcyclicGraphs.class)
@@ -38,7 +36,7 @@ public class MoreGraphsPropertyBasedTests {
   }
 
   @Property
-  void givenADag_whenCalculatingLazyTopologicalOrdering_thenSizeIsNumNodesOfDag(
+  void givenADag_whenCalculatingLazyTopologicalOrdering_thenSizeIsNumOfNodesInDag(
       @ForAll(supplier = MoreArbitraries.DirectedAcyclicGraphs.class)
           ImmutableGraph<Integer> graph) {
 
@@ -48,10 +46,10 @@ public class MoreGraphsPropertyBasedTests {
         .as(
             """
             MoreGraphs.lazyTopologicalOrdering(graph) expected to have \
-            size equal to graph.nodes().size: %s\
+            size equal to graph.nodes().size(): %s\
             """,
             graph.nodes().size())
-        .hasSize(graph.nodes().size());
+        .hasSameSizeAs(graph.nodes());
   }
 
   @Example
@@ -297,9 +295,10 @@ public class MoreGraphsPropertyBasedTests {
               graph ->
                   Combinators.combine(
                           Arbitraries.just(graph),
-                          Arbitraries.subsetOf(graph.nodes())
-                              .ofMinSize(MIN_STARTING_NODES_COUNT_FOR_CYCLIC_GRAPH))
+                          Arbitraries.subsetOf(graph.nodes()).ofMinSize(MIN_STARTING_NODES_SIZE))
                       .as(GraphAndNodes::new));
     }
+
+    private static final int MIN_STARTING_NODES_SIZE = 1;
   }
 }

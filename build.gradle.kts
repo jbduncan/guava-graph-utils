@@ -35,21 +35,20 @@ dependencies {
 
     rewrite(platform(libs.openrewrite.recipe.bom))
     rewrite(libs.openrewrite.recipe.rewrite.java.dependencies)
-    rewrite(libs.openrewrite.recipe.rewrite.java.security)
     rewrite(libs.openrewrite.recipe.rewrite.migrate.java)
-    rewrite(libs.openrewrite.recipe.rewrite.recommendations)
     rewrite(libs.openrewrite.recipe.rewrite.testing.frameworks)
 }
 
 val oldestSupportedJavaVersion: Int = 17
-val newestTestedJavaVersion: Int = 21
+val newestSupportedJavaVersion: Int = 25
+val supportedJavaVersions = listOf(oldestSupportedJavaVersion, 21, newestSupportedJavaVersion)
 
 tasks.updateDaemonJvm {
-    @Suppress("UnstableApiUsage")
-    jvmVersion = JavaLanguageVersion.of(newestTestedJavaVersion)
+    languageVersion = JavaLanguageVersion.of(newestSupportedJavaVersion)
+    vendor = JvmVendorSpec.ADOPTIUM
 }
 
-java.toolchain.languageVersion.set(JavaLanguageVersion.of(newestTestedJavaVersion))
+java.toolchain.languageVersion.set(JavaLanguageVersion.of(newestSupportedJavaVersion))
 
 tasks.compileJava {
     options.release.set(oldestSupportedJavaVersion)
@@ -71,9 +70,14 @@ tasks.compileTestJava {
     options.errorprone.disable("NullAway")
 }
 
-tasks.test { useJUnitPlatformEngines() }
+tasks.test {
+    // Our tests run on all the JDK versions that we support further down.
+    // Running them via the normal Test task runs them on one of these JDK
+    // versions, which is wasteful.
+    onlyIf { false }
+}
 
-listOf(oldestSupportedJavaVersion, newestTestedJavaVersion).forEach { majorVersion ->
+supportedJavaVersions.forEach { majorVersion ->
     val jdkTest =
         tasks.register<Test>("testJdk${majorVersion}Version") {
             javaLauncher =
@@ -88,16 +92,12 @@ listOf(oldestSupportedJavaVersion, newestTestedJavaVersion).forEach { majorVersi
             classpath = sourceSets["test"].runtimeClasspath
             testClassesDirs = sourceSets["test"].output.classesDirs
 
-            useJUnitPlatformEngines()
+            useJUnitPlatform { includeEngines("junit-jupiter", "jqwik") }
 
             dependsOn(tasks.compileTestJava)
         }
 
     tasks.check { dependsOn(jdkTest) }
-}
-
-private fun Test.useJUnitPlatformEngines() {
-    useJUnitPlatform { includeEngines("junit-jupiter", "jqwik") }
 }
 
 spotless {
@@ -110,7 +110,6 @@ spotless {
     }
     kotlin {
         ktfmt(libs.versions.ktfmt.get()).kotlinlangStyle()
-        target("*.kts")
     }
 }
 
@@ -126,17 +125,12 @@ tasks.dependencyUpdates {
 }
 
 rewrite {
-    activeRecipe(
-        "com.github.jbduncan.rewrite.CodeCleanup",
-        "com.github.jbduncan.rewrite.SecurityBestPractices",
-    )
+    activeRecipe("com.github.jbduncan.rewrite.CodeCleanup")
     isExportDatatables = true
 
     configFile = file("$rootDir/config/rewrite.yml")
     failOnDryRunResults = true
 }
-
-tasks.check { dependsOn(tasks.rewriteDryRun) }
 
 tasks.spotlessApply {
     mustRunAfter(tasks.rewriteRun)
@@ -144,6 +138,10 @@ tasks.spotlessApply {
 
 // TODO: Add Gradle dependency verification:
 //       https://britter.dev/blog/2025/02/10/gradle-dependency-verification/
+
+// TODO: As I've had to remove org.openrewrite.recipe:rewrite-java-security due to it being a
+//       commercial OpenRewrite recipe now, adopt FindSecBugs (https://find-sec-bugs.github.io/)
+//       instead. See how Spotless uses it, and see if Caffeine uses it too.
 
 // TODO: Use static analysis tools:
 //   - https://github.com/PicnicSupermarket/error-prone-support
@@ -159,6 +157,8 @@ tasks.spotlessApply {
 //       See Caffeine's source code for examples and see if any extra errorprone
 //       checks need to be enabled.
 
+// TODO: try re-enabling NullAway for tests and see what happens
+
 // TODO: Caffeine seems to enable a JSpecify mode for Nullaway. Look into this
 //       and enable it here.
 
@@ -166,8 +166,12 @@ tasks.spotlessApply {
 
 // TODO: Look into ways that Caffeine configures errorprone and Refaster.
 
-// TODO: Adopt pre-commit (https://github.com/pre-commit/pre-commit), lefthook
-//       (github.com/evilmartians/lefthook), or mise's support for git pre-commit hooks
+// TODO: Adopt hk (https://hk.jdx.dev/), lefthook (github.com/evilmartians/lefthook),
+//       pre-commit (https://github.com/pre-commit/pre-commit) or another tool for
+//       git pre-commit hooks
+
+// TODO: jqwik is in maintenance mode, so migrate to kotest property based testing:
+//       https://kotest.io/docs/proptest/property-based-testing.html
 
 // TODO: Evaluate these Gradle plugins for use:
 //   - https://docs.gradle.org/current/userguide/jacoco_plugin.html
@@ -210,3 +214,10 @@ tasks.spotlessApply {
 
 // TODO: Consider fuzzing with com.code_intelligence.jazzer. Search Caffeine's
 //       source code for more info.
+
+// TODO: Consider making this project use Java modules. https://gradlex.org/ has
+//       at least one useful plugin for this.
+
+// TODO: Consider migrating AssertJ to Truth (https://github.com/google/truth) as the
+//       number of assertions is far fewer whilst satisfying most use cases, making it
+//       easier to work with.

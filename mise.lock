@@ -4,6 +4,10 @@
 version = "temurin-25.0.2+10.0.LTS"
 backend = "core:java"
 
+[tools.java."platforms.linux-x64"]
+checksum = "sha256:987387933b64b9833846dee373b640440d3e1fd48a04804ec01a6dbf718e8ab8"
+url = "https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.2%2B10/OpenJDK25U-jdk_x64_linux_hotspot_25.0.2_10.tar.gz"
+
 [tools.java."platforms.macos-arm64"]
 checksum = "sha256:74ff6e892924a49767c35eb61251b1969c03213819d51065d9b8f9e0238c4f97"
 url = "https://github.com/adoptium/temurin25-binaries/releases/download/jdk-25.0.2%2B10/OpenJDK25U-jdk_aarch64_mac_hotspot_25.0.2_10.tar.gz"

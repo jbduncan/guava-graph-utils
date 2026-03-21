@@ -352,11 +352,12 @@ public final class MoreGraphs {
    * {@linkplain Graph#predecessors(Object) predecessors} and other ancestors have been visited.
    *
    * <p>This method is preferable to {@link MoreGraphs#topologicalOrdering(Graph)
-   * MoreGraphs.topologicalOrdering} when the topological ordering will be iterated on only once, as
-   * it will avoid putting the result into an intermediate list. Also, it is preferable to {@link
-   * MoreGraphs#topologicalOrderingStartingFrom(Iterable, SuccessorsFunction)}
-   * topologicalOrderingStartingFrom} when the given graph can be represented as a {@code Graph} and
-   * a topological ordering over the entire graph is needed.
+   * MoreGraphs.topologicalOrdering} when the topological ordering will only be iterated once, as it
+   * will avoid unnecessarily consuming memory.
+   *
+   * <p>This method is preferable to {@link MoreGraphs#topologicalOrderingStartingFrom(Iterable,
+   * SuccessorsFunction)} topologicalOrderingStartingFrom} when the given graph can be represented
+   * as a {@code Graph} and a topological ordering over the entire graph is needed.
    *
    * <p>The given graph must be non-null, otherwise a {@code NullPointerException} will be thrown.
    *
@@ -441,10 +442,11 @@ public final class MoreGraphs {
    *
    * <p>This method is preferable to {@link MoreGraphs#lazyTopologicalOrdering(Graph)
    * MoreGraphs.lazyTopologicalOrdering} when the topological ordering will be iterated on multiple
-   * times, as it will avoid recalculating the topological ordering each and every time. Also, it is
-   * preferable to {@link MoreGraphs#topologicalOrderingStartingFrom(Iterable, SuccessorsFunction)}
-   * topologicalOrderingStartingFrom} when the given graph can be represented as a {@code Graph} and
-   * a topological ordering over the entire graph is needed.
+   * times, as it will avoid recalculating the topological ordering each time.
+   *
+   * <p>This method is preferable to {@link MoreGraphs#topologicalOrderingStartingFrom(Iterable,
+   * SuccessorsFunction)} topologicalOrderingStartingFrom} when the given graph can be represented
+   * as a {@code Graph} and a topological ordering over the entire graph is needed.
    *
    * <p>The given graph must be non-null, otherwise a {@code NullPointerException} will be thrown.
    *
@@ -542,8 +544,8 @@ public final class MoreGraphs {
    *
    * <p>This method is preferable to {@link MoreGraphs#lazyTopologicalOrdering(Graph)
    * lazyTopologicalOrdering} and {@link MoreGraphs#topologicalOrdering(Graph) topologicalOrdering}
-   * when the graph can only be represented as a successors function or when only the subgraph
-   * reachable from the starting nodes is needed.
+   * when the graph can only be represented as a successors function or when only the subgraph that
+   * is reachable from the starting nodes is needed.
    *
    * <p>The given starting nodes iterable, its elements, and the graph must all be non-null,
    * otherwise a {@code NullPointerException} will be thrown.
@@ -743,34 +745,40 @@ public final class MoreGraphs {
         return first.nodeOrder();
       }
 
+      // TODO: adjacentNodes/successors/predecessors are all proving too hard to implement as fully
+      //       lazy views, so consider doing any of:
+      //       1. returning immutable collections
+      //       2. documenting that the results are undefined when the graph union is mutated
+      //       3. doing what the javadocs for `Graph.{adjacentNodes, successors, predecessors}` say
+      //          and throw an exception if `node` is ever removed from the graph
+
       @Override
       public Set<N> adjacentNodes(N node) {
-        return neighbours(node, Graph::adjacentNodes);
+        return neighbors(node, Graph::adjacentNodes);
       }
 
       @Override
       public Set<N> predecessors(N node) {
-        return neighbours(node, Graph::predecessors);
+        return neighbors(node, Graph::predecessors);
       }
 
       @Override
       public Set<N> successors(N node) {
-        return neighbours(node, Graph::successors);
+        return neighbors(node, Graph::successors);
       }
 
-      private Set<N> neighbours(N node, BiFunction<Graph<N>, N, Set<N>> neighbours) {
+      private Set<N> neighbors(N node, BiFunction<Graph<N>, N, Set<N>> neighbours) {
         checkArgument(
             first.nodes().contains(node) || second.nodes().contains(node),
             NODE_IS_NOT_IN_THIS_GRAPH,
             node);
 
         // A ForwardingSet is used to re-evaluate the set every time it is accessed because:
-        // - "neighbours" throws IAE if "first" or "second" don't contain "node", but the graph
-        //   union should only throw IAE if both "first" _and_ "second" don't contain "node", so
-        //   Sets.union cannot always be used.
-        // - The neighbours of "node" can change if "first" or "second" are ever mutated, so if
-        //   only "first" or "second"'s neighbours were ever returned, the result could become
-        //   out-of-date.
+        // - The `checkArgument` call above throws IAE if `first` or `second` doesn't contain
+        //   `node`. However, the graph union should only throw IAE if both `first` _and_ `second`
+        //   do not contain `node`. Therefore, Sets.union cannot always be used.
+        // - The neighbors of `node` can change if `first` or `second` are ever mutated, so if
+        //   only `first` or `second`'s neighbors are ever returned, the result could become stale.
         return new ForwardingSet<>() {
           @Override
           protected Set<N> delegate() {
